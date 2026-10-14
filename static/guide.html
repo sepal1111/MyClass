@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>教師操作手冊與使用說明 · 國小課堂即時記錄系統 (Teacher User Manual)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/api/system/logo">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+      --card-bg: rgba(30, 41, 59, 0.75);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --accent-positive: #10b981;
+      --accent-negative: #ef4444;
+      --accent-warning: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --input-bg: rgba(15, 23, 42, 0.65);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.65;
+      padding: 24px 20px 80px;
+    }
+
+    .guide-container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    /* Top Sticky Action Bar */
+    .guide-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      padding: 12px 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 15px;
+      z-index: 1000;
+      box-shadow: var(--shadow-md);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .guide-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .guide-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      background: rgba(37, 99, 235, 0.18);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-full);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-bottom: 12px;
+    }
+
+    .guide-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .guide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .guide-nav-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 18px 24px;
+      margin-bottom: 36px;
+      backdrop-filter: blur(12px);
+    }
+
+    .guide-nav-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .guide-nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .guide-nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .guide-nav-pill:hover {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .guide-section {
+      margin-bottom: 44px;
+      scroll-margin-top: 90px;
+    }
+
+    .guide-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .guide-section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4));
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .guide-section-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .guide-item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .guide-item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 22px 26px;
+      backdrop-filter: blur(12px);
+      transition: all var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .guide-item-card:hover {
+      border-color: rgba(96, 165, 250, 0.35);
+      box-shadow: var(--shadow-md);
+    }
+
+    .guide-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .guide-item-badge {
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+    }
+
+    .guide-item-badge.badge-primary { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd; }
+    .guide-item-badge.badge-success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .guide-item-badge.badge-warning { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
+    .guide-item-badge.badge-purple { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; }
+
+    .guide-item-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .guide-item-body {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    .guide-item-body b {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .guide-item-body code {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px 7px;
+      border-radius: 6px;
+      color: #38bdf8;
+      font-size: 0.88rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .guide-tip-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(59, 130, 246, 0.12);
+      border-left: 4px solid var(--primary-light);
+      font-size: 0.9rem;
+      color: #bfdbfe;
+    }
+
+    .guide-tip-box.tip-success {
+      background: rgba(16, 185, 129, 0.12);
+      border-left-color: var(--accent-positive);
+      color: #a7f3d0;
+    }
+
+    .guide-tip-box.tip-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border-left-color: var(--accent-warning);
+      color: #fde68a;
+    }
+
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .guide-table th, .guide-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--card-border);
+      text-align: left;
+    }
+
+    .guide-table th {
+      background: rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .guide-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+
+    /* Light Mode Theme */
+    [data-theme="light"], body.theme-light {
+      --bg-gradient: linear-gradient(135deg, #eff6ff 0%, #f8fafc 45%, #f5f3ff 100%);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #f8fafc;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    body.theme-light {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+    }
+
+    body.theme-light .guide-top-bar {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    body.theme-light .guide-title {
+      background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    body.theme-light .guide-header {
+      border-bottom-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-header-badge {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: rgba(37, 99, 235, 0.25);
+      color: var(--primary-dark);
+    }
+
+    body.theme-light .guide-nav-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    body.theme-light .guide-nav-pill {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.theme-light .guide-nav-pill:hover {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #ffffff;
+    }
+
+    body.theme-light .guide-item-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    body.theme-light .guide-item-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.08);
+    }
+
+    body.theme-light .guide-item-body {
+      color: #475569;
+    }
+
+    body.theme-light .guide-item-body b {
+      color: #0f172a;
+    }
+
+    body.theme-light .guide-item-body code {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #0284c7;
+    }
+
+    body.theme-light .guide-tip-box {
+      background: #eff6ff;
+      color: #1e40af;
+      border-left-color: #3b82f6;
+    }
+
+    body.theme-light .guide-tip-box.tip-success {
+      background: #ecfdf5;
+      color: #065f46;
+      border-left-color: #10b981;
+    }
+
+    body.theme-light .guide-tip-box.tip-warning {
+      background: #fffbeb;
+      color: #92400e;
+      border-left-color: #f59e0b;
+    }
+
+    body.theme-light .guide-table {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-table th {
+      background: #f8fafc;
+      color: #1e293b;
+      border-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-table td {
+      border-color: #e2e8f0;
+      color: #334155;
+    }
+
+    body.theme-light .guide-item-badge {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #64748b;
+    }
+
+    body.theme-light .guide-item-badge.badge-primary {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    body.theme-light .guide-item-badge.badge-success {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #047857;
+    }
+
+    body.theme-light .guide-item-badge.badge-warning {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #b45309;
+    }
+
+    body.theme-light .guide-item-badge.badge-purple {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+      color: #6d28d9;
+    }
+
+    /* Language display switcher styles */
+    [data-lang="en"] { display: none; }
+    body.lang-en [data-lang="zh"] { display: none !important; }
+    body.lang-en [data-lang="en"] { display: block !important; }
+    body.lang-en span[data-lang="en"], 
+    body.lang-en a[data-lang="en"], 
+    body.lang-en b[data-lang="en"] { display: inline !important; }
+    body.lang-en div.guide-nav-grid [data-lang="en"],
+    body.lang-en div.guide-header-badge[data-lang="en"] { display: inline-flex !important; }
+  </style>
+</head>
+<body>
+
+  <div class="guide-container">
+
+    <!-- Top Sticky Bar -->
+    <div class="guide-top-bar">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="/" class="guide-nav-pill" style="background: var(--primary); border-color: var(--primary-light); color: #fff; font-weight: 700;">
+          <span data-lang="zh">⬅️ 回到即時記錄系統</span>
+          <span data-lang="en">⬅️ Return to App</span>
+        </a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <a href="/quick-guide" class="guide-nav-pill" style="font-weight: 800;">
+          <span data-lang="zh">🎞️ 簡易版簡報</span>
+          <span data-lang="en">🎞️ Quick Slides (zh)</span>
+        </a>
+        <button id="btn-guide-toggle-theme" class="guide-nav-pill" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); font-weight: 800; font-size: 0.92rem;">
+          <span data-lang="zh" id="guide-theme-label-zh">☀️ 淺色模式</span>
+          <span data-lang="en" id="guide-theme-label-en">☀️ Light Mode</span>
+        </button>
+        <button id="btn-guide-toggle-lang" class="guide-nav-pill" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); font-weight: 800; font-size: 0.92rem;">
+          🌐 繁中 / English
+        </button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="guide-header">
+      <div class="guide-header-badge" data-lang="zh">📖 國小課堂教學全功能手冊</div>
+      <div class="guide-header-badge" data-lang="en">📖 Comprehensive Teacher User Manual</div>
+
+      <h1 class="guide-title" data-lang="zh">國小課堂即時記錄系統 · 操作使用指南</h1>
+      <h1 class="guide-title" data-lang="en">Classroom Live Tracker · Teacher User Guide</h1>
+
+      <p class="guide-subtitle" data-lang="zh">
+        專為國小導師與科任教師設計的現代化數位課堂管理工具。涵蓋「即時評分、快速加減分、5大假別點名、座位拖曳、彈性分組、質性影音筆記、大螢幕頒獎台與雙語系支援」。
+      </p>
+      <p class="guide-subtitle" data-lang="en">
+        Designed for modern elementary homeroom & subject teachers. Features live scoring, quick +/- mode, attendance tracking, drag-and-drop seating, flexible grouping, multimedia notes, big-screen Olympic podium, and full bilingual support.
+      </p>
+    </header>
+
+    <!-- Table of Contents -->
+    <nav class="guide-nav-card">
+      <div class="guide-nav-title">
+        <span data-lang="zh">📌 功能導覽目錄 (按四大情境模組快速跳轉)</span>
+        <span data-lang="en">📌 Table of Contents (Browse by 4 Classroom Contexts)</span>
+      </div>
+
+      <!-- Quick Start -->
+      <div style="margin-bottom: 14px;">
+        <a href="#quickstart" class="guide-nav-pill" style="border-color: rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.15);">
+          <span data-lang="zh">🚀 快速上手 3 步驟</span>
+          <span data-lang="en">🚀 3-Step Quick Start</span>
+        </a>
+      </div>
+
+      <!-- Category 1: 🚀 課堂進行 -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #60a5fa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>🚀</span>
+          <span data-lang="zh">課堂進行：上課當下連續使用 (In-Class)</span>
+          <span data-lang="en">In-Class</span>
+        </div>
+        <div class="guide-nav-grid">
+          <a href="#scoring" class="guide-nav-pill"><span data-lang="zh">⭐ 1. 即時評分與座位視圖</span><span data-lang="en">⭐ 1. Live Scoring & Seating View</span></a>
+          <a href="#dashboard" class="guide-nav-pill"><span data-lang="zh">📊 7. 儀表板與排行榜</span><span data-lang="en">📊 7. Dashboard & Leaderboard</span></a>
+          <a href="#notes" class="guide-nav-pill"><span data-lang="zh">📝 4. 特殊表現快速紀錄（文字／照片／影片）</span><span data-lang="en">📝 4. Quick Notes (Text / Photo / Video)</span></a>
+          <a href="#toolkit" class="guide-nav-pill"><span data-lang="zh">🧰 3. 教學互動工具 (公布欄/抽籤/計時)</span><span data-lang="en">🧰 3. Interactive Tools</span></a>
+          <a href="#toolkit" class="guide-nav-pill"><span data-lang="zh">🎨 3-2. 互動牆、文字雲與答題競賽</span><span data-lang="en">🎨 3-2. Live Wall, Word Cloud & Quiz Battle</span></a>
+          <a href="#projection" class="guide-nav-pill"><span data-lang="zh">📺 8. 大螢幕奧運頒獎台（評分頁 🏆 顯示排行榜）</span><span data-lang="en">📺 8. Olympic Podium Projector (🏆 Show Leaderboard)</span></a>
+          <a href="#toolkit" class="guide-nav-pill"><span data-lang="zh">🧰 懸浮工具列 (計時/抽籤/專注鈴)</span><span data-lang="en">🧰 Floating Dock (Timer/Draw/Chime)</span></a>
+        </div>
+      </div>
+
+      <!-- Category 2: 📋 班級經營 -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #34d399; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>📋</span>
+          <span data-lang="zh">班級經營：導師每日例行，依一天流程排列 (Class Management)</span>
+          <span data-lang="en">Class Management</span>
+        </div>
+        <div class="guide-nav-grid">
+          <a href="#attendance" class="guide-nav-pill"><span data-lang="zh">📋 2. 出缺席點名與假別</span><span data-lang="en">📋 2. Attendance Tracking</span></a>
+          <a href="#whereabouts" class="guide-nav-pill"><span data-lang="zh">🚶 2-2. 在位掌握 (早自修/外出)</span><span data-lang="en">🚶 2-2. Whereabouts Tracking</span></a>
+          <a href="#journal" class="guide-nav-pill"><span data-lang="zh">📓 5. 教學日誌與備忘待辦</span><span data-lang="en">📓 5. Lesson Journal & Todos</span></a>
+        </div>
+      </div>
+
+      <!-- Category 3: 📚 教材與作業 -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>📚</span>
+          <span data-lang="zh">教材與作業：備課與課後 (Materials & Homework)</span>
+          <span data-lang="en">Materials & Homework</span>
+        </div>
+        <div class="guide-nav-grid">
+          <a href="#lms" class="guide-nav-pill"><span data-lang="zh">📚 9. 課程教材與學生登入</span><span data-lang="en">📚 9. Course Materials (LMS)</span></a>
+          <a href="#assignments" class="guide-nav-pill"><span data-lang="zh">📤 10. 作業指派與小組繳交</span><span data-lang="en">📤 10. Assignments & Group Work</span></a>
+          <a href="#quiz" class="guide-nav-pill"><span data-lang="zh">✅ 11. 線上測驗與自動批改</span><span data-lang="en">✅ 11. Online Quizzes</span></a>
+          <a href="#grading" class="guide-nav-pill"><span data-lang="zh">📋 12. 作業批改與師生互動</span><span data-lang="en">📋 12. Grading & Feedback Q&A</span></a>
+          <a href="#filecollect" class="guide-nav-pill"><span data-lang="zh">📁 13. 課堂臨時檔案蒐集</span><span data-lang="en">📁 13. Ad-Hoc File Collection</span></a>
+          <a href="#hwscan" class="guide-nav-pill"><span data-lang="zh">📥 13-2. 作業掃描登記</span><span data-lang="en">📥 13-2. Homework Scan Check-in</span></a>
+          <a href="#paperquiz" class="guide-nav-pill"><span data-lang="zh">📝 6. 紙本測驗極速登錄</span><span data-lang="en">📝 6. Paper Quiz Scoring</span></a>
+        </div>
+      </div>
+
+      <!-- Category 4: 🏆 激勵與統計 -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #fbbf24; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>🏆</span>
+          <span data-lang="zh">激勵與統計：回顧、獎勵與報表 (Rewards & Stats)</span>
+          <span data-lang="en">Rewards & Stats</span>
+        </div>
+        <div class="guide-nav-grid">
+          <a href="#rewards" class="guide-nav-pill"><span data-lang="zh">🎁 19. 獎勵兌換商城管理</span><span data-lang="en">🎁 19. Reward Redemption Shop</span></a>
+          <a href="#pointcards" class="guide-nav-pill"><span data-lang="zh">🎫 20. 實體點數卡管理與圖卡設計</span><span data-lang="en">🎫 20. Physical Point Cards & Studio</span></a>
+          <a href="#reports" class="guide-nav-pill"><span data-lang="zh">📊 18. 6 大 Excel 報表匯出</span><span data-lang="en">📊 18. 6-Sheet Excel Reports</span></a>
+        </div>
+      </div>
+
+      <!-- Category 5: ⚙️ 設定 -->
+      <div style="margin-bottom: 14px;">
+        <div style="font-size: 0.85rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>⚙️</span>
+          <span data-lang="zh">設定：學期初與偶爾調整 (Settings)</span>
+          <span data-lang="en">Settings</span>
+        </div>
+        <div class="guide-nav-grid">
+          <a href="#students" class="guide-nav-pill"><span data-lang="zh">👨‍🎓 16. 學生名冊與雙語姓名</span><span data-lang="en">👨‍🎓 16. Student Roster & Names</span></a>
+          <a href="#seating" class="guide-nav-pill"><span data-lang="zh">🪑 14. 座位表拖曳與排座</span><span data-lang="en">🪑 14. Seating Chart & Layout</span></a>
+          <a href="#grouping" class="guide-nav-pill"><span data-lang="zh">🧩 15. 彈性分組與獨立組分</span><span data-lang="en">🧩 15. Multi-Plan Grouping</span></a>
+          <a href="#rules" class="guide-nav-pill"><span data-lang="zh">🎯 17. 評分規則自訂項目</span><span data-lang="en">🎯 17. Scoring Rules Setup</span></a>
+          <a href="#appearance" class="guide-nav-pill"><span data-lang="zh">🖼️ 21. 學校 Logo 與圖示設定</span><span data-lang="en">🖼️ 21. School Logo & Favicon</span></a>
+          <a href="#security-i18n" class="guide-nav-pill"><span data-lang="zh">🔐 22. 密碼與連線、雙語切換</span><span data-lang="en">🔐 22. Password, Connection & Bilingual Mode</span></a>
+          <a href="#faq" class="guide-nav-pill"><span data-lang="zh">💡 23. 常見問題與教學技巧</span><span data-lang="en">💡 23. FAQ & Classroom Tips</span></a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Section: Quickstart -->
+    <section id="quickstart" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🚀</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">快速上手 3 步驟 (Quick Start)</span>
+          <span data-lang="en">3-Step Quick Start Guide</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">步驟 1</span><span data-lang="en">STEP 1</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">建立課程或班級</span>
+              <span data-lang="en">Create a Class or Subject Course</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點擊頁面頂部的 <b>➕（新增課程）</b> 按鈕，輸入班級名稱（例如：<code>五年二班 社會</code>），選擇教師角色（<b>導師班級</b> 或 <b>科任課程</b>），確認後即可立即建立並切換至該班級。</span>
+            <span data-lang="en">Click the <b>➕ (Add Course)</b> button in the top navigation bar. Enter the course title (e.g., <code>Grade 5-2 Social Studies</code>), select role (<b>Homeroom Class</b> or <b>Subject Course</b>), and click confirm.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">步驟 2</span><span data-lang="en">STEP 2</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">匯入學生名冊（支援中文與英文姓名）</span>
+              <span data-lang="en">Import Student Roster (Supports English Names)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏫 班級經營 ➔ 🧑‍🎓 學生名冊管理</b>，點擊 <b>📥 學生名單批次匯入</b>。您可以下載標準 Excel 範本，填入「座號、學號、中文姓名、英文姓名、性別」，或直接在文字框中貼上名單，一鍵匯入全班學生。</span>
+            <span data-lang="en">Navigate to <b>⚙️ Admin ➔ 🧑‍🎓 Student Roster</b>, then click <b>📥 Batch Import</b>. Download the Excel template, fill in "Seat No., Student ID, Chinese Name, English Name, Gender", or paste text directly for 1-click import.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">步驟 3</span><span data-lang="en">STEP 3</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">開始課堂即時記錄與大螢幕激勵</span>
+              <span data-lang="en">Start Live Scoring & Big Screen Motivation</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到 <b>⭐ 即時評分</b> 即可點擊學生給予加扣分；或切換 <b>⚡ 快速加減分模式</b> 直接於卡片上點擊加減號！點擊 <b>📺 進入大螢幕投影模式</b> 投放到電子白板，呈現奧運頒獎台與座號總覽！</span>
+            <span data-lang="en">Go to <b>⭐ Live Scoring</b> to award points with popup rules or toggle <b>⚡ Quick +/- Mode</b> to score directly on cards with one tap! Open <b>📺 Projector View</b> on your classroom screen for the Olympic podium and scoreboard!</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 1: Scoring -->
+    <section id="scoring" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">⭐</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">1. 即時評分、小組加分與紀錄回復 (Scoring & Logs)</span>
+          <span data-lang="en">1. Live Scoring, Group Scoring & Log Restore</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">⚡ 快速評分</span><span data-lang="en">⚡ QUICK SCORING</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">快速加減分切換模式 (Quick Scoring Mode)</span>
+              <span data-lang="en">Quick +/- Scoring Toggle Mode</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">在即時評分頁面上方，點擊 <b>⚡ 快速加減分：開啟/關閉</b> 按鈕：<br>
+            • <b>開啟狀態</b>：學生卡片上直接常駐顯示 <code>+1</code>（綠色加分）與 <code>-1</code>（紅色扣分）按鈕，點擊<b>1 秒直接完成評分</b>。<br>
+            • <b>🔒 自動鎖定上方小組標籤</b>：開啟快速加減分時，系統會<b>自動禁用（Disabled）上方小組篩選與加分按鈕並顯示灰階提示</b>，防止誤觸導致全組連動加扣分；關閉快速加減分後即自動解鎖恢復小組操作。<br>
+            • <b>手機自適應</b>：在手機或平板直向螢幕上，加減按鈕具備最佳間距與防誤觸設計，操作流暢不重疊。<br>
+            • <b>關閉狀態</b>：恢復標準模式，點擊學生卡片跳出詳細評分規則選單（熱心助人、發言踴躍等）。</span>
+            <span data-lang="en">Click the <b>⚡ Quick Scoring: On/Off</b> button on the top right of the scoring pane:<br>
+            • <b>Enabled</b>: Permanent <code>+1</code> (Green) and <code>-1</code> (Red) buttons appear on student cards for rapid 1-tap scoring.<br>
+            • <b>🔒 Auto-Disable Team Filter Buttons</b>: While Quick Mode is active, team filter buttons at the top are automatically <b>disabled with grayscale styling</b> to prevent accidental bulk scoring. Disabling Quick Mode immediately unlocks team buttons.<br>
+            • <b>Mobile Optimized</b>: Layout adapts perfectly to smartphone touch screens with anti-overlap spacing.<br>
+            • <b>Disabled</b>: Standard popover menu mode opens when clicking student cards.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">小組與多選</span><span data-lang="en">Team & Batch</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">小組即時加分、多選批次評分與 2.5 秒撤銷 (Undo)</span>
+              <span data-lang="en">Team Scoring, Batch Award & 2.5s Undo</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>小組即時加分</b>：點選上方快捷小組標籤或整組成員進行評分時，系統會<b>同步為全組學生加分，並為該小組累積「小組獨立得分」</b>，卡片上即時呈現當前累積組分。<br>
+            • <b>多選批次評分</b>：長按或點選多位學生卡片進入多選狀態，點選評分項目可同時為多位同學加減分。<br>
+            • <b>秒級撤銷 (Undo)</b>：評分完成後，螢幕下方會跳出 <b>2.5 秒 Undo 提示框</b>，若誤觸可立即點擊「↩️ 復原撤銷」回到評分前狀態。</span>
+            <span data-lang="en">• <b>Team Live Scoring</b>: Awarding points to a team adds points to all members and accumulates <b>Isolated Group Points</b> simultaneously with live score badges on student cards.<br>
+            • <b>Batch Scoring</b>: Select multiple students by tapping cards to award points in batches.<br>
+            • <b>Instant Undo</b>: A <b>2.5s Undo toast</b> appears at the bottom after scoring; tap "↩️ Undo" anytime to revert accidental scores.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">日誌管理</span><span data-lang="en">Log Manager</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">評分歷程分組標籤、記錄刪除與一鍵回復 (Restore)</span>
+              <span data-lang="en">Score Logs with Group Tags & 1-Click Restore</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>分組模式與組別標籤</b>：在學生個人評分歷程中，每筆加扣分皆完整註記評分時所屬的「分組模式」與「小組名稱」（例如：<code>國語分組 · 第 2 組</code>）。<br>
+            • <b>誤刪一鍵回復</b>：若教師在日誌中不小心刪除分數，可隨時點擊 <b>↩️ 恢復紀錄</b>，系統會立即回補分數，確保學期歷程數據精準無虞。</span>
+            <span data-lang="en">• <b>Group & Plan Tags</b>: Each score entry in student history logs tracks its exact Grouping Plan and Team Name (e.g., <code>Chinese Reading · Team 2</code>).<br>
+            • <b>1-Click Log Restore</b>: If a score record is accidentally deleted, click <b>↩️ Restore Record</b> to instantly restore the score.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">即時評分時段統計切換（當天／當週／當月／指定期間）</span>
+              <span data-lang="en">Live Scoring Period Filter (Today / Week / Month / Custom Range)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">即時評分頁面標題旁新增 <b>當天、當週、當月、指定期間</b> 4 顆時段切換按鈕，學生卡片與小組上顯示的即時累積分數會<b>立即依所選時段重新計算</b>（例如切到「當週」只看本週加扣分總和），旁邊並會顯示 <code>📅 分數統計：當天</code> 之類的當前時段徽章。<br>
+            點擊 <b>指定期間</b> 會展開專屬日期區間工具列，可自行輸入起訖日期，或點擊 <b>近 7 天</b>、<b>近 30 天</b>、<b>本月</b> 快捷標籤後按 <b>⚡ 套用範圍</b> 立即套用。<br>
+            <b>教師的時段選擇會記住</b>（存於瀏覽器），切換分頁、切換班級或重新整理頁面後仍維持上次選擇的統計時段。</span>
+            <span data-lang="en">The Live Scoring header now has 4 period toggle buttons: <b>Today, This Week, This Month, Custom Range</b>. Live cumulative scores shown on student and team cards <b>instantly recalculate</b> to match the selected period (e.g., switching to "This Week" shows only this week's point changes), with a badge like <code>📅 Score Period: Today</code> next to it.<br>
+            Clicking <b>Custom Range</b> expands a dedicated date-range toolbar — enter start/end dates manually, or click quick presets <b>Last 7 Days</b>, <b>Last 30 Days</b>, or <b>This Month</b>, then press <b>⚡ Apply Range</b>.<br>
+            <b>Your period choice is remembered</b> in the browser, so it persists across tab switches, course changes, and page reloads.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Attendance -->
+    <section id="attendance" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📋</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">2. 出缺席點名與雙語日期選擇 (Attendance)</span>
+          <span data-lang="en">2. Attendance Management & Bilingual Dates</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">6 大假別</span><span data-lang="en">6 LEAVE TYPES</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">6 大出缺席假別與一鍵全班出席</span>
+              <span data-lang="en">6 Attendance Statuses & 1-Click All Present</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">系統支援 <b>出席 (Present)</b>、<b>病假 (Sick Leave)</b>、<b>事假 (Personal Leave)</b>、<b>公假 (Official Leave)</b>、<b>喪假 (Bereavement Leave)</b>、<b>遲到 (Late)</b> 6 種出缺席狀態。<br>
+            • 上課開始時點擊 <b>✅ 全班出席</b> 即可秒速完成點名。<br>
+            • 點名請假之學生在評分卡片與排行榜上會標註 <code>(請假)</code>，避免課堂計分誤判。</span>
+            <span data-lang="en">Supports <b>Present</b>, <b>Sick Leave</b>, <b>Personal Leave</b>, <b>Official Leave</b>, <b>Bereavement Leave</b>, and <b>Late</b>.<br>
+            • Click <b>✅ All Present</b> for 1-click full class attendance.<br>
+            • Absent students automatically show a <code>(Leave)</code> badge on scoring cards to prevent scoring confusion.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">全客製化雙語日期選擇器 (Custom DatePicker)</span>
+              <span data-lang="en">Custom Bilingual DatePicker Component</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點名日期選擇器採用專屬雙語 DatePicker 元件：在英文語系下顯示 <code>YYYY-MM-DD</code> 與完整英文月曆（<code>January ~ December</code>、<code>Su ~ Sa</code>）；在繁中語系下顯示 <code>年/月/日</code> 與中文月曆。</span>
+            <span data-lang="en">The date picker uses a customized bilingual component: shows <code>YYYY-MM-DD</code> with English calendar (<code>January ~ December</code>, <code>Su ~ Sa</code>) in English mode, and <code>年/月/日</code> in Traditional Chinese mode.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">🚶 早自修／午休在位掌握（學生不在教室的原因與負責老師）</span>
+              <span data-lang="en">🚶 Morning Study / Lunch Break Whereabouts (Why a Student Is Out & Who to Ask)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">位於 <b>📋 班級經營 ➔ 🚶 在位掌握</b>，用來掌握早自修、午休時學生是否在教室；校隊訓練、處室公差時，導師可立刻知道人在哪裡、該問哪位老師。<br>
+            • <b>使用方式</b>：選擇日期與時段（🌅 早自修／🍱 午休，系統依目前時間自動選擇），<b>預設全班都在教室</b>；點學生卡片，選擇不在教室的原因即可；回來時再點一次，按「✅ 回到教室了」。<b>系統會記下離開與回來的時間，紀錄不會消失</b>；同一時段可以外出多次。誤按時可在視窗中按「🗑️ 誤按，刪除這筆」（刪除後不留紀錄）。<br>
+            • <b>預設原因</b>：棒球隊、羽球隊、合唱團、田徑隊、英文訓練、科展、奧匹、語文訓練、糾察隊、其他。選「其他」時<b>必須輸入原因</b>（例如「幫老師搬資料」）。<br>
+            • <b>「不在教室名單」找人清單</b>：依原因分組，直接顯示學生與<b>負責老師</b>，導師臨時找學生時一眼就知道該問誰。<br>
+            • <b>🪑 座位表檢視</b>：按「👥 名冊／🪑 座位表」切換，座位表依「⚙️ 設定 ➔ 座位表編排」的排位顯示（含講台位置），一眼看出哪個座位的同學不在教室；學生自行登記頁也有相同切換。<br>
+            • <b>☑️ 多選</b>：同一批學生（例如 3 位棒球隊員）可一次選取、一次設定原因。<b>✅ 全班都在教室</b> 可一鍵把該時段所有尚未回來的學生標記為已回教室（紀錄保留）。<br>
+            • <b>📊 紀錄與統計</b>：選擇日期區間與時段，查看<b>學生統計</b>（誰外出幾次、累計幾分鐘、各原因次數）、<b>原因統計</b>（各原因次數、人數、負責老師）與<b>明細</b>（離開–回來時間、外出分鐘）；「未登記回來」代表過了當天仍沒人標記回到教室，不計入累計分鐘。按「📥 匯出 Excel」可下載含「外出明細／學生統計／原因統計」三張工作表的報表。<br>
+            • <b>⚙️ 管理原因與負責老師</b>：可修改名稱與圖示、新增項目、停用或刪除，並為每個項目填寫<b>負責老師（選填）</b>。修改後自動儲存，<b>所有班級共用</b>；已有登記紀錄的項目不能刪除，只會改為停用。<br>
+            • <b>🔗 學生自行登記頁（免登入）</b>：教師不在教室時，可按「🔗 學生自行登記頁」<b>啟用</b>，系統會產生本班專屬的連結。<b>教師電腦</b>：按「開啟登記頁」後按 <b>Ctrl + D</b> 加入瀏覽器書籤，之後教師離開教室、系統未登入時，學生直接點書籤即可登記；<b>手機／平板</b>：掃描 QR Code。學生用任一方式開啟後，<b>不需登入</b>即可點自己的名字、選擇公出原因，回來時再點一次按「我回到教室了」（只會記下回來時間，不會刪除紀錄）；頁面同時顯示不在教室名單與負責老師。連結帶有本班專屬金鑰，<b>只提供給本班學生</b>；外流或不再開放時按「重新產生連結」或「停用」，舊連結立即失效。學生只能登記<b>今天</b>的狀態，看不到學生照片。同一批同學（例如一起去校隊練習）可按「☑️ 多人一起登記」，點選多位同學後一次選好原因。<br>
+            • 多台裝置同時開啟時，教師端會即時同步，學生自行登記頁約每 10 秒自動更新。</span>
+            <span data-lang="en">Found at <b>📋 Class Management ➔ 🚶 Whereabouts</b>: track whether students are in the classroom during morning study and lunch break, so a homeroom teacher instantly knows where a student is and whom to ask when they are away for team practice or office errands.<br>
+            • <b>How to use</b>: pick the date and slot (🌅 Morning Study / 🍱 Lunch Break — auto-selected by the current time). <b>Everyone defaults to "in class."</b> Click a student card and choose the reason they are away; when they return, click again and press "✅ Back in class." <b>The system records both the leave and return times and keeps the record</b>; a student can leave several times in one slot. If tapped by mistake, use "🗑️ Wrong tap, delete this entry" (leaves no record).<br>
+            • <b>Default reasons</b>: Baseball, Badminton, Choir, Track & Field, English Training, Science Fair, Olympiad, Language Training, Patrol Squad, Other. Choosing "Other" <b>requires a typed reason</b> (e.g., "helping a teacher move materials").<br>
+            • <b>"Not in Classroom" lookup list</b>: grouped by reason and showing the students together with the <b>responsible teacher</b>, so you know whom to ask at a glance.<br>
+            • <b>🪑 Seating View</b>: toggle "👥 Roster / 🪑 Seating" to see students laid out as in "⚙️ Settings ➔ Seating Chart" (including the podium position), so you can see at a glance whose seat is empty; the student self-service page has the same toggle.<br>
+            • <b>☑️ Multi-select</b>: select a group (e.g., 3 baseball players) and set the reason once. <b>✅ Everyone in class</b> marks every student still out in that slot as returned (records are kept).<br>
+            • <b>📊 Records & Statistics</b>: pick a date range and slot to see <b>by student</b> (how many times, total minutes, counts per reason), <b>by reason</b> (counts, headcount, responsible teacher), and <b>details</b> (leave–return times, minutes). "No return logged" means nobody marked the student back in class by the end of the day; it is excluded from total minutes. Click "📥 Export Excel" for a workbook with Details / By Student / By Reason sheets.<br>
+            • <b>⚙️ Manage Reasons & Teachers</b>: rename, change icons, add, deactivate or delete items, and fill in each item's <b>responsible teacher (optional)</b>. Changes auto-save and are <b>shared by all classes</b>; items already used in records cannot be deleted, only deactivated.<br>
+            • <b>🔗 Student Self-Service Page (no login)</b>: when you are away from the classroom, click "🔗 Student Self-Service Page" and <b>enable</b> it to get a class-specific link. <b>On the teacher's computer</b>: click "Open page," press <b>Ctrl + D</b> to bookmark it — afterwards, when you are away and the system is logged out, students just click the bookmark to register; <b>on phones/tablets</b>: scan the QR code. Either way, students can, <b>without logging in</b>, tap their own name, choose a reason for leaving, and tap again to press "I'm back in class"; the page also shows who is out and the responsible teacher. The link carries a class-specific key, so <b>share it only with your students</b>; use "Regenerate link" or "Disable" if it leaks or you no longer want it open — the old link stops working immediately. Students can only register <b>today's</b> status and cannot see student photos. A group leaving together (e.g., for team practice) can use "☑️ Register Multiple Students" to pick several names and choose the reason once.<br>
+            • When open on several devices, the teacher view syncs in real time and the student page auto-refreshes about every 10 seconds.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 9: Toolkit -->
+    <section id="toolkit" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🧰</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">3. 課堂教學互動輔助工具箱 (Teaching Toolkit)</span>
+          <span data-lang="en">3. Classroom Interactive Teaching Toolkit</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">📌 課堂公布欄</span><span data-lang="en">📌 BULLETIN BOARD</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">課堂即時公布欄 (富文字、顏色與黑板投影)</span>
+              <span data-lang="en">Classroom Live Bulletin Board (Rich Styles & Themes)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>多種字體大小與色彩</b>：支援 小、中、大、特大 4 種字體縮放，可自選 白、黃、綠、藍、粉 5 色文字、粗體與清單列表。<br>
+            • <b>3 大黑板主題</b>：提供「黑板綠」、「科技黑」、「極簡白」三種底色風格。<br>
+            • <b>自動保存與全螢幕</b>：內容依班級自動記憶於瀏覽器，並支援 <b>⛶ 全螢幕投影</b> 投放電子白板。</span>
+            <span data-lang="en">• <b>Font Scaling & Colors</b>: 4 font sizes (Small, Medium, Large, Extra Large), 5 text colors, bold, and bulleted lists.<br>
+            • <b>3 Board Themes</b>: Chalk Green, Slate Dark, and Clean Whiteboard.<br>
+            • <b>Auto-Save & Fullscreen</b>: Auto-saved per class; supports <b>⛶ Fullscreen Projector</b> mode for smartboards.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">🎲 隨機抽籤</span><span data-lang="en">🎲 LUCKY DRAW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">隨機抽籤 (挑選學生上台、隨堂發表與小組抽籤)</span>
+              <span data-lang="en">Random Picker (Student Presentation, On-Stage & Group Selection)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>個人與小組模式</b>：支援指定抽取 1 ~ N 位學生或隨機抽選小組代表上台發表。<br>
+            • <b>排除已中籤機制</b>：勾選「排除本次已抽中者」，抽籤池將自動扣除已抽中同學，保障全班每位同學都有上台發表的均等機會。<br>
+            • <b>洗牌動畫與提示徽章</b>：具備緊張刺激的洗牌滾動動畫與提示音效，中籤彈窗清晰醒目顯示座號、姓名與「🎤 請上台 / 發表」提示。</span>
+            <span data-lang="en">• <b>Student & Group Modes</b>: Select 1 ~ N individual students or team representatives for presentations.<br>
+            • <b>Exclude Already Picked</b>: Non-repeating draw pool ensures every student gets an equal opportunity to present.<br>
+            • <b>Shuffle Animation & Presenter Badge</b>: Dynamic shuffle animation with audio cue; clearly highlights chosen students with a "🎤 Presenter" badge.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">⏱️ 計時碼錶</span><span data-lang="en">⏱️ TIMER & STOPWATCH</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">倒數計時器、正計時碼錶、隨機背景音樂 (BGM) 與浮動視窗</span>
+              <span data-lang="en">Countdown Timer, Stopwatch, Random BGM & Mini Widget</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>倒數計時器</b>：內建 30秒 ~ 15分鐘快捷按鈕與自訂分秒，最後 5 秒倒數視覺警示，<b>時間歸零時自動暫停音樂並播放清脆響鈴 3 次</b>。<br>
+            • <b>🎵 隨機背景音樂 (BGM)</b>：進入計時器時<b>自動隨機挑選曲目並單曲循環播放</b>，提供「播放 / 暫停」、「🔀 隨機換曲」與音量微調控制；切換離開分頁或關閉頁面時自動暫停，營造專注舒適的課堂氛圍。<br>
+            • <b>正計時碼錶</b>：精確至百分秒，支援計圈 (Lap Time) 記錄。<br>
+            • <b>浮動迷你視窗與全螢幕</b>：點擊「📌 浮動迷你視窗」可在右下角縮小懸浮，或點擊「⛶ 全螢幕投影」在電子白板以特大字體投影倒數。</span>
+            <span data-lang="en">• <b>Countdown Timer</b>: Quick presets (30s ~ 15m) + custom input, last-5-second warning, and <b>automatically pauses music & rings the alarm 3 times upon completion</b>.<br>
+            • <b>🎵 Background Music (BGM)</b>: Automatically selects a <b>random looping track</b> upon entering the timer, complete with Play/Pause, "🔀 Next Track", and volume controls; automatically pauses when switching away or closing the page.<br>
+            • <b>Stopwatch</b>: Centisecond precision with lap time records.<br>
+            • <b>Mini Floating Widget & Fullscreen</b>: Pin a mini widget on the bottom-right corner or project in fullscreen mode with giant digits.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">☁️ 文字雲</span><span data-lang="en">☁️ WORD CLOUD</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">課堂即時文字雲（學生手機投稿、大螢幕同步顯示）</span>
+              <span data-lang="en">Live Word Cloud (Student Submissions & Projector Sync)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到 <b>🚀 課堂進行 ➔ 🧰 教學互動工具 ➔ ☁️ 文字雲</b>：教師輸入題目主題後啟動，學生手機／平板會自動彈出作答卡片，送出的詞彙即時彈入畫布。<br>
+            • <b>題目與限制</b>：可自訂題目、是否允許同一學生重複提交相同詞彙，以及每人提交上限（1~5 個詞）。<br>
+            • <b>字級代表頻率</b>：出現次數越多的詞彙字級越大、越居中（最高頻詞置中放大並有光暈）；畫布不顯示次數數字，滑鼠移到詞彙上可查看確切次數。<br>
+            • <b>詞頻排行榜</b>：右側即時彙整排行榜，詞頻越高字級越大，方便快速掌握全班討論重點。<br>
+            • <b>匯出與歷史場次</b>：可一鍵將文字雲匯出為高解析度 PNG 圖片；歷史場次可回顧、清空或切換狀態。<br>
+            • <b>大螢幕同步</b>：開啟大螢幕投影視窗時，文字雲會同步全螢幕顯示，全班一起看詞彙長出來。</span>
+            <span data-lang="en">Go to <b>🚀 In-Class ➔ 🧰 Interactive Tools ➔ ☁️ Word Cloud</b>: enter a prompt and start, and a response card pops up on students' phones/tablets; submitted words animate onto the canvas in real time.<br>
+            • <b>Prompt & Limits</b>: set the prompt, whether a student may submit the same word more than once, and the per-student limit (1~5 words).<br>
+            • <b>Size = Frequency</b>: the more often a word appears, the larger and more central it is (the top word is centered with a glow). The canvas shows no count badges; hover a word to see its exact count.<br>
+            • <b>Frequency Ranking</b>: a live ranking on the right, with higher-frequency words shown in larger type.<br>
+            • <b>Export & History</b>: export the cloud as a high-resolution PNG; review, clear, or toggle past sessions.<br>
+            • <b>Projector Sync</b>: with the projector window open, the cloud is mirrored full-screen as it grows.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">🎮 答題競賽</span><span data-lang="en">🎮 QUIZ BATTLE</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">Kahoot 式答題競賽（個人賽／小組賽、題庫管理與 LMS／CSV 匯入）</span>
+              <span data-lang="en">Kahoot-Style Quiz Battle (Individual / Team Modes, Question Bank & LMS/CSV Import)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到 <b>🚀 課堂進行 ➔ 🧰 教學互動工具 ➔ 🎮 答題競賽</b>，先在 <b>題庫管理</b> 建立題庫與題目，再選擇模式開始競賽：<br>
+            • <b>題庫與題目</b>：支援多個題庫；每題可設定題幹、2~4 個選項（藍／紅／綠／紫四色按鈕）、倒數秒數（10~60 秒）、基礎分值與題目詳解。<br>
+            • <b>📥 匯入題目</b>：可 <b>調用 LMS 線上測驗</b>（自動載入本課程所有線上測驗小單元，是非題轉為二選一、選擇題轉為 2~4 選項，可全選或逐題勾選預覽），或匯入 <b>CSV 檔案</b>（頁面提供「答題競賽題目匯入範本.csv」可下載）。匯入目標可選「建立為新題庫」或「附加至目前題庫」。<br>
+            • <b>個人賽 vs 小組賽</b>：個人賽依「基礎分＋答題速度加權」累計；小組賽依既有常態分組，小組分數為成員即時加總。<br>
+            • <b>即時作答與防作弊</b>：學生手機即時彈出四色觸控按鈕，送出後鎖定；題目選項推送給學生時已移除正解標記，無法從開發者工具偷看答案。<br>
+            • <b>揭曉與頒獎</b>：公佈正解與各選項得票分佈，賽後顯示 3D 頒獎台；按 <b>🎁 一鍵發放獎勵加分</b> 依前三名名次寫入全班記分板。大螢幕投影視窗會同步顯示題目、作答人數與結果。</span>
+            <span data-lang="en">Go to <b>🚀 In-Class ➔ 🧰 Interactive Tools ➔ 🎮 Quiz Battle</b>. Build a question bank and questions in <b>Manage Question Bank</b>, then pick a mode and start:<br>
+            • <b>Banks & Questions</b>: multiple banks; each question has a stem, 2~4 options (blue / red / green / purple buttons), a countdown (10~60 s), base points, and an explanation.<br>
+            • <b>📥 Import Questions</b>: <b>pull from LMS online quizzes</b> (all quiz units of the course are loaded; true/false becomes two options, multiple-choice becomes 2~4 options; select all or pick individually with a preview), or import a <b>CSV file</b> (a "Quiz Battle import template.csv" is available to download). Import into a <b>new bank</b> or <b>append to the current bank</b>.<br>
+            • <b>Individual vs Team</b>: individual mode accumulates base points plus a speed bonus; team mode follows your existing regular grouping and sums members' scores live.<br>
+            • <b>Live Answering & Anti-Cheat</b>: students get touch-friendly colored buttons on their phones and are locked after submitting; correct-answer flags are stripped before options are sent to students.<br>
+            • <b>Reveal & Podium</b>: the correct option and vote distribution are revealed, followed by a 3D podium; click <b>🎁 Award Bonus Points</b> to write top-3 rewards to the class scoreboard. The projector window mirrors questions, answer counts, and results.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Notes -->
+    <section id="notes" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📝</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">4. 特殊表現質性紀錄與影音上傳 (Notes)</span>
+          <span data-lang="en">4. Qualitative Notes & Multimedia Logs</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">影音觀察</span><span data-lang="en">MULTIMEDIA</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">質性行為觀察、拍照錄影與歷史時間軸</span>
+              <span data-lang="en">Behavior Observations, Photo/Video & Timeline</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">除了量化加減分外，教師可針對學生的特殊課堂表現、情緒狀態或學習亮點撰寫文字觀察筆記，並直接上傳現場照片（JPG/PNG）或錄影短片（MP4/WebM）。系統會自動以 <code>班級-座號-日期</code> 歸檔，隨時於時間軸回溯查閱。<br>
+            • <b>快速紀錄三步驟</b>（<b>🚀 課堂進行 ➔ 📝 特殊表現紀錄</b>）：① 點選學生頭像　② 點選常用片語（主動發言、幫助同學、需要提醒…可複選，再補充文字）　③ 按 <b>📷 拍照／錄影</b>（手機與平板直接開啟相機）後儲存。日期預設為今天，需要補記時再按「更改日期」。<br>
+            • <b>從評分頁直接記錄</b>：即時評分頁每張學生卡片右上角有 <b>📝</b> 小按鈕，點一下就為該生開啟快速紀錄視窗，不必離開評分頁。<br>
+            • <b>手機版</b>：教師手機版的「快速加減分」每張學生卡片左上角同樣有 📝，點選後直接帶入該生；也可從首頁「特殊表現紀錄」進入。</span>
+            <span data-lang="en">Beyond quantitative scores, record qualitative text notes on student behavior, emotions, or achievements. Attach classroom photos (JPG/PNG) and videos (MP4/WebM) auto-archived as <code>Class-SeatNo-Date</code> for easy timeline review.<br>
+            • <b>Quick record in 3 steps</b> (<b>🚀 In-Class ➔ 📝 Notes</b>): ① tap a student; ② tap common phrases (Spoke up, Helped a classmate, Needs a reminder… multi-select, then add details); ③ tap <b>📷 Take Photo / Video</b> (opens the camera on phones/tablets) and save. The date defaults to today; use "Change date" to back-fill.<br>
+            • <b>From the scoring page</b>: every student card has a small <b>📝</b> button at its top-right corner — one tap opens the quick-record window for that student.<br>
+            • <b>Mobile</b>: each card in the teacher phone's quick scoring also has a 📝 at its top-left that jumps straight to that student; you can also enter from the home page.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Journal -->
+    <section id="journal" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📓</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">5. 教學進度與課堂日誌 (Lesson Journal)</span>
+          <span data-lang="en">5. Lesson Journal & Teaching Notes</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">進度記錄</span><span data-lang="en">PROGRESS</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">課堂隨堂記事、進度標籤與教材單元關聯</span>
+              <span data-lang="en">Class Notes, Category Tags & Unit Association</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換至 <b>📋 班級經營 ➔ 📓 教學日誌</b>，教師可於課堂結束前花 30 秒快速記錄今日教學備忘：<br>
+            • <b>5 大分類標籤</b>：提供 <code>🗒️ 一般</code>、<code>📈 進度說明</code>、<code>🏫 班級經營</code>、<code>📦 教材問題</code>、<code>✅ 待辦事項</code>。<br>
+            • <b>教材單元連結</b>：可由下拉選單選取當前所屬之課程單元（例如：<code>單元一：臺灣的自然環境</code>），日誌將與該單元教材自動關聯。<br>
+            • <b>📷 附加照片上傳</b>：支援即時拍照或選擇檔案上傳黑板板書、課堂實作成果或學生作品照。</span>
+            <span data-lang="en">Navigate to <b>📋 Class Management ➔ 📓 Lesson Journal</b> for 30-second rapid end-of-class logging:<br>
+            • <b>5 Category Tags</b>: <code>🗒️ General</code>, <code>📈 Progress Note</code>, <code>🏫 Classroom Management</code>, <code>📦 Material Issue</code>, <code>✅ Action Todo</code>.<br>
+            • <b>Course Unit Linking</b>: Link entries directly to specific LMS chapters/units (e.g. <code>Unit 1: Geography</code>).<br>
+            • <b>📷 Attach Photos</b>: Upload whiteboard notes, classroom activities, or student work samples.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">待辦與篩選</span><span data-lang="en">TODO & FILTER</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">待辦事項追蹤、標籤快篩與時序軸回顧</span>
+              <span data-lang="en">Action Item Tracking, Tag Filter & Timeline Review</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>待辦事項追蹤</b>：日誌標記為 <code>✅ 待辦事項</code> 者，每筆紀錄前皆有勾選方塊，完成事項可一鍵劃線勾除。<br>
+            • <b>只看未完成待辦</b>：勾選上方「只看未完成待辦」，迅速彙整下次上課前需要準備或批改的事項。<br>
+            • <b>時間軸時序排列</b>：所有歷史日誌依日期降冪排列，教師可依標籤按鈕進行一鍵快篩，備課與學期回顧極為清晰便利。</span>
+            <span data-lang="en">• <b>Action Checklist</b>: Entries tagged as <code>✅ Action Todo</code> display interactive checkboxes to mark tasks completed.<br>
+            • <b>Unfinished Todos Filter</b>: Toggle "Unfinished Todos Only" to see pending classroom preparation tasks.<br>
+            • <b>Chronological Timeline</b>: Entries are displayed in reverse chronological order with instant tag filter chips.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Paper Quiz -->
+    <section id="paperquiz" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📝</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">6. 紙本測驗成績登記與分析 (Paper Quiz)</span>
+          <span data-lang="en">6. Paper Quiz Scoring & Analytics</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">極速連打</span><span data-lang="en">RAPID INPUT</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">鍵盤極速連打登錄、自動跳格與秒速自動儲存</span>
+              <span data-lang="en">Keyboard-Fast Entry, Auto-Advance & Instant Auto-Save</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">紙本小考、習作或段考批改完成後，切換至 <b>📚 教材與作業 ➔ 📝 紙本測驗</b>：<br>
+            • <b>建立測驗</b>：輸入測驗名稱（如：<code>第 3 單元隨堂平時考</code>）、科目（數學、國語等）、日期、滿分與及格分數。<br>
+            • <b>鍵盤流暢連打</b>：焦點位於成績輸入框時，輸入分數後按下 <kbd>Enter</kbd> 或 <kbd>Tab</kbd> 自動跳至下一位學生；亦可使用方向鍵 <kbd>↓</kbd> / <kbd>↑</kbd> 快速穿梭。<br>
+            • <b>⚡ 毫秒級自動儲存</b>：任何輸入變更後，右上角綠色 <code>⚡ 自動儲存已啟用</code> 燈號即時同步至資料庫，亦可按 <kbd>Ctrl + S</kbd> 立即儲存，絕不遺失任何分數。</span>
+            <span data-lang="en">For paper tests, homework exercises, and midterm exams, go to <b>📚 Materials & Homework ➔ 📝 Paper Quiz</b>:<br>
+            • <b>Create Quiz</b>: Set quiz title (e.g., <code>Unit 3 Quiz</code>), subject (Math, Science...), date, max score, and passing threshold.<br>
+            • <b>Lightning Keyboard Entry</b>: Type a score and press <kbd>Enter</kbd> or <kbd>Tab</kbd> to automatically jump to the next student; use <kbd>↑</kbd> / <kbd>↓</kbd> arrow keys to navigate.<br>
+            • <b>⚡ Instant Auto-Save</b>: Green indicator <code>⚡ Auto-Save Enabled</code> confirms database sync on every keystroke, or press <kbd>Ctrl + S</kbd> to save.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">拍照與總覽</span><span data-lang="en">PHOTO & STATS</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生拍照佐證查驗、假別過濾與全班成績總覽分析</span>
+              <span data-lang="en">Photo Verification, Leave Tracking & Class Score Analytics</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>📷 拍照佐證查驗</b>：支援學生在手機端自行登入並拍照上傳考卷照片作為成績憑證，教師端點擊考卷縮圖即可放大檢驗。<br>
+            • <b>缺席與補考追蹤</b>：上方篩選列支援「只看未登錄」、「只看待審核考卷」、「只看缺席/請假」、「只看開放補考」，清楚掌握缺考學生名單。<br>
+            • <b>📊 學生成績總覽</b>：點擊「📊 學生成績總覽」可開啟全班即時透視彈窗，自動計算班級平均分、及格率、最高分、最低分與各分數級距直方圖，並可一鍵匯出分析。</span>
+            <span data-lang="en">• <b>📷 Photo Evidence Verification</b>: Students can take photos of graded exam papers to upload proof; teachers click thumbnails for full-size inspection.<br>
+            • <b>Leave & Makeup Tracking</b>: Filter options include "Unrecorded only", "Pending photos", "Absent/Leave", and "Makeup open" to identify missing tests.<br>
+            • <b>📊 Class Score Analytics</b>: Click "📊 Student Scores Overview" for real-time class averages, pass rates, highest/lowest scores, and score distribution charts.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Dashboard -->
+    <section id="dashboard" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📊</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">7. 實時儀表板、個人小組排行與座號總覽 (Dashboard)</span>
+          <span data-lang="en">7. Real-Time Dashboard & Number Roster</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">3 種檢視模式</span><span data-lang="en">3 VIEW MODES</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">個人排行、小組獨立積分排行與座號得分一覽表</span>
+              <span data-lang="en">Individual Rank, Group Isolated Rank & Student Number Roster</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>🧑 個人排行 (Top 10)</b>：前三名金銀銅牌榮譽徽章，激勵學生自主向學。<br>
+            • <b>🚩 小組排行</b>：展示各小組專屬獨立得分與成員名單，精準呈現團隊競賽榮譽。<br>
+            • <b>📋 座號得分總覽</b>：依 1 號 ~ N 號座號依序排列全班所有同學的即時累積總分，方便全班總體掌握。<br>
+            • <b>時段篩選</b>：支援 <b>當天、當週、當月、指定日期區間、學期總計</b> 5 大時段。</span>
+            <span data-lang="en">• <b>🧑 Individual Rank (Top 10)</b>: Gold, Silver, and Bronze badges for top performers.<br>
+            • <b>🚩 Group Rank</b>: Displays isolated group scores and roster to motivate team spirit.<br>
+            • <b>📋 Number Roster</b>: Complete list of all students sorted by seat number 1 ~ N with real-time cumulative scores.<br>
+            • <b>Date Filter</b>: Filter by <b>Today, This Week, This Month, Custom Date Range, or Semester Total</b>.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Projection -->
+    <section id="projection" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📺</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">8. 大螢幕奧運頒獎台投影模式 (Projector View)</span>
+          <span data-lang="en">8. Big Screen Projector & Olympic Podium</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">奧運頒獎台</span><span data-lang="en">OLYMPIC PODIUM</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">專為教室電子白板設計的大字體視覺投影</span>
+              <span data-lang="en">Classroom Smartboard View with Instant Synchronization</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點擊 <b>📺 進入大螢幕投影模式</b> 可全螢幕投影：<br>
+            • <b>奧運頒獎台</b>：前三名金（🥇 冠軍）、銀（🥈 亞軍）、銅（🥉 季軍）大型獎台視覺動畫。<br>
+            • <b>無刷新即時同步</b>：教師在手機或平板上加分，大螢幕無需重新整理，0.1 秒自動平滑同步更新！<br>
+            • <b>獨立網址投影</b>：支援直接在新分頁開啟 <code>/projection.html</code>，並可點擊 <code>⛶ 全螢幕</code> 模式。</span>
+            <span data-lang="en">Open <b>📺 Projector View</b> for classroom electronic displays:<br>
+            • <b>Olympic Podium</b>: Animated 3D-styled podium for 1st (🥇 Gold), 2nd (🥈 Silver), and 3rd (🥉 Bronze).<br>
+            • <b>No-Flash Live Sync</b>: Score changes on teachers' mobile devices reflect instantly on screen in 0.1s.<br>
+            • <b>Standalone Projector Page</b>: Open <code>/projection.html</code> in a dedicated window with fullscreen ⛶ toggle.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 10: LMS Units & Materials -->
+    <section id="lms" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📚</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">9. 課程素材(LMS)：單元教材與學生登入</span>
+          <span data-lang="en">9. Course Materials (LMS): Units & Student Login</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">建立單元、教材與定時開放</span>
+              <span data-lang="en">Create Units, Materials & Scheduled Release</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到頂部 <b>📚 課程素材(LMS)</b> 頁籤，點擊 <b>➕ 新增章節</b> 建立單元；在單元內點擊 <b>➕ 新增素材</b>，於彈出視窗選擇「這是什麼內容？」：<br>
+            • <code>📘 教學資源（教材、簡報、影片、連結）</code>：可 <b>📁 選擇檔案</b>（支援多檔上傳）或 <b>➕ 新增連結</b>，貼上 YouTube 網址會自動嵌入播放。<br>
+            • <code>📝 作業</code>、<code>✅ 線上測驗</code>：詳見下方章節 11、12（<b>建立後類別無法變更</b>）。<br>
+            • <b>⏰ 定時開放（可選）</b>：設定日期時間後，內容在該時刻前對學生保持隱藏，時間到自動開放。</span>
+            <span data-lang="en">Go to the top <b>📚 Course Materials (LMS)</b> tab, click <b>➕ Add Chapter</b> to create a unit, then <b>➕ Add Content</b> inside it and choose a type in "What kind of content is this?":<br>
+            • <code>📘 Teaching Resource (materials, slides, video, links)</code>: <b>📁 Choose File</b> (multiple files supported) or <b>➕ Add Link</b> — pasting a YouTube URL auto-embeds the player.<br>
+            • <code>📝 Assignment</code> and <code>✅ Quiz</code>: see sections 11 & 12 below (<b>the category cannot be changed after creation</b>).<br>
+            • <b>⏰ Scheduled Release (optional)</b>: set a date/time to keep content hidden from students until then; it opens automatically.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">學生登入</span><span data-lang="en">STUDENT LOGIN</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生登入方式與帳號密碼管理</span>
+              <span data-lang="en">Student Login & Account Management</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生於獨立登入頁以 <b>帳號</b> 與 <b>密碼</b> 登入（無需 QR Code）。匯入名冊或編輯學生資料時可自訂「帳號」與「密碼」欄位；若留空，帳號由系統自動產生，<b>預設密碼為該生座號四碼</b>（例如 5 號預設密碼為 <code>0005</code>）。<br>
+            登入成功後，學生會看到 3 大頁籤：<b>📚 課程與作業</b>（預設）、<b>🌟 我的點數</b>、<b>🎨 即時互動牆</b>。</span>
+            <span data-lang="en">Students log in on a dedicated page using an <b>account</b> and <b>password</b> (no QR code needed). When importing or editing the roster, teachers may set custom account/password values — if left blank, the account is auto-generated and the <b>default password is the student's 4-digit seat number</b> (e.g. seat 5 → <code>0005</code>).<br>
+            After login, students see 3 tabs: <b>📚 Materials & Assignments</b> (default), <b>🌟 My Points</b>, and <b>🎨 Live Wall</b>.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">閱讀進度</span><span data-lang="en">READING PROGRESS</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">內容顯示管理與閱讀進度追蹤</span>
+              <span data-lang="en">Content Visibility & Reading Progress Tracking</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">每筆內容右側提供 <b>✏️ 編輯</b>、<b>📋 查看繳交／查看成績</b>（作業／測驗）、<b>👁️ 顯示／🙈 隱藏</b>、<b>🗑️ 刪除</b>。<br>
+            學生點開教學資源後會自動標記 <code>✓ 已閱讀</code>；教師端則在該素材旁看到 <b>📊 已閱讀 {n}／未閱讀 {n}</b> 徽章，點擊開啟 <b>📊 閱讀狀態</b> 視窗，逐一檢視每位學生的最後閱讀時間與閱讀次數。</span>
+            <span data-lang="en">Each content row offers <b>✏️ Edit</b>, <b>📋 View Submissions / View Scores</b> (for assignments/quizzes), <b>👁️ Show / 🙈 Hide</b>, and <b>🗑️ Delete</b>.<br>
+            Students are auto-marked <code>✓ Read</code> when they open a teaching resource. Teachers see a <b>📊 Read {n} / Unread {n}</b> badge next to it — click to open the <b>📊 Reading Status</b> panel showing each student's last-viewed time and view count.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 11: Assignments & Group Submission -->
+    <section id="assignments" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📝</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">10. 作業指派、繳交流程與小組共同繳交</span>
+          <span data-lang="en">10. Assignment Setup, Submission Flow & Group Submission</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">作業設定</span><span data-lang="en">SETUP</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">建立作業：繳交方式、個人／小組與繳交期限</span>
+              <span data-lang="en">Creating an Assignment: Submission Types, Individual/Group & Deadline</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">於「新增內容／作業」視窗選擇 <code>📝 作業</code> 後可設定：<br>
+            • <b>繳交方式（可複選）</b>：<code>📄 上傳檔案</code>、<code>✏️ 文字輸入</code>、<code>🔗 網址連結</code>，學生僅會看到你勾選的欄位。<br>
+            • <b>個人作業／小組作業</b>：選擇小組作業時，需指定套用哪一套既有的 <b>分組方案</b>，同小組成員共用一份繳交紀錄。<br>
+            • <b>繳交期限（可選）</b>＋<b>逾期自動鎖定</b>：勾選後超過期限學生將無法自行繳交或重新繳交，需由教師手動解鎖。</span>
+            <span data-lang="en">In the "Add Content / Assignment" dialog, choosing <code>📝 Assignment</code> exposes:<br>
+            • <b>Submission Types (multi-select)</b>: <code>📄 File Upload</code>, <code>✏️ Text Input</code>, <code>🔗 Link</code> — students only see the fields you enable.<br>
+            • <b>Individual vs. Group Assignment</b>: group mode requires picking an existing <b>Grouping Plan</b>; all members of a team share one submission.<br>
+            • <b>Deadline (optional)</b> + <b>Auto-Lock When Overdue</b>: once enabled, students can't submit or resubmit past the deadline until the teacher manually unlocks it.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">學生繳交</span><span data-lang="en">SUBMIT</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生繳交流程與各種狀態顯示</span>
+              <span data-lang="en">Student Submission Flow & Status States</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生依開放的欄位填寫後點擊 <b>📤 送出繳交</b>（已繳交過則顯示 <b>🔄 更新繳交</b>）。狀態文字包含：<code>尚未繳交</code>、<code>✅ 已繳交</code>、<code>✅ 已繳交（遲交）</code>、<code>🔒 已鎖定，等待老師批改</code>、<code>⏳ 已申請重新繳交，請等待老師同意</code>、<code>🎯 已評分：{分數} 分</code>。若作業被鎖定，學生會改看到 <b>申請重新繳交</b> 按鈕；教師也可在批改視窗一鍵 <b>🔁 全部退回重新繳交</b>。</span>
+            <span data-lang="en">Students fill in the enabled fields and click <b>📤 Submit</b> (shown as <b>🔄 Update Submission</b> once already submitted). Status labels include: <code>Not Submitted</code>, <code>✅ Submitted</code>, <code>✅ Submitted (Late)</code>, <code>🔒 Locked, awaiting grading</code>, <code>⏳ Resubmission requested, awaiting approval</code>, <code>🎯 Graded: {score} pts</code>. If locked, students instead see a <b>Request Resubmission</b> button; teachers can also bulk-reopen everyone with <b>🔁 Reopen All for Resubmission</b> in the grading panel.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">小組繳交</span><span data-lang="en">GROUP</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">小組作業的共同繳交機制</span>
+              <span data-lang="en">How Group Assignments Share One Submission</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">小組作業<b>每組僅有一份繳交紀錄</b>，任一組員送出或更新即代表全組。批改列表會以 <code>👥 {小組名稱}（成員1、成員2…）</code> 呈現，評分與評語為<b>整組共用</b>。若學生在該作業套用的分組方案下尚未被分配到小組，會看到提示「<b>你尚未被分配到小組，請聯絡老師</b>」而無法填寫繳交表單。</span>
+            <span data-lang="en">Group assignments keep <b>one shared submission per team</b> — any member submitting or updating it applies to the whole group. The grading list shows rows as <code>👥 {Team Name} (member1, member2...)</code>, and the score/feedback is <b>shared across the team</b>. A student not yet assigned to a group under that assignment's plan sees "<b>You have not been assigned to a group — please contact your teacher</b>" instead of a submission form.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 12: Quizzes -->
+    <section id="quiz" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">✅</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">11. 線上測驗：題型設計與自動批改</span>
+          <span data-lang="en">11. Online Quizzes: Question Design & Auto-Grading</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">題型管理</span><span data-lang="en">QUESTION TYPES</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">3 種題型與 CSV 批次匯入匯出</span>
+              <span data-lang="en">3 Question Types & CSV Batch Import/Export</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">建立 <code>✅ 線上測驗</code> 內容後，於題目編輯區可新增 <b>選擇題</b>、<b>是非題</b>、<b>簡答題</b>，並為每題設定配分；選擇題可直接「<b>選項（點選圈選正確答案）</b>」設定標準答案。<br>
+            題目量大時可使用工具列：<b>📥 下載匯入範本（CSV）</b>、<b>📤 匯入題目（CSV）</b>、<b>📥 匯出目前題目（CSV）</b>，或逐題點擊 <b>➕ 新增題目</b>。</span>
+            <span data-lang="en">After creating a <code>✅ Quiz</code>, the question editor lets you add <b>Multiple Choice</b>, <b>True/False</b>, and <b>Short Answer</b> questions, each with its own point value; for multiple choice, mark the answer via "<b>Options (click to mark the correct answer)</b>".<br>
+            For large question banks, use the toolbar: <b>📥 Download Import Template (CSV)</b>, <b>📤 Import Questions (CSV)</b>, <b>📥 Export Current Questions (CSV)</b>, or add questions one at a time with <b>➕ Add Question</b>.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">自動批改</span><span data-lang="en">AUTO-GRADED</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">送出即自動批改與詳解公布設定</span>
+              <span data-lang="en">Instant Auto-Grading & Answer Reveal Setting</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換 <b>送出後公布詳解（關閉則只顯示總分）</b> 決定學生繳交後能否看到逐題對錯與正確答案。學生作答時題目與選項<b>會隨機排序</b>以降低互相對答案的機率；測驗<b>恆為個人作答，不支援小組模式</b>。<br>
+            送出後系統立即自動計分，彈出提示「<b>🎉 測驗已送出，系統已自動完成批改！</b>」，並顯示 <b>🏆 得分：{score} / {max_score}</b>；若開啟詳解，每題會標示 ✅／❌ 與正確答案，關閉則僅顯示「<b>老師已設定不公開詳解，僅顯示總分。</b>」<b>全程無需教師手動批改</b>。</span>
+            <span data-lang="en">Toggle <b>Reveal Answers After Submission (off shows only the total score)</b> to control whether students see per-question right/wrong marks and correct answers after submitting. Question and option order is <b>shuffled per attempt</b> to reduce answer-sharing; quizzes are <b>always individual, group mode is not supported</b>.<br>
+            Scoring happens instantly on submit — students see "<b>🎉 Quiz submitted — automatically graded!</b>" and a <b>🏆 Score: {score} / {max_score}</b> banner. With reveal on, each question shows ✅/❌ plus the correct answer; with it off, only "<b>Your teacher has hidden the answer key — only the total score is shown.</b>" is displayed. <b>No manual teacher grading is required.</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 13: Grading & Submission Comments -->
+    <section id="grading" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📋</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">12. 作業批改、評語鎖定與提問串</span>
+          <span data-lang="en">12. Assignment Grading, Lock/Feedback & Submission Q&A Thread</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">評分批改</span><span data-lang="en">GRADING</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">批改介面：評分、評語與鎖定切換</span>
+              <span data-lang="en">Grading Panel: Score, Feedback & Lock Toggle</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點擊內容旁的 <b>📋 查看繳交／查看成績</b> 開啟 <b>📋 作業繳交與評分</b> 視窗，逐生（或逐組）檢視繳交內容（檔案連結、文字內容皆可預覽），並填入 <b>分數</b> 與 <b>評語(可選)</b> 後點擊 <b>💾 評分</b> 儲存；也可用 <b>🔒 鎖定／🔓 解鎖</b> 個別切換該筆繳交是否還能修改。<br>
+            <b>評分會自動計入班級點數系統</b>，該分數會出現在學生的評分歷程、排行榜與儀表板中；重新評分時系統會先撤銷先前紀錄，避免重複計分。目前<b>沒有評分規準（Rubric）</b>，僅支援單一分數＋自由文字評語。</span>
+            <span data-lang="en">Click <b>📋 View Submissions / View Scores</b> next to any content item to open the <b>📋 Submissions & Grading</b> panel, review each student's (or group's) submission (files, links, and text content are all previewable), enter a <b>Score</b> and optional <b>Feedback</b>, then click <b>💾 Save Grade</b>. Use <b>🔒 Lock / 🔓 Unlock</b> to toggle whether an individual submission can still be edited.<br>
+            <b>Grades automatically feed the class point system</b> — the score appears in the student's score history, leaderboard, and dashboard. Re-grading first reverses the prior score entry to avoid double-counting. There is currently <b>no rubric system</b> — only a single score plus free-text feedback per submission (or per group).</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">師生問答</span><span data-lang="en">Q&A THREAD</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">提問串：繳交前後的師生即時問答</span>
+              <span data-lang="en">Submission Comments: Q&A Before & After Submitting</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">每份作業／測驗皆附帶一條專屬「提問串」，讓學生<b>在正式繳交前就能先發問</b>，教師也能隨時回覆。學生端點擊 <b>💬 提問老師</b>（有留言時顯示則數，如 <code>💬 提問老師（3 則）</code>）展開對話框，於輸入框「輸入想問老師的問題...」後按 <b>📤 送出</b>。教師端在批改視窗中同樣有 <b>💬 提問串</b> 可展開回覆，輸入框提示「回覆學生...」。<br>
+            <b>留言一經送出即無法編輯或刪除</b>，作為師生溝通的永久紀錄；小組作業的提問串由全組共用，任一成員皆可留言與查看。</span>
+            <span data-lang="en">Every assignment and quiz has its own dedicated comment thread so students can <b>ask questions before formally submitting</b>, with teachers able to reply anytime. On the student side, click <b>💬 Ask Teacher</b> (shows a count once there are messages, e.g. <code>💬 Ask Teacher (3)</code>) to expand the thread, type into "Type your question for the teacher..." and click <b>📤 Send</b>. Teachers find the matching <b>💬 Q&A Thread</b> toggle inside the grading panel, with a "Reply to student..." composer.<br>
+            <b>Once sent, messages cannot be edited or deleted</b> — they form a permanent record of teacher-student communication. For group assignments, the thread is shared by the whole team; any member can post to or read it.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 13: File Collection -->
+    <section id="filecollect" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📁</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">13. 課堂臨時檔案蒐集 (File Collection)</span>
+          <span data-lang="en">13. Ad-Hoc File Collection</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">建立蒐集主題、副檔名限制與開放／停止上傳</span>
+              <span data-lang="en">Create a Collection Topic, Extension Limits & Open/Close Uploads</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到 <b>📚 教材與作業 ➔ 📁 檔案蒐集</b>，這是比「作業」更輕量、免評分、免繳交期限設定的<b>臨時性收件匣</b>，適合課堂上臨時請學生上傳照片、錄音或影片（例如英語自我介紹影片、Scratch 作品錄影）。點擊 <b>➕ 建立蒐集主題</b> 並填寫：<br>
+            • <b>主題名稱與說明</b>：作為給學生看的任務提示。<br>
+            • <b>限制副檔名（選填）</b>：以逗號分隔（例如 <code>mp4, mov, mp3, png</code>），留空代表不限格式。<br>
+            • <b>立即開放學生上傳</b>：勾選即開放，未勾選則建立為關閉狀態。<br>
+            每個主題卡片會即時顯示 <b>🟢 開放上傳中／🔒 已停止上傳</b> 狀態徽章，以及「繳交進度（已交人數／總人數）」與「總收件容量（檔案數／容量大小）」統計。教師可隨時點擊 <b>🔒 停止上傳／🟢 開放上傳</b> 切換：<b>關閉後學生將無法再上傳，也無法重新命名或刪除已繳交的檔案</b>。</span>
+            <span data-lang="en">Go to <b>📚 Materials & Homework ➔ 📁 File Collection</b> — a lighter-weight <b>ad-hoc inbox</b> than Assignments, with no grading or deadline settings, perfect for quickly asking students to upload a photo, recording, or video during class (e.g., an English self-intro video or a Scratch project recording). Click <b>➕ Create Topic</b> and fill in:<br>
+            • <b>Title & Description</b>: the task instructions shown to students.<br>
+            • <b>Allowed Extensions (optional)</b>: comma-separated (e.g., <code>mp4, mov, mp3, png</code>); leave blank to allow any file type.<br>
+            • <b>Open for uploads immediately</b>: check to open right away, or leave unchecked to create it closed.<br>
+            Each topic card shows a live <b>🟢 Open / 🔒 Closed</b> status badge plus "Submission Progress" (students submitted / total) and "Total Storage" (file count / size) stats. Teachers can toggle <b>🔒 Close / 🟢 Open</b> anytime: <b>once closed, students can no longer upload, rename, or delete their submitted files</b>.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">收件檢視</span><span data-lang="en">REVIEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">收件成果檢視、影音預覽、搜尋篩選與 ZIP 打包下載</span>
+              <span data-lang="en">Review Submissions, Inline Media Preview, Search/Filter & ZIP Download</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點擊主題卡片上的 <b>👀 查看收件成果</b> 進入該主題的檔案列表：<br>
+            • <b>影音直接預覽</b>：圖片、影片（MP4/WebM 等）與音訊（MP3/WAV 等）皆可直接在頁面上播放或放大檢視，無需另外下載。<br>
+            • <b>搜尋與篩選</b>：可依學生姓名、座號或檔名關鍵字搜尋，並可依檔案類型（圖片／影片／音訊／其他）快速篩選。<br>
+            • <b>📦 打包下載全部檔案 (ZIP)</b>：一鍵將該主題目前所有學生繳交的檔案打包為單一 ZIP 壓縮檔下載保存，方便歸檔或轉交他人。<br>
+            學生端則在自己的頁面看到相同主題卡，依規則上傳檔案；若主題已被教師標記副檔名限制，系統會在上傳前即時擋下不符格式的檔案並提示。</span>
+            <span data-lang="en">Click <b>👀 View Submissions</b> on a topic card to open its file list:<br>
+            • <b>Inline Media Preview</b>: images, videos (MP4/WebM, etc.), and audio (MP3/WAV, etc.) can be played or enlarged directly on the page — no download needed to check them.<br>
+            • <b>Search & Filter</b>: search by student name, seat number, or filename, and filter quickly by file type (image / video / audio / other).<br>
+            • <b>📦 Download All as ZIP</b>: bundle every file currently submitted under that topic into a single ZIP archive with one click, ideal for archiving or sharing.<br>
+            Students see the matching topic card on their own page and upload according to the rules; if the teacher set an extension restriction, the app blocks mismatched files at upload time with an inline warning.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">高畫質拍攝</span><span data-lang="en">HQ CAMERA</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生端上傳與「🎥 高畫質拍攝」（改善拍照／錄影被壓縮的問題）</span>
+              <span data-lang="en">Student Upload & "🎥 HQ Capture" (Fixes Compressed Photos/Videos)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生在檔案蒐集卡片中有兩個按鈕：<b>📤 選擇檔案上傳</b> 與 <b>🎥 高畫質拍攝</b>。<br>
+            • <b>為什麼要有高畫質拍攝</b>：平板／手機的瀏覽器內建「拍照或錄影」會先把影片、照片壓成低畫質再交給網頁，且無法由網頁調整。因此「選擇檔案上傳」的選單已不再提供內建拍攝，拍攝請改用 <b>🎥 高畫質拍攝</b>，或先用裝置的相機 App 拍好再選檔上傳。<br>
+            • <b>拍攝視窗功能</b>：要求裝置最高解析度（理想 4K、30fps），以高位元率錄影（優先 MP4，不支援時為 WebM）；可 📸 拍照、⏺ 錄影、🔄 切換前後鏡頭；拍完先預覽，再選擇 ✅ 上傳或 ↩ 重拍；檔案自動命名為「錄影_日期時間」或「拍照_日期時間」。<br>
+            • <b>相機偵測與畫質選擇</b>：視窗上方顯示「偵測到 N 個相機」、目前實際解析度與 fps，以及該相機最高支援規格（部分瀏覽器如 iPad Safari 無法取得最高規格）；多鏡頭裝置可用下拉選單指定相機，並可選擇畫質（最高／4K／1080p／720p），超出相機能力的選項會自動停用。<br>
+            • <b>注意事項</b>：網頁拍攝需 <b>HTTPS</b> 與相機／麥克風授權；實際解析度受裝置限制（iPad 網頁錄影通常最高 1080p）。單檔上限 250MB，錄影接近 240MB 會自動停止（約可錄 4 分鐘），較長內容請學生分段錄製。若教師設定了「限制副檔名」，拍攝檔（mp4／webm／jpg）也須符合，否則會被擋下。</span>
+            <span data-lang="en">Each file-collection card on the student page has two buttons: <b>📤 Choose File</b> and <b>🎥 HQ Capture</b>.<br>
+            • <b>Why HQ Capture</b>: the browser's built-in "Take Photo or Video" on tablets/phones compresses media to low quality before handing it to the page, and the page cannot change that. So the file picker no longer offers built-in capture; use <b>🎥 HQ Capture</b>, or shoot with the device's Camera app first and then choose the file.<br>
+            • <b>Capture Window</b>: requests the device's highest resolution (ideal 4K, 30 fps) and records at a high bitrate (MP4 preferred, WebM as fallback); supports 📸 photo, ⏺ video, 🔄 front/back switching; preview before choosing ✅ Upload or ↩ Retake; files are auto-named "錄影_datetime" or "拍照_datetime".<br>
+            • <b>Camera Detection & Quality</b>: the window shows "N cameras detected," the actual resolution and fps, and the camera's maximum supported spec (some browsers, such as iPad Safari, cannot report it); multi-camera devices offer a camera dropdown and a quality picker (Max / 4K / 1080p / 720p), with options beyond the camera's ability disabled automatically.<br>
+            • <b>Notes</b>: web capture requires <b>HTTPS</b> and camera/microphone permission; actual resolution is device-limited (iPad web recording usually tops out at 1080p). The per-file limit is 250 MB; recording auto-stops near 240 MB (about 4 minutes), so ask students to record longer content in segments. If the teacher set an extension restriction, captured files (mp4/webm/jpg) must match it or they will be rejected.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Section 13-2: Homework Scan -->
+    <section id="hwscan" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📥</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">13-2. 作業掃描登記 (Homework Scan Check-in)</span>
+          <span data-lang="en">13-2. Homework Scan Check-in</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">以作業專屬 QR Code 掃描收作業、每日收件計畫與未交名單</span>
+              <span data-lang="en">Collect Homework by Scanning Per-Assignment QR Codes, Daily Plans & Missing List</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">切換到 <b>📚 教材與作業 ➔ 📥 作業掃描登記</b>（位於「檔案蒐集」之後、「紙本測驗」之前）。此功能<b>只能在教師本機電腦使用</b>：區網內的學生手機／平板無法存取，非本機瀏覽時選單也不會顯示。<br>
+            • <b>作業項目與每日計畫</b>：先建立作業項目，再設定「這天要收哪些作業」。<br>
+            • <b>以作業專屬 QR Code 收件（主要方式）</b>：每張貼紙 QR Code 綁定「一位學生＋一項作業」，掃描即自動記錄「誰交了什麼」，並顯示最近 5 筆登記。支援條碼掃描槍、手動輸入或電腦鏡頭掃描。<br>
+            • <b>備援方式</b>：作業上沒有 QR Code 時，展開「作業上沒有 QR Code？」，改以掃描借書證條碼並勾選作業登記。<br>
+            • <b>手動補登與復原</b>：可補繳、請假、改回未交，並可復原上一筆；提供未交名單與全班收件進度。<br>
+            • <b>匯出</b>：可匯出 Excel／CSV（CSV 為 UTF-8 含 BOM，Excel 開啟不亂碼）。</span>
+            <span data-lang="en">Go to <b>📚 Materials & Homework ➔ 📥 Homework Scan</b> (after "File Collection," before "Paper Quiz"). This feature works <b>only on the teacher's own computer</b>: students' phones/tablets on the LAN cannot reach it, and the menu is hidden when browsing from a non-local device.<br>
+            • <b>Items & Daily Plan</b>: create homework items, then set "which assignments are due today."<br>
+            • <b>Per-assignment QR Codes (primary)</b>: each sticker QR code binds <b>one student + one assignment</b>; scanning records "who handed in what" automatically and shows the latest 5 entries. Works with barcode scanner guns, manual entry, or the computer's webcam.<br>
+            • <b>Fallback</b>: if homework has no QR code, expand "No QR Code on the homework?" and scan the library-card barcode, then tick the assignments.<br>
+            • <b>Manual Entry & Undo</b>: mark late-submitted, on leave, or back to missing; undo the last scan; view the missing list and class-wide progress.<br>
+            • <b>Export</b>: Excel / CSV (CSV is UTF-8 with BOM so Excel opens it without garbled text).</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">小助手模式</span><span data-lang="en">HELPER MODE</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">小助手獨立掃描視窗，教師主畫面可同時做其他事</span>
+              <span data-lang="en">Standalone Helper Window — Keep Teaching While Students Scan</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>🚀 開啟小助手獨立掃描視窗</b>：開啟純淨的獨立視窗，可拖到第二螢幕交給學生幹部刷條碼，老師的主畫面仍可繼續即時評分、點名或使用計時器，互不干擾。<br>
+            • <b>小助手友善介面</b>：掃描槍輸入框自動回焦、大字體結果看板、正常／重複／異常三種提示音（可關閉）、全班收件百分比進度條、只看未交篩選、全螢幕切換與電腦鏡頭掃描。<br>
+            • <b>🪟 在頁面浮動彈窗開啟</b>：瀏覽器封鎖新視窗時的備援，功能相同。<br>
+            • <b>即時同步</b>：小助手在獨立視窗登記的每一筆，教師主畫面都會即時更新。</span>
+            <span data-lang="en">• <b>🚀 Open Helper Scan Window</b>: opens a clean standalone window you can drag to a second monitor for a student helper, while your main screen stays free for live scoring, attendance, or timers.<br>
+            • <b>Helper-Friendly UI</b>: scanner input auto-refocuses, large result display, normal / duplicate / error sounds (can be muted), class-wide percentage bar, "show missing only" filter, fullscreen toggle, and webcam scanning.<br>
+            • <b>🪟 Open as In-Page Popup</b>: a fallback with the same features if the browser blocks new windows.<br>
+            • <b>Live Sync</b>: every entry made in the helper window updates the teacher's main screen instantly.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">標籤列印</span><span data-lang="en">LABEL PRINT</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">A4 標籤貼紙列印與 10mm 安全邊距（防止 QR Code 被印表機裁切）</span>
+              <span data-lang="en">A4 Sticker Label Printing with 10mm Safe Margin (Prevents QR Codes Being Cropped)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>預設四邊保留 10mm</b>：A4 紙張四邊預設留白 10mm（可印範圍 190×277mm），避免各校印表機的非列印區裁掉最外圈的 QR Code 與姓名導致無法掃描。<br>
+            • <b>多種版型自動換算</b>：24 格、21 格、18 格、40 格、10 格貼紙版型會依留白自動分配欄寬與列高，選單標註尺寸。<br>
+            • <b>可調整</b>：「紙張邊緣留白」可選 10mm（推薦）、12mm、8mm、5mm；可勾選「顯示裁切輔助虛線」，使用普通 A4 紙或未裁切貼紙時方便剪裁。<br>
+            • <b>列印提醒</b>：列印時請將縮放設為 <b>100% 實際大小</b>，預覽頂部提示列有說明。</span>
+            <span data-lang="en">• <b>10mm Margins by Default</b>: A4 keeps 10 mm on all four sides (printable area 190×277 mm) so printers' non-printable edges don't clip outer-edge QR codes and names.<br>
+            • <b>Auto-Sized Layouts</b>: 24-, 21-, 18-, 40-, and 10-label sheets recompute column widths and row heights from the margin; sizes are shown in the menu.<br>
+            • <b>Adjustable</b>: choose the "Paper Edge Margin" of 10 mm (recommended), 12 mm, 8 mm, or 5 mm; tick "Show cutting guide lines" to help trim plain A4 paper or uncut sticker sheets.<br>
+            • <b>Print Tip</b>: set print scaling to <b>100% (actual size)</b>; the banner at the top of the preview reminds you.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Seating -->
+    <section id="seating" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🪑</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">14. 教室座位表編排與智慧排座 (Seating)</span>
+          <span data-lang="en">14. Seating Chart & Smart Arrangement</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">智慧排座</span><span data-lang="en">ARRANGEMENT</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">自訂行列數、講台方位與 3 種自動排座</span>
+              <span data-lang="en">Custom Grid, Podium Position & 3 Auto-Seat Modes</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>講台方位</b>：可自訂黑板/講台在 <b>上(前)、下(後)、左、右</b> 4 種視角。<br>
+            • <b>🔢 依座號依序編排</b>：自動依照 1 號 ~ N 號由左至右、由前至後排位。<br>
+            • <b>⚖️ 性別平均排位</b>：男女生交叉梅花座智慧編排。<br>
+            • <b>🎲 隨機排位</b>：全班同學隨機抽籤入座。<br>
+            • <b>自由拖曳</b>：任何座位卡片皆可自由拖拉交換，或拖曳至下方未入座區。</span>
+            <span data-lang="en">• <b>Podium Position</b>: Configure blackboard / teacher podium at <b>Top (Front), Bottom (Back), Left, or Right</b>.<br>
+            • <b>🔢 Seat by Number</b>: Ordered consecutively from seat 1 to N.<br>
+            • <b>⚖️ Gender Balance</b>: Alternates male and female students in a checkerboard pattern.<br>
+            • <b>🎲 Randomize</b>: Shuffles all students randomly.<br>
+            • <b>Drag & Drop</b>: Drag any seat card to swap positions or unseat students seamlessly.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4: Grouping -->
+    <section id="grouping" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🧩</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">15. 彈性分組模式記憶與小組獨立積分 (Grouping)</span>
+          <span data-lang="en">15. Multi-Plan Grouping & Isolated Team Scores</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">多模式記憶</span><span data-lang="en">MULTI-PLAN</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">多分組模式隨選切換與複製 (Multi-Plan Grouping Plans)</span>
+              <span data-lang="en">Flexible Multi-Plan Grouping & Cloning</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>多模式記憶保存</b>：支援為不同學科或課堂活動建立專屬分組（如：<code>國語分組</code>、<code>數學討論</code>、<code>自然實驗組</code>、<code>綜合活動</code>）。<br>
+            • <b>一鍵切換啟用</b>：隨堂切換模式，系統自動載入對應的小組成員架構與圖示。<br>
+            • <b>模式複製與自訂</b>：可將現有分組架構快速複製為新模式，大幅省去重複排組時間。</span>
+            <span data-lang="en">• <b>Multi-Plan Memory</b>: Create distinct grouping plans for different subjects and activities (e.g., <code>Chinese Reading</code>, <code>Math Discussion</code>, <code>Science Lab</code>).<br>
+            • <b>Instant Plan Switching</b>: Switch active plans with one click; team structures and icons load automatically.<br>
+            • <b>Plan Cloning</b>: Clone existing grouping structures to new plans in seconds.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">圖示與計分</span><span data-lang="en">AVATARS & SCORING</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">小組獨立得分計算、拖曳分組與 25 款動物圖示</span>
+              <span data-lang="en">Isolated Group Scoring, Drag Assignment & 25 Animal Icons</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>小組獨立積分機制</b>：當教師為小組加分時，小組擁有專屬的「小組獨立總分」，小組排行榜直接以此分數排序，不再受個別組員個別調分或換組影響。<br>
+            • <b>即時組分標示</b>：評分介面之小組快捷列與學生卡片標籤即時顯示當前小組得分（如 <code>🏷️ 第 2 組 4 分</code>）。<br>
+            • <b>🦁 25 款可愛動物圖示</b>：內建企鵝、黑熊、石虎、海獺、海豚、貓頭鷹等 25 款可愛動物頭像；支援上傳自訂隊徽。<br>
+            • <b>智慧分組與自由拖曳</b>：支援輸入組數自動隨機/性別平衡編組，學生卡片可自由跨組拖曳調整。</span>
+            <span data-lang="en">• <b>Isolated Group Scoring</b>: Teams accumulate their own independent team scores; group leaderboards rank teams directly by this isolated score.<br>
+            • <b>Real-Time Group Score Badges</b>: Quick team selection bar and student card badges show live group scores (e.g., <code>🏷️ Team 2 (4 pts)</code>).<br>
+            • <b>🦁 25 Animal Icons</b>: Built-in animal avatars (Penguin, Bear, Otter, Dolphin, Owl, etc.) + custom team logo uploads.<br>
+            • <b>Smart Auto-Grouping & Drag</b>: Balanced or random auto-grouping with intuitive drag-and-drop member assignments.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 15: Students Roster -->
+    <section id="students" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">👨‍🎓</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">16. 學生名冊管理與批次匯入 (Student Roster)</span>
+          <span data-lang="en">16. Student Roster Management & Batch Import</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">名冊管理</span><span data-lang="en">ROSTER</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">新增單一學生、中文英文雙語姓名與性別管理</span>
+              <span data-lang="en">Single Student Setup, Bilingual Names & Gender Management</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏫 班級經營 ➔ 👨‍🎓 學生名冊管理</b>：<br>
+            • <b>➕ 新增單一學生</b>：輸入座號、學號、中文姓名、英文姓名（例如 <code>Alex</code>）、性別（男/女）與自訂密碼。<br>
+            • <b>雙語姓名隨選切換</b>：系統全站（包含即時評分、座位表、小組與排行榜）頂部提供「姓名：中文 / 英文」切換按鈕，可隨時一秒切換顯示中文或英文姓名，非常適合雙語學校與英語課堂情境！<br>
+            • <b>編輯與刪除</b>：每位學生卡片皆提供「✏️ 編輯」與「🗑️ 刪除」功能。</span>
+            <span data-lang="en">Navigate to <b>🏫 Classroom Management ➔ 👨‍🎓 Student Roster</b>:<br>
+            • <b>➕ Add Single Student</b>: Input seat number, student ID, Chinese name, English name (e.g. <code>Alex</code>), gender, and custom login password.<br>
+            • <b>1-Click Bilingual Name Switch</b>: Top navbar includes a "Name: Chinese / English" toggle; effortlessly switches all displayed student names across scoring, seating, and leaderboards — perfect for bilingual and ESL classrooms!<br>
+            • <b>Edit & Delete</b>: Each card features "✏️ Edit" and "🗑️ Delete" options.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">批次匯入</span><span data-lang="en">IMPORT & PHOTOS</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">Excel / CSV 批次匯入範本與照片資料夾對應</span>
+              <span data-lang="en">Excel/CSV Batch Import Templates & Photo Folder Setup</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>📥 下載 Excel / CSV 範本</b>：點擊下載標準範本檔，填妥「座號 學號 姓名 性別」或「座號 姓名 性別」欄位後，一鍵上傳匯入全班名冊。<br>
+            • <b>📸 大頭照</b>：可在名冊頁「批次匯入照片」一次選多張（<b>檔名須為學號</b>，例如 <code>112001.jpg</code>），或在學生的 ✏️ 編輯視窗中「更換照片／移除照片」（需先設定學號）；也可直接將 JPG 放入程式目錄下的 <code>bin/photo/</code> 資料夾，檔名為 <b><code>學號.jpg</code></b>，系統會自動讀取載入；若尚未拍攝大頭照，系統會自動以高質感的男女生頭像作為預設頭像。</span>
+            <span data-lang="en">• <b>📥 Download Templates</b>: Click to download pre-formatted Excel (.xlsx) or CSV templates, fill in roster columns, and bulk import with 1 click.<br>
+            • <b>📸 Photos</b>: Use “Bulk import photos” in the roster page (select many; <b>file names must be the student ID</b>, e.g. <code>112001.jpg</code>) or change/remove a single photo in the student’s ✏️ edit window (set a student ID first); or place JPGs in <code>bin/photo/</code> named <b><code>StudentID.jpg</code></b> for automated facial photo integration. Defaults to boy/girl avatars if photos are not provided.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">⚠️ 危險區域</span><span data-lang="en">⚠️ DANGER ZONE</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">刪除目前班級（雙重確認 ＋ 系統密碼驗證）</span>
+              <span data-lang="en">Delete This Class (Double Confirmation + System Password)</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生名冊管理頁面最下方設有 <b>⚠️ 危險區域：班級刪除操作</b> 專區（頂部班級選單旁也提供 <b>🗑️ 刪除目前班級</b> 捷徑），供整理不再需要的舊班級或測試班級：<br>
+            • <b>第 1 步：嚴重警告</b>：彈窗列出班級名稱與學生人數，明確告知學生名冊、評分紀錄、出缺席、分組、點數卡、測驗與互動紀錄等<b>關聯資料將被永久刪除</b>，無法復原。<br>
+            • <b>第 2 步：系統密碼驗證</b>：需輸入<b>今日系統管理密碼</b>（見第 22 章密碼公式，如 <code>Admin0826</code>）才能真正執行刪除，支援 <kbd>Enter</kbd> 快捷送出，密碼錯誤會即時提示。<br>
+            成功刪除後系統會自動切換至其他有效班級。<b>請務必先確認資料已備份或匯出，再執行此操作。</b></span>
+            <span data-lang="en">At the bottom of Student Roster, an <b>⚠️ Danger Zone: Delete Class</b> panel (also reachable via the <b>🗑️ Delete Current Class</b> shortcut next to the top course selector) lets you clean up old or test classes you no longer need:<br>
+            • <b>Step 1 — Severe Warning</b>: A dialog lists the class name and student count, clearly stating that the roster, score logs, attendance, groups, point cards, quizzes, and interaction records will be <b>permanently deleted</b> and cannot be recovered.<br>
+            • <b>Step 2 — System Password Verification</b>: You must enter <b>today's system admin password</b> (see the formula in Section 22, e.g. <code>Admin0826</code>) to actually proceed; <kbd>Enter</kbd> submits, and an incorrect password shows an immediate error.<br>
+            After a successful deletion, the app automatically switches to another valid class. <b>Make sure any data you need is backed up or exported before using this feature.</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 16: Scoring Rules -->
+    <section id="rules" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🎯</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">17. 評分項目設定與分數自訂 (Scoring Rules)</span>
+          <span data-lang="en">17. Scoring Rules & Custom Point Values</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">自訂規則</span><span data-lang="en">CUSTOM RULES</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">新增自訂評分項目、自選圖示與自訂增減分數值</span>
+              <span data-lang="en">Create Custom Rules, Emoji Icons & Custom Point Values</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏫 班級經營 ➔ 🎯 評分項目設定</b>：<br>
+            • <b>➕ 新增自訂評分項目</b>：輸入項目名稱（例如：<code>主動整潔</code>、<code>筆記優秀</code>、<code>未帶作業</code>）、選擇加分或扣分、自選代表性 Emoji 圖示，並設定加扣分數（如 <code>+2</code> 或 <code>-1</code>）。<br>
+            • <b>即時同步於評分視窗</b>：新增或編輯的評分項目會立即同步出現在「⭐ 即時評分」的點選彈窗中。<br>
+            • <b>🔄 恢復預設項目</b>：若需重設，可點擊「恢復預設項目」一鍵還原系統標準評分項目（發言踴躍、認真聽講、作業優良等）。</span>
+            <span data-lang="en">Navigate to <b>🏫 Classroom Management ➔ 🎯 Scoring Rules</b>:<br>
+            • <b>➕ Add Custom Rule</b>: Enter rule name (e.g., <code>Helpful</code>, <code>Tidy Desk</code>, <code>Forgot Homework</code>), select +/- type, choose an icon, and assign score points.<br>
+            • <b>Instant Sync</b>: Custom rules appear immediately in the Live Scoring popup dialog.<br>
+            • <b>🔄 Restore Defaults</b>: Click to reset to default rules (Active Participation, Good Listener, Homework Excellence, etc.).</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 17: Reports -->
+    <section id="reports" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📊</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">18. 6 大專業 Excel 報表匯出與淡色系分組 (Reports Export)</span>
+          <span data-lang="en">18. 6-Sheet Excel Export & Pastel Groups</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">6 大工作表</span><span data-lang="en">6 SHEETS</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">完整 6 大專業工作表試算表匯出</span>
+              <span data-lang="en">Comprehensive 6-Sheet Excel Export with Full Details</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏆 激勵與統計 ➔ 📊 報表資料匯出</b>，選擇起訖日期區間即可一鍵下載包含 <b>6 大專業工作表</b> 的 Excel 完整報表：<br>
+            • <b>工作表 1【出缺席統計】</b>：全班出席、病假、事假、公假、喪假、遲到次數完整匯總。<br>
+            • <b>工作表 2【量化成績統計與明細】</b>：學生個人座號姓名加扣分總計與事件明細表。<br>
+            • <b>工作表 3【小組分數成員與得分一覽】</b>：完整輸出各分組模式名稱、小組名稱、小組獨立得分、組內人數，成員名單依序分欄，並為<b>不同分組模式填充柔和淡色系（Pastel Colors）背景底色</b>。<br>
+            • <b>工作表 4【質性紀錄明細】</b>：日期時間、學生姓名與特殊課堂表現文字記錄。<br>
+            • <b>工作表 5【紙本測驗成績總覽】</b>：各次紙本小考與段考全班學生分數矩陣與平均分一覽。<br>
+            • <b>工作表 6【紙本測驗詳細明細】</b>：每位學生每次測驗之得分、拍照佐證狀態與補考註記。</span>
+            <span data-lang="en">Go to <b>🏫 Classroom Management ➔ 📊 Export Reports</b> and choose a date range to export a <b>6-sheet Excel workbook</b>:<br>
+            • <b>Sheet 1 [Attendance Summary]</b>: Total present, sick, personal, official, bereavement leave, and late counts.<br>
+            • <b>Sheet 2 [Quantitative Score Breakdown]</b>: Individual student score totals and itemized grading events.<br>
+            • <b>Sheet 3 [Team Scores & Member Overview]</b>: Group plan names, team scores, member counts, individual columns, with <b>soft pastel background fills</b>.<br>
+            • <b>Sheet 4 [Qualitative Notes]</b>: Date, student name, and behavioral observations.<br>
+            • <b>Sheet 5 [Paper Quiz Scores Overview]</b>: Roster matrix of student scores across all paper quizzes and averages.<br>
+            • <b>Sheet 6 [Paper Quiz Detailed Records]</b>: Itemized scores, photo proof verification status, and makeup notes.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 15: Reward Redemption -->
+    <section id="rewards" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🎁</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">19. 獎勵兌換商城、品項管理與三階段審核</span>
+          <span data-lang="en">19. Reward Redemption Shop, Item Management & 3-Stage Approval</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">獎勵設定</span><span data-lang="en">SETUP</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">建立獎勵品項：榮譽徽章、特殊圖卡與實體獎品</span>
+              <span data-lang="en">Create Reward Items: Honor Badges, Collectible Cards & Physical Prizes</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏫 班級經營 ➔ 🎁 獎勵兌換管理 ➔ 🎁 獎勵品項管理</b>，點擊 <b>➕ 新增獎勵品項</b>，可設定：<br>
+            • <b>獎勵種類</b>：<code>🏅 虛擬榮譽徽章（立即點亮）</code>、<code>🎴 虛擬特殊圖卡（圖鑑收集）</code>、<code>🎁 實體獎品／特權（審核預扣）</code>。<br>
+            • <b>所需點數</b>、<b>庫存數量</b>（可勾選 <code>無限量</code>）、圖卡系列可額外填寫「圖卡系列名稱」以利收藏分類。<br>
+            • <b>品項圖案／照片上傳為必填</b>，不可使用預設圖；勾選「立即上架顯示於學生商城」即可讓學生看到並兌換。</span>
+            <span data-lang="en">Go to <b>🏫 Classroom Management ➔ 🎁 Reward Redemption ➔ 🎁 Reward Item Management</b> and click <b>➕ Add Reward Item</b> to configure:<br>
+            • <b>Reward Type</b>: <code>🏅 Virtual Honor Badge (instant unlock)</code>, <code>🎴 Virtual Collectible Card (album collection)</code>, or <code>🎁 Physical Prize / Privilege (approval + hold)</code>.<br>
+            • <b>Points Cost</b>, <b>Stock</b> (or check <code>Unlimited</code>), and for cards an optional "Card Series Name" for grouping in the album.<br>
+            • <b>An item image/photo is required</b> — no default placeholder image is allowed; check "List immediately in the student shop" to make it visible for redemption.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">兌換審核</span><span data-lang="en">REDEEM</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生兌換商城與實體獎品三階段審核流程</span>
+              <span data-lang="en">Student Redemption Shop & the 3-Stage Physical Approval Flow</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生於 <b>🎁 點數兌換商城</b> 依類別瀏覽品項，點擊兌換後會先跳出「<b>確認兌換此獎勵？</b>」視窗，列出所需點數、目前可用點數與兌換後剩餘點數供確認。<br>
+            • <b>虛擬徽章／圖卡</b>：確認後立即完成兌換並扣點（徽章為<b>限兌換一次</b>），分別收藏於「🏅 我的榮譽徽章館」與「🎴 特殊圖卡圖鑑冊」。<br>
+            • <b>實體獎品</b>：採<b>三階段安全流程</b>：學生提出申請 ➔ 教師於「📋 學生實體兌換審核台」核准（此時<b>暫時預扣點數</b>，尚未真正扣除）➔ 學生實際領取後教師按下確認拿取（<b>正式扣點</b>並完成）；教師亦可駁回或取消申請（取消會退還預扣點數）。審核台可依 <code>📌 待審核</code>／<code>⏳ 待領取(預扣中)</code>／<code>✅ 已完成發放</code>／<code>❌ 已駁回/取消</code> 篩選查看，學生端則可在「📦 實體獎品領取進度」隨時追蹤申請狀態。</span>
+            <span data-lang="en">Students browse items by category in the <b>🎁 Redemption Shop</b>; tapping redeem first shows a "<b>Confirm this redemption?</b>" dialog listing the points cost, currently available points, and remaining balance after redemption.<br>
+            • <b>Virtual badges/cards</b>: complete instantly and deduct points on confirmation (badges are <b>one-time only</b>), then appear in "🏅 My Honor Badge Wall" and "🎴 Collectible Card Album" respectively.<br>
+            • <b>Physical prizes</b> follow a <b>3-stage safety flow</b>: student requests ➔ teacher approves in the "📋 Physical Redemption Approval Desk" (points are <b>held, not yet deducted</b>) ➔ once the student actually picks up the item, the teacher confirms pickup (<b>points are finally deducted</b> and the redemption completes). Teachers can also reject a request or cancel an approved one (cancelling refunds the held points). The approval desk can be filtered by <code>📌 Pending</code> / <code>⏳ Awaiting Pickup (Held)</code> / <code>✅ Completed</code> / <code>❌ Rejected/Cancelled</code>, and students can track their request status anytime under "📦 Physical Prize Pickup Progress".</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 14: Physical Point Cards -->
+    <section id="pointcards" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🎫</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">20. 實體點數卡管理、圖卡設計工作室與學生掃碼加分</span>
+          <span data-lang="en">20. Physical Point Cards, Card Designer Studio & Scan-to-Score</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">匯入與管理實體點數卡、風格系列與班級授權</span>
+              <span data-lang="en">Import & Manage Physical Point Cards, Style Series & Class Authorization</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏫 班級經營 ➔ 🎫 實體點數卡管理</b>，點擊 <b>📥 批次匯入點數卡</b>，可下載 Excel 或 CSV 範本（欄位：<code>卡號</code>、<code>分數</code> 為必填，<code>卡名</code>、<code>序列號</code> 為選填），批次匯入實際印製的點數卡資料；系統會同時檢查<b>檔案內部</b>與<b>同班級現存卡片</b>是否有重複卡號，發現重複會立即回報衝突明細，避免同一張卡誤匯入兩次造成評分混亂。<br>
+            • <b>🏷️ 風格系列管理</b>：點數卡的外觀<b>完全由教師自主建立</b>（系統不再內建固定系列），可自由新增任意數量的「風格系列」（例如 <code>閱讀之星</code>、<code>科展英雄卡</code>），並可勾選<b>授權使用班級</b>，防止其他班級誤刷該系列的卡片。<br>
+            • <b>📊 統計分析</b>：檢視「🔥 最常使用卡片排行」（含卡片序列號）與「🏆 學生刷卡獲得總分排行」。<br>
+            • 需要重新開始時可點擊 <b>🗑️ 清空全部卡片</b>。</span>
+            <span data-lang="en">Go to <b>⚙️ Admin ➔ 🎫 Physical Point Cards</b> and click <b>📥 Batch Import Cards</b> to download an Excel or CSV template (required columns: <code>Code</code>, <code>Score</code>; optional: <code>Label</code>, <code>Card No.</code>) and bulk-import your pre-printed physical cards; the system checks for duplicate card numbers both <b>within the file</b> and <b>against existing cards in the same class</b>, immediately reporting any conflicts to prevent the same card from being imported twice and confusing scoring.<br>
+            • <b>🏷️ Style Series Management</b>: card appearance is <b>entirely teacher-defined</b> (there are no more built-in fixed series) — freely create as many "style series" as you like (e.g., <code>Reading Star</code>, <code>Science Fair Hero</code>) and check off <b>authorized classes</b> so other classes can't accidentally scan that series' cards.<br>
+            • <b>📊 Usage Analytics</b>: view "🔥 Most-Used Card Ranking" (now includes the card's serial number) and "🏆 Student Point-Card Score Ranking".<br>
+            • Click <b>🗑️ Clear All Cards</b> to start over if needed.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">全新功能</span><span data-lang="en">NEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">各分數專屬底圖：為系列中每個點數配置不同卡面</span>
+              <span data-lang="en">Per-Score Backgrounds: A Different Card Face for Each Point Value</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">於「🏷️ 風格系列管理」新增或編輯系列時，可展開 <b>📸 自訂不同分數圖卡</b> 區塊：輸入指定分數（如 <code>+3</code>、<code>+8</code>、<code>-1</code>），點擊 <b>➕ 加入此分數圖卡</b> 並上傳專屬底圖，即可讓同一系列下不同點數的卡片各自使用不同的卡面圖片；未特別指定分數的卡號則自動套用該系列的<b>通用預設底圖</b>。學生掃碼揭曉、收集冊與 Card Designer Studio 皆會自動依卡片實際分數套用對應底圖。</span>
+            <span data-lang="en">When creating or editing a series under "🏷️ Style Series Management", expand the <b>📸 Custom Score Images</b> panel: enter a specific point value (e.g., <code>+3</code>, <code>+8</code>, <code>-1</code>), click <b>➕ Add This Score's Image</b>, and upload a dedicated background — so cards worth different points in the same series can each use their own artwork. Cards without a specific score assigned fall back to that series' <b>generic default background</b>. The student's scan reveal, collection album, and the Card Designer Studio all automatically apply the matching background based on each card's actual point value.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-purple"><span data-lang="zh">🎨 圖卡工作室</span><span data-lang="en">🎨 CARD DESIGNER STUDIO</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">Card Designer Studio：所見即所得排版、裝飾形狀與 A4 批次列印</span>
+              <span data-lang="en">Card Designer Studio: WYSIWYG Layout, Decorative Shapes & A4 Batch Printing</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">點擊 <b>🎨 製作與列印實體卡</b> 開啟 <b>Card Designer Studio</b>——完整取代並超越原本需另外安裝的桌面版製卡工具，全程在瀏覽器中完成：<br>
+            • <b>WYSIWYG 畫布編輯</b>：800×1200 高解析度卡面，右側「檢視面板」可切換 <code>QR Code</code>、<code>卡號</code>、<code>點數分數</code>、<code>卡片名稱</code>、<code>代碼文字</code> 等元素，逐一設定顯示開關、位置座標（可直接拖曳或用 +/- 微調鍵精準調整）與尺寸大小。<br>
+            • <b>🔷 自訂裝飾形狀（可新增多個）</b>：點擊 ⬛ 矩形／⚪ 圓形／🔺 正三角形按鈕自由疊加任意數量的裝飾區塊，每個形狀皆可獨立設定寬高、圓角、顏色、透明度、邊框，並提供<b>邊緣霧化（毛玻璃）</b>效果讓卡面更有質感。<br>
+            • <b>輪播切換與縮放</b>：上方「◀ 第 1/N 張 ▶」可切換系列內各分數卡片逐一排版；畫布支援縮放與「自適應」一鍵置中。<br>
+            • <b>輸出</b>：完成排版後點擊 <b>💾 儲存排版</b> 保存設定，<b>📦 打包下載 PNG</b> 匯出整套系列的高解析度 PNG（ZIP 壓縮檔），或 <b>🖨️ A4 拼模列印</b> 直接以標準 A4（每頁 8 張）呼叫瀏覽器列印機制，居家或學校印表機皆可直接列印裁切。<br>
+            若排版跑版想重來，點擊 <b>🔄 還原預設</b> 一鍵恢復系統預設版面配置。</span>
+            <span data-lang="en">Click <b>🎨 Design & Print Physical Cards</b> to open the <b>Card Designer Studio</b> — it fully replaces (and goes beyond) the old separately-installed desktop card-making tool, all inside the browser:<br>
+            • <b>WYSIWYG Canvas Editor</b>: an 800×1200 high-resolution card face; the right-side Inspector panel lets you toggle and configure the <code>QR Code</code>, <code>Card Number</code>, <code>Point Value</code>, <code>Card Label</code>, and <code>Code Text</code> elements — each with its own visibility switch, position (drag directly, or nudge precisely with +/- step buttons), and size.<br>
+            • <b>🔷 Custom Decorative Shapes (add as many as you like)</b>: click the ⬛ Rectangle / ⚪ Circle / 🔺 Triangle buttons to stack any number of decorative shapes, each independently configurable for width/height, corner radius, color, opacity, and border — with an optional <b>frosted-glass edge</b> effect for a polished look.<br>
+            • <b>Carousel & Zoom</b>: the "◀ Card 1/N ▶" pager lets you lay out each point-value card in a series one at a time; the canvas supports zoom and a one-click "Fit to Window."<br>
+            • <b>Output</b>: click <b>💾 Save Layout</b> to persist your settings, <b>📦 Download PNG (ZIP)</b> to export high-resolution PNGs for the whole series as a ZIP, or <b>🖨️ A4 Batch Print</b> to invoke the browser's print dialog with a standard A4 layout (8 cards per page) ready for home or school printers.<br>
+            If a layout goes wrong, click <b>🔄 Reset to Default</b> to instantly restore the system's default layout.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">掃碼加分</span><span data-lang="en">STUDENT SCAN</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">學生手機掃描 QR Code 自動加分</span>
+              <span data-lang="en">Students Scan the QR Code to Auto-Score with Their Phone</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">學生在自己的頁面點擊 <b>📷 掃描實體點數卡加分</b>，開啟相機掃描視窗，將卡片上的 QR Code 對準鏡頭即可；若裝置沒有相機或授權失敗，系統會自動顯示<b>手動輸入卡號</b>欄位供替代輸入。掃描成功會彈出 <b>🎉 恭喜獲得點數卡！</b> 視窗，顯示卡片名稱、卡號、圖片與 <code>+{分數}</code> 徽章，並自動記入該生的評分紀錄；所有收集過的卡片會顯示在 <b>🎴 我的點數卡收集冊</b>。<br>
+            <b>每張卡片的點數在匯入時已固定</b>（不需再另外選擇評分規則），且<b>同一張卡片同一位學生每天限刷一次</b>，若該卡所屬系列有設定班級授權，非授權班級的學生將無法刷卡取得點數。</span>
+            <span data-lang="en">Students tap <b>📷 Scan Physical Point Card</b> on their page to open the camera scanner and aim it at the QR code on the card. If no camera is available or permission is denied, the app automatically falls back to a <b>manual code entry</b> field. A successful scan pops up "<b>🎉 Card Collected!</b>" showing the card's name, number, image, and a <code>+{score}</code> badge, and instantly logs the points to that student's score history; every card they've collected appears in their <b>🎴 My Point Card Collection</b>.<br>
+            <b>Each card's point value is fixed at import time</b> (there's no separate scoring rule to pick), and <b>a student can scan the same card only once per day</b>. If the card's series restricts authorized classes, students outside those classes cannot redeem points from it.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">系列總覽</span><span data-lang="en">SERIES OVERVIEW</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">預設「風格系列總覽」、全域搜尋與批次操作</span>
+              <span data-lang="en">Series Overview by Default, Global Search & Batch Actions</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>預設總覽模式</b>：進入 <b>班級經營 ➔ 實體點數卡管理</b> 時，先顯示各「風格系列」的相簿式總覽，不再一次展開全部卡片。每張系列卡片顯示系列名稱、卡片總數、累計兌換加分次數、序號範圍（例如 <code>#D_001 ~ #D_135</code>）、點數分佈與外觀設計狀態；有未分類卡片時會有專屬收納夾。<br>
+            • <b>穿透瀏覽</b>：點擊系列卡片或「🔍 查看系列卡片」（亦可用系列下拉選單）展開該系列的卡片清單，頂部有「⬅ 返回風格系列總覽」。<br>
+            • <b>全域搜尋</b>：在搜尋框輸入卡號或代碼（如 <code>#D_001</code>）即時過濾全班卡片，按「✕ 清除搜尋」恢復。<br>
+            • <b>工具列智慧切換</b>：總覽模式自動收合排序按鈕、全選與批次工具列；進入卡片清單或搜尋結果時展開，可批次移動系列或批次刪除。</span>
+            <span data-lang="en">• <b>Overview First</b>: opening <b>Classroom Management ➔ Physical Point Cards</b> now shows an album-style overview of each "style series" instead of expanding every card. Each series card shows its name, total cards, cumulative redemption count, serial range (e.g. <code>#D_001 ~ #D_135</code>), point distribution, and design status; uncategorized cards get a dedicated folder.<br>
+            • <b>Drill Down</b>: click a series card or "🔍 View Series Cards" (or use the series dropdown) to open its card list, which has a "⬅ Back to Series Overview" button.<br>
+            • <b>Global Search</b>: type a card number or code (e.g. <code>#D_001</code>) to filter all cards instantly; click "✕ Clear Search" to restore.<br>
+            • <b>Smart Toolbar</b>: overview mode hides sort buttons, select-all, and the batch toolbar; they appear in card lists or search results, where you can batch-move series or batch-delete.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 20: Appearance -->
+    <section id="appearance" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🖼️</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">21. 學校 / 班級 Logo 與 Favicon 自訂設定 (Appearance)</span>
+          <span data-lang="en">21. Custom School / Class Logo & Favicon Setup</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">校徽與標誌</span><span data-lang="en">BRANDING</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">上傳學校專屬校徽、即時預覽與瀏覽器分頁圖示同步</span>
+              <span data-lang="en">Custom Logo Upload, Instant Preview & Browser Favicon Sync</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>⚙️ 設定 ➔ 🖼️ 標誌設定</b>：<br>
+            • <b>支援多種格式</b>：可上傳您學校的專屬校徽或班級 Logo（支援 <b>PNG</b>、<b>JPG</b> 或 <b>SVG</b> 向量格式）。<br>
+            • <b>全站即時替換</b>：上傳後系統頂部導覽列標誌、學生登入畫面與瀏覽器分頁圖示 (Favicon) 將同步即時替換，打造專業校園品牌！<br>
+            • <b>即時預覽與還原</b>：介面提供 72×72 即時預覽窗，並提供「🔄 恢復系統預設 Logo」按鈕，隨時可一鍵還原預設標誌。</span>
+            <span data-lang="en">Navigate to <b>⚙️ Settings ➔ 🖼️ School Logo</b>:<br>
+            • <b>Format Support</b>: Upload your school emblem or class logo (supports <b>PNG</b>, <b>JPG</b>, or <b>SVG</b>).<br>
+            • <b>Universal Sync</b>: Automatically updates the top header logo, student login portal, and browser Favicon for unified school branding.<br>
+            • <b>Preview & 1-Click Reset</b>: Features a live 72×72 preview box and a "🔄 Restore Default Logo" button to reset anytime.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 16: Security & i18n -->
+    <section id="security-i18n" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🔐</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">22. 系統密碼安全與全系統中英雙語系切換 (Security & i18n)</span>
+          <span data-lang="en">22. Security Password Formula & Bilingual Mode</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning"><span data-lang="zh">安全防護</span><span data-lang="en">SECURITY</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">每日密碼公式與安全防護機制</span>
+              <span data-lang="en">Daily Password Formula & Unauthorized Access Prevention</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>防護機制</b>：未登入的瀏覽器即使直接輸入網址亦會被系統拒絕，必須通過密碼驗證。<br>
+            • <b>預設密碼公式</b>：<code>密碼字頭 (預設 Admin) + 當天月日 (MMDD)</code>。<br>
+            &nbsp;&nbsp;例如：8月26日的預設密碼為 <b><code>Admin0826</code></b>。<br>
+            • <b>自訂密碼字頭</b>：教師可於後台 <b>🔐 密碼安全</b> 自訂專屬字頭；若遺忘密碼可使用忘記密碼對話框一鍵重置為預設。</span>
+            <span data-lang="en">• <b>Access Control</b>: Any direct URL request from an unauthenticated browser is blocked until password verification.<br>
+            • <b>Password Formula</b>: <code>Password Prefix (Default: Admin) + Today's MMDD</code>.<br>
+            &nbsp;&nbsp;Example: On August 26, the default password is <b><code>Admin0826</code></b>.<br>
+            • <b>Custom Prefix & Reset</b>: Customize the prefix in <b>🔐 Security Admin</b>; easily reset to default if forgotten.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">雙語系統</span><span data-lang="en">BILINGUAL i18n</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">全系統雙語切換與學生中英文姓名顯示</span>
+              <span data-lang="en">Full System Bilingual Toggle & Student Name Display</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>🌐 繁中 / EN 語系切換</b>：點擊頂部語言按鈕，全系統導覽、評分項目、所有彈窗、大螢幕投影及此操作手冊皆即時切換為流暢英文。<br>
+            • <b>👤 姓名顯示切換</b>：在中文語系下，教師可點擊按鈕自由切換顯示「中文姓名」或「英文姓名」；在英文語系下系統預設優先顯示學生的英文姓名。</span>
+            <span data-lang="en">• <b>🌐 Traditional Chinese / English</b>: Click the language toggle button to switch all UI labels, rules, modals, projector screens, and this manual into English.<br>
+            • <b>👤 Name Display Mode</b>: In Chinese mode, toggle between Chinese and English student names; in English mode, English names are displayed by default.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">連線 QR Code</span><span data-lang="en">CONNECT QR</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">「📱 學生連線」與「📱 手機評分連線」QR Code 快捷按鈕</span>
+              <span data-lang="en">"📱 Student Connect" & "📱 Mobile Scoring Connect" QR Code Shortcuts</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>位置</b>：<b>⚙️ 設定</b> 次導航列右側有兩顆常駐按鈕——<b>📱 學生連線 QR Code</b> 與 <b>📱 手機評分連線 QR Code</b>，無論目前在哪個後台分頁都能一鍵叫出；頂部標題列已不再放手機評分按鈕。「🔐 密碼安全與手冊」面板也有對應的說明卡片與按鈕。<br>
+            • <b>學生連線</b>：顯示學生專屬登入網址與 QR Code，點擊 QR Code 可彈出全螢幕投影視窗，方便全班用手機／平板掃碼登入。<br>
+            • <b>手機評分連線</b>：教師用手機掃碼開啟「教師手機版」，輸入教師密碼登入後選擇班級，即可在教室走動時點名、快速加減分、記錄、寫日誌，並遙控電腦上的教學互動工具（詳見下一張卡片）。</span>
+            <span data-lang="en">• <b>Location</b>: the right side of the <b>⚙️ Settings</b> sub-nav has two persistent buttons — <b>📱 Student Connect QR Code</b> and <b>📱 Mobile Scoring QR Code</b> — available from any admin tab. The top header no longer carries the mobile-scoring button. The "🔐 Security & Manual" panel also has matching explainer cards and buttons.<br>
+            • <b>Student Connect</b>: shows the student login URL and QR code; click the QR code to open a fullscreen projection window so the whole class can scan to log in.<br>
+            • <b>Mobile Scoring Connect</b>: the teacher scans with a phone to open the "Teacher Mobile" page, logs in with the teacher password, picks a class, and can take attendance, score, write notes/journal, and remote-control the toolkit on the computer while walking around (see the next card).</span>
+          </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">教師手機版</span><span data-lang="en">TEACHER MOBILE</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">📱 教師手機版：選班級、點名、加減分、記錄、日誌與遙控教學互動工具</span>
+              <span data-lang="en">📱 Teacher Mobile: Class Picker, Attendance, Scoring, Notes, Journal & Toolkit Remote</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">手機與電腦連上同一個教室 Wi-Fi，掃描「📱 手機評分連線 QR Code」（或直接開啟 <code>/mobile</code>），輸入教師密碼登入：<br>
+            • <b>先選班級</b>：以卡片顯示所有班級；只有一個班級時自動進入。右上角「換班」可隨時切換。<br>
+            • <b>📋 出缺席點名</b>：每位學生一列，直接點選「出席／病假／事假／公假／喪假／遲到」，按「儲存點名」。<br>
+            • <b>⭐ 快速加減分</b>：不需要座位表，學生以<b>卡片</b>排列（手機直式兩欄、平板三欄），每張卡片上方是「座號｜姓名」，下方是並排的紅色 <b>－</b> 與綠色 <b>＋</b> 按鈕；點 <b>＋</b> 加 1 分、點 <b>－</b> 扣 1 分，<b>每按一下就立即寫入該生的累計分數</b>；卡片上顯示「累計 N 分」（與電腦、大螢幕一致，其他裝置改分也會自動同步），右上角是這次在手機上的增減，底部「復原上一筆」可撤銷。<br>
+            • <b>📝 特殊表現紀錄</b>、<b>📓 教學日誌</b>：選擇學生（或日誌分類），輸入文字並可拍照／錄影附加，按儲存即可。<br>
+            • <b>🧰 教學互動工具</b>：<b>課堂公佈欄</b>（輸入公告發佈到電腦與大螢幕；「清除大螢幕上的公告」只會關閉大螢幕公告與電腦上的全螢幕佈告，<b>不會刪除任何佈告</b>；要刪除時，在「已建立的佈告」清單點選要刪的佈告（<b>可多選</b>，也有「全選」「取消選取」），再按「刪除所選佈告」（會先確認並列出標題）；只選一則時也可按「顯示在電腦」，<b>多選時「顯示在電腦」會自動停用</b>（一次只能顯示一則）；佈告清單與電腦即時同步）、<b>計時</b>（預設時間或自訂分鐘，開始／停止）、<b>抽籤</b>（學生或小組、人數、是否排除已抽過）。<b>開啟功能的同時，教師電腦上正連線的畫面會自動切換到對應的功能</b>（計時會直接開始倒數、抽籤由電腦執行並把結果回傳手機與大螢幕）。<br>
+            • <b>同步狀態</b>：手機會顯示「已同步到教師電腦」；若找不到開著同一個班級的電腦畫面，會提醒你在電腦上開啟 MyClass 並選擇同一個班級。<br>
+            • <b>中英文介面</b>：頁首（登入畫面為右上角）的「EN／中文」按鈕可切換繁體中文與英文，選擇會記在這支手機上；英文介面會優先顯示學生的英文姓名（沒有英文姓名時顯示中文姓名）。寫入資料庫的項目名稱（例如「手機快速加分」「手機公告」）維持中文，與電腦端紀錄與報表一致。<br>
+            • <b>連點不會放大畫面</b>：手機頁已停用「連點兩下放大」，快速連按「＋」「－」不會觸發縮放，每一下都會記錄（雙指縮放不受影響）。<br>
+            • 出缺席與加減分的結果會即時反映在電腦與大螢幕。舊版的手機評分模式（<code>?mobile=1</code>）與「遙控教室大螢幕」彈窗已由這個頁面取代。</span>
+            <span data-lang="en">With your phone and the computer on the same classroom Wi-Fi, scan the "📱 Mobile Scoring QR Code" (or open <code>/mobile</code>) and log in with the teacher password:<br>
+            • <b>Pick a class first</b>: all classes are shown as cards (a single class opens automatically); use "Switch" at the top right to change.<br>
+            • <b>📋 Attendance</b>: one row per student — tap Present / Sick / Personal / Official / Bereavement / Late, then "Save".<br>
+            • <b>⭐ Quick Scoring</b>: no seating chart needed. Students appear as <b>cards</b> (two columns on a phone, three on a tablet) — seat number | name on top, a red <b>－</b> and a green <b>＋</b> button side by side below. Tap <b>＋</b> for +1 and <b>－</b> for −1; <b>every tap is written to the student's accumulated score immediately</b>. Each card shows "Total N" (matching the computer and projector, and updated when other devices change scores), the badge at the top right is this phone's change, and "Undo last" at the bottom reverts it.<br>
+            • <b>📝 Notes</b> & <b>📓 Journal</b>: choose the student (or journal category), type text and optionally attach a photo/video, then save.<br>
+            • <b>🧰 Interactive Tools</b>: <b>Bulletin</b> (publish an announcement to the computer and projector; "Clear projector announcement" only closes the projector announcement and the fullscreen board on the computer and <b>never deletes a post</b>; to delete, select posts in the "Existing posts" list (<b>multi-select</b> works, with "Select all" / "Clear selection") and press "Delete selected posts" (it asks to confirm and lists the titles); with exactly one selected you can also press "Show on computer", and <b>"Show on computer" is disabled automatically when several are selected</b> (only one can be shown at a time); the post list syncs with the computer in real time), <b>Timer</b> (presets or custom minutes, start/stop), <b>Draw</b> (students or groups, count, exclude drawn). <b>Opening a tool makes the teacher's computer screen switch to the same tool automatically</b> (the timer starts counting down; the draw runs on the computer and sends the result back to the phone and projector).<br>
+            • <b>Sync status</b>: the phone shows "synced to the teacher's computer"; if no computer screen has the same class open it reminds you to open MyClass and pick that class.<br>
+            • <b>Chinese / English UI</b>: the "EN / 中文" button in the header (top right on the login screen) switches between Traditional Chinese and English, and the choice is remembered on that phone; the English UI prefers students' English names (falling back to the Chinese name). Item names written to the database (e.g. "手機快速加分", "手機公告") stay in Chinese so they match the computer's records and reports.<br>
+            • <b>No zoom on repeated taps</b>: double-tap zoom is disabled on the phone page, so tapping ＋ / － quickly never zooms the screen and every tap is recorded (pinch zoom still works).<br>
+            • Attendance and score changes appear on the computer and projector in real time. The old mobile scoring mode (<code>?mobile=1</code>) and the "Remote control" popup have been replaced by this page.</span>
+          </div>
+        </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">安裝版</span><span data-lang="en">INSTALLED EDITION</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">可攜版與安裝版：右下角常駐、資料位置與升級</span>
+              <span data-lang="en">Portable vs Installed Edition: Tray Icon, Data Location & Upgrades</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">• <b>可攜版</b>（跑班的科任老師）：整個資料夾放隨身碟，雙擊執行檔即可，資料在資料夾內的 <code>bin</code>。<br>
+            • <b>安裝版</b>（固定在同一間教室的導師）：執行安裝程式，預設裝到 <code>C:\MyClass</code>。啟動後在背景執行，<b>右下角通知區會出現圖示</b>：雙擊開啟系統；右鍵可複製學生連線網址、開啟檔案資料夾、切換「開機時自動啟動」、重新啟動伺服器或結束。<br>
+            • <b>取得學生上傳的檔案</b>：安裝版在 <code>C:\MyClass\bin\uploads</code>，也可從托盤選單「開啟檔案資料夾」直接開啟。<br>
+            • <b>升級</b>：直接執行新版安裝程式即可，只會覆蓋程式檔，<code>bin</code> 內的資料不會被更動；解除安裝也會保留 <code>bin</code>。<b>程式更新後第一次啟動，系統會在資料庫升級前自動備份</b>到 <code>bin\backups</code>（只保留最近 10 份；托盤選單可直接開啟備份資料夾）。如需還原：先從托盤選單「結束」，再把備份檔複製成 <code>bin\classroom_record.db</code>（並刪除同資料夾的 <code>classroom_record.db-wal</code>、<code>-shm</code>），重新啟動即可。<br>
+            • <b>從可攜版搬到安裝版</b>：安裝時在「匯入既有資料」頁選擇可攜版資料夾（裡面有 <code>bin</code> 的那一層），會把資料複製過來，原資料夾不受影響。<br>
+            • <b>防火牆</b>：安裝程式會自動允許本系統通過 Windows 防火牆，區網內的學生手機／平板才連得進來。<br>
+            • 同一份資料只會有一個伺服器在執行；再次點捷徑只會開啟既有網頁。若伺服器異常，可看 <code>bin\logs\server.log</code>。</span>
+            <span data-lang="en">• <b>Portable edition</b> (subject teachers who move between rooms): keep the whole folder on a USB drive and double-click the executable; data lives in the folder's <code>bin</code>.<br>
+            • <b>Installed edition</b> (homeroom teachers fixed in one classroom): run the installer, which defaults to <code>C:\MyClass</code>. It runs in the background and <b>shows an icon in the notification area</b>: double-click to open the system; right-click to copy the student connection URL, open the files folder, toggle "Start with Windows," restart the server, or quit.<br>
+            • <b>Getting students' uploaded files</b>: in the installed edition they are in <code>C:\MyClass\bin\uploads</code>, or use "Open files folder" from the tray menu.<br>
+            • <b>Upgrading</b>: just run the newer installer; it replaces program files only and never touches <code>bin</code>; uninstalling also keeps <code>bin</code>. <b>On the first launch after an update, the system automatically backs up the database before upgrading it</b> into <code>bin\backups</code> (the 10 most recent are kept; open the folder from the tray menu). To restore: choose "Quit" from the tray menu, copy the backup over <code>bin\classroom_record.db</code> (and delete <code>classroom_record.db-wal</code> / <code>-shm</code> in the same folder), then start again.<br>
+            • <b>Moving from portable to installed</b>: on the "Import existing data" page, choose the portable folder (the level that contains <code>bin</code>); its data is copied over and the original is left untouched.<br>
+            • <b>Firewall</b>: the installer allows the app through Windows Firewall so students' phones/tablets on the LAN can connect.<br>
+            • Only one server runs per data folder; clicking the shortcut again just opens the existing page. If something goes wrong, check <code>bin\logs\server.log</code>.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 11: FAQ -->
+    <section id="faq" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">💡</div>
+        <h2 class="guide-section-title">
+          <span data-lang="zh">23. 常見問題與教學使用技巧 (FAQ & Tips)</span>
+          <span data-lang="en">23. FAQ & Classroom Teaching Tips</span>
+        </h2>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary"><span data-lang="zh">常見問題</span><span data-lang="en">Q&A</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">手機掃描 QR Code 連線時無法開啟網頁？</span>
+              <span data-lang="en">Mobile QR Code Cannot Open the Webpage?</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">請確認手機或平板與電腦是否已連上<b>相同的教室 Wi-Fi 區域網路</b>。若校園網路有訪客隔離 (AP Isolation) 設定，可開啟手機熱點供電腦與手機連線即可順暢操作。</span>
+            <span data-lang="en">Please make sure the mobile device is connected to the <b>same classroom Wi-Fi network</b> as the host computer. If AP isolation is enabled, connect both to a personal smartphone hotspot.</span>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-success"><span data-lang="zh">常見問題</span><span data-lang="en">Q&A</span></span>
+            <div class="guide-item-title">
+              <span data-lang="zh">如何快速進行期末總結算或成績結算？</span>
+              <span data-lang="en">How to Perform End-of-Semester Score Calculations?</span>
+            </div>
+          </div>
+          <div class="guide-item-body">
+            <span data-lang="zh">進入 <b>🏆 激勵與統計 ➔ 📊 報表資料匯出</b>，選擇日期範圍或留空（匯出全學期），點擊 <b>📥 下載 Excel 完整報表</b>，系統會自動產出含有 6 大工作表（出缺席統計、量化成績明細、小組淡色系得分一覽、質性記錄、紙本測驗成績與詳細明細）的完整統計試算表。</span>
+            <span data-lang="en">Go to <b>🏫 Classroom Management ➔ 📊 Export Reports</b>, select a date range or leave empty for full semester, and click <b>📥 Download Full Excel Report</b> to export a complete 6-sheet workbook including attendance summary, individual scores, pastel-highlighted team records, qualitative notes, and paper quiz details.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+
+  </div>
+
+  <script>
+    (function () {
+      // 1. Language logic
+      const urlParams = new URLSearchParams(window.location.search);
+      let currentGuideLang = urlParams.get('lang') || localStorage.getItem('app_lang') || 'zh-TW';
+      if (!['zh-TW', 'en'].includes(currentGuideLang)) currentGuideLang = 'zh-TW';
+
+      function applyGuideLang(lang) {
+        currentGuideLang = lang;
+        localStorage.setItem('app_lang', lang);
+        localStorage.removeItem('guide_lang');
+
+        if (lang === 'en') {
+          document.documentElement.lang = 'en-US';
+          document.body.classList.add('lang-en');
+        } else {
+          document.documentElement.lang = 'zh-TW';
+          document.body.classList.remove('lang-en');
+        }
+
+        const btnLang = document.getElementById('btn-guide-toggle-lang');
+        if (btnLang) {
+          btnLang.innerHTML = lang === 'en' ? '🌐 English / 繁中' : '🌐 繁中 / English';
+        }
+      }
+
+      // 2. Theme logic (Dark / Light)
+      let currentTheme = localStorage.getItem('app_theme') || 'dark';
+
+      function applyGuideTheme(theme) {
+        currentTheme = theme;
+        localStorage.setItem('app_theme', theme);
+        localStorage.removeItem('guide_theme');
+
+        const labelZh = document.getElementById('guide-theme-label-zh');
+        const labelEn = document.getElementById('guide-theme-label-en');
+
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+          document.body.classList.add('theme-light');
+          if (labelZh) labelZh.textContent = '🌙 深色模式';
+          if (labelEn) labelEn.textContent = '🌙 Dark Mode';
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.body.classList.remove('theme-light');
+          if (labelZh) labelZh.textContent = '☀️ 淺色模式';
+          if (labelEn) labelEn.textContent = '☀️ Light Mode';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        applyGuideLang(currentGuideLang);
+        applyGuideTheme(currentTheme);
+
+        const btnLang = document.getElementById('btn-guide-toggle-lang');
+        if (btnLang) {
+          btnLang.addEventListener('click', () => {
+            const nextLang = currentGuideLang === 'en' ? 'zh-TW' : 'en';
+            applyGuideLang(nextLang);
+          });
+        }
+
+        const btnTheme = document.getElementById('btn-guide-toggle-theme');
+        if (btnTheme) {
+          btnTheme.addEventListener('click', () => {
+            const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyGuideTheme(nextTheme);
+          });
+        }
+      });
+
+      // Synchronize in real-time across open tabs
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'app_lang' && e.newValue && ['zh-TW', 'en'].includes(e.newValue)) {
+          applyGuideLang(e.newValue);
+        }
+        if (e.key === 'app_theme' && e.newValue && ['dark', 'light'].includes(e.newValue)) {
+          applyGuideTheme(e.newValue);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

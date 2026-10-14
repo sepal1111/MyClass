@@ -1,0 +1,44 @@
+{
+  "excel_path": "A系列匯入檔.xlsx",
+  "backgrounds_dir": "backgrounds",
+  "output_dir": "output_cards",
+  "default_canvas_size": [800, 1200],
+  "qr_code": {
+    "enabled": true,
+    "size": [136, 136],
+    "position": [39, 633],
+    "error_correction": "M",
+    "box_size": 10,
+    "border": 2
+  },
+  "text_elements": {
+    "card_no": {
+      "enabled": true,
+      "position": [547, 755],
+      "font_size": 22,
+      "font_color": "#000000",
+      "font_family": "msjhbd.ttc",
+      "anchor": "rm",
+      "prefix": "No.",
+      "replace_underscore_with_hyphen": true
+    },
+    "card_value": {
+      "enabled": false,
+      "position": [280, 615],
+      "font_size": 28,
+      "font_color": "#C0392B",
+      "font_family": "msjhbd.ttc",
+      "anchor": "mm",
+      "prefix": "點數："
+    },
+    "card_code_text": {
+      "enabled": false,
+      "position": [39, 780],
+      "font_size": 14,
+      "font_color": "#333333",
+      "font_family": "msjh.ttc",
+      "anchor": "lm",
+      "prefix": ""
+    }
+  }
+}

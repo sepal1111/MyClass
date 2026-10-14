@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0284c7">
+<title>MyClass 教師手機版</title>
+<style>
+  :root {
+    --primary: #0284c7;
+    --primary-dark: #0369a1;
+    --primary-bg: #f0f9ff;
+    --border: #cbd5e1;
+    --text: #1e293b;
+    --muted: #64748b;
+    --card: #ffffff;
+    --bg: #f1f5f9;
+    --good: #059669;
+    --bad: #dc2626;
+    --warn: #d97706;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #38bdf8; --primary-dark: #7dd3fc; --primary-bg: #0c2a3d; --border: #334155;
+      --text: #e2e8f0; --muted: #94a3b8; --card: #1e293b; --bg: #0f172a;
+      --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  /* 禁用「連點兩下放大」：快速連按 ＋／－ 時不會觸發縮放；雙指縮放不受影響，也不會吃掉連續的點擊 */
+  html, body, button, a, input, select, textarea, label { touch-action: manipulation; }
+  button, .sc-card, .card-btn, .chip { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  header.top {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; padding-top: calc(10px + env(safe-area-inset-top));
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #fff;
+  }
+  header.top .title { flex: 1; font-weight: 900; font-size: 1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  header.top button { min-width: 44px; min-height: 44px; border: 1px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.16); color: #fff; border-radius: 12px; font-size: 1rem; font-weight: 800; padding: 0 12px; font-family: inherit; }
+  main { padding: 14px 12px 90px; max-width: 720px; margin: 0 auto; }
+  h2.section { font-size: 1.05rem; margin: 4px 0 10px; color: var(--primary-dark); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 560px) { .grid.cols3 { grid-template-columns: repeat(3, 1fr); } }
+  .card-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    min-height: 112px; padding: 14px 10px;
+    background: var(--card); border: 2px solid var(--border); border-radius: 18px;
+    color: var(--text); font-family: inherit; font-size: 1.05rem; font-weight: 900; text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card-btn:active { transform: scale(0.97); }
+  .card-btn .ico { font-size: 2.2rem; line-height: 1; }
+  .card-btn .sub { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+  .card-btn.last { border-color: var(--primary); background: var(--primary-bg); }
+  .card-btn.wide { grid-column: 1 / -1; min-height: 92px; }
+  .btn { min-height: 48px; border: 0; border-radius: 12px; padding: 0 18px; font-size: 1.02rem; font-weight: 800; font-family: inherit; cursor: pointer; background: var(--primary); color: #fff; }
+  .btn.secondary { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+  .btn.good { background: var(--good); }
+  .btn.bad { background: var(--bad); }
+  .btn.block { width: 100%; }
+  .btn:disabled { opacity: 0.5; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 14px;
+  }
+  .item .num { min-width: 46px; font-weight: 900; color: var(--muted); font-size: 0.9rem; }
+  .item .name { flex: 1; font-weight: 900; font-size: 1.08rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* 快速加減分：學生卡片（2 欄；寬螢幕 3 欄） */
+  .sc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (min-width: 560px) { .sc-grid { grid-template-columns: repeat(3, 1fr); } }
+  .sc-card {
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 28px 8px 12px; background: var(--card); border: 2px solid #0f2a3d; border-radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) { .sc-card { border-color: #475569; } }
+  .sc-head { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 48px; }
+  .sc-num { font-size: 1.5rem; font-weight: 500; padding-right: 10px; border-right: 2px solid currentColor; line-height: 1.6; }
+  .sc-name { font-size: 1.5rem; font-weight: 500; line-height: 1.3; word-break: keep-all; overflow-wrap: anywhere; }
+  .sc-total { font-size: 0.95rem; font-weight: 700; color: var(--muted); }
+  .sc-total b { font-size: 1.15rem; color: var(--text); }
+  .sc-btns { display: flex; gap: 12px; justify-content: center; }
+  .sc-btn { width: 62px; height: 52px; border: 0; border-radius: 14px; color: #fff; font-size: 1.9rem; font-weight: 900; line-height: 1; font-family: inherit; box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+  .sc-btn.minus { background: #e53935; }
+  .sc-btn.plus { background: #10b981; }
+  .sc-btn:active { transform: scale(0.93); }
+  .sc-delta { position: absolute; top: 4px; right: 6px; min-width: 30px; padding: 0 6px; border-radius: 999px; font-size: 0.85rem; font-weight: 900; text-align: center; line-height: 1.6; color: #fff; display: none; }
+  .sc-delta.pos { background: var(--good); display: block; }
+  .sc-delta.neg { background: var(--bad); display: block; }
+  /* 學生卡片左上角的 📝 快速紀錄按鈕（右上角是這次的增減） */
+  .sc-note { position: absolute; top: 0; left: 2px; width: 38px; height: 38px; border: 0; border-radius: 50%; background: transparent; font-size: 1.15rem; line-height: 1; font-family: inherit; }
+  .sc-note:active { background: var(--primary-bg); }
+  .pm { width: 58px; height: 52px; border: 0; border-radius: 14px; font-size: 1.8rem; font-weight: 900; color: #fff; font-family: inherit; line-height: 1; }
+  .pm.plus { background: var(--good); }
+  .pm.minus { background: var(--bad); }
+  .pm:active { transform: scale(0.94); }
+  .delta { min-width: 44px; text-align: center; font-weight: 900; font-size: 1.05rem; color: var(--muted); }
+  .delta.pos { color: var(--good); }
+  .delta.neg { color: var(--bad); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--card); color: var(--text); font-size: 0.95rem; font-weight: 800; font-family: inherit; }
+  .chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .chip.on.warn { background: var(--warn); border-color: var(--warn); }
+  .chip.on.bad { background: var(--bad); border-color: var(--bad); }
+  /* 特殊表現紀錄：學生點選（座號＋姓名）與常用片語 */
+  .note-students { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 38vh; overflow-y: auto; padding: 2px; }
+  @media (min-width: 560px) { .note-students { grid-template-columns: repeat(4, 1fr); } }
+  .chip.stu { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 52px; padding: 4px 6px; border-radius: 12px; line-height: 1.2; }
+  .chip.stu .n { font-size: 0.78rem; font-weight: 700; opacity: 0.75; }
+  .chip.stu .nm { font-size: 1rem; font-weight: 900; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip.phrase { min-height: 44px; }
+  .chip.phrase.warn { border-color: var(--warn); color: var(--warn); }
+  .file-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; }
+  .att-item { flex-wrap: wrap; }
+  .att-item .chips { width: 100%; }
+  label.field { display: block; font-weight: 800; margin: 12px 0 6px; }
+  input.txt, select.txt, textarea.txt {
+    width: 100%; font-size: 1.05rem; padding: 12px; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--card); color: var(--text); font-family: inherit;
+  }
+  textarea.txt { min-height: 130px; resize: vertical; }
+  .panel { background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px; margin-bottom: 14px; }
+  .status { margin-top: 10px; padding: 10px 12px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; }
+  .status.ok { background: rgba(5,150,105,0.12); color: var(--good); }
+  .status.warn { background: rgba(217,119,6,0.14); color: var(--warn); }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 6px 0; }
+  .bar-bottom {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+    display: flex; gap: 10px; padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    background: var(--card); border-top: 1.5px solid var(--border);
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%);
+    background: rgba(15,23,42,0.95); color: #fff; padding: 10px 18px; border-radius: 12px;
+    font-weight: 800; z-index: 50; max-width: 92vw; display: none;
+  }
+  .toast.show { display: block; }
+  .toast.err { background: #b91c1c; }
+  .winner { font-size: 1.5rem; font-weight: 900; text-align: center; padding: 16px 8px; color: var(--primary-dark); }
+  .center { text-align: center; }
+  .spacer { height: 8px; }
+</style>
+</head>
+<body>
+<header class="top" id="top" hidden>
+  <button type="button" id="btnBack" data-act="back">‹ 返回</button>
+  <div class="title" id="topTitle">MyClass</div>
+  <button type="button" id="btnLang" data-act="lang" aria-label="Language / 語言">EN</button>
+  <button type="button" id="btnSwitch" data-act="courses">換班</button>
+</header>
+
+<main id="app"><div class="center hint" style="padding:40px 0;">載入中…</div></main>
+<div class="toast" id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/mobile.js"></script>
+</body>
+</html>

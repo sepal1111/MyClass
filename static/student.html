@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>學生課程入口 - MyClass</title>
+<script>
+  // 自動偵測作業系統與裝置類型，寫成 <html data-os data-device> 供 CSS/JS 之後判斷用
+  // （例如 iOS Safari 的 100vh 位址列問題、未來相機拍照 input capture 屬性等裝置差異）。
+  // 同步執行、放在 <link rel="stylesheet"> 之前，避免屬性套用較晚造成畫面閃爍。
+  (function () {
+    var ua = navigator.userAgent || '';
+    var platform = navigator.platform || '';
+    var uaData = navigator.userAgentData;
+    var isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+
+    function detectOS() {
+      if (uaData && uaData.platform) {
+        var p = uaData.platform.toLowerCase();
+        if (p.indexOf('android') !== -1) return 'android';
+        if (p.indexOf('windows') !== -1) return 'windows';
+        if (p.indexOf('mac') !== -1) return isTouch && /iPad|iPhone/.test(ua) ? 'ios' : 'macos';
+        if (p.indexOf('linux') !== -1) return 'linux';
+      }
+      // iPadOS 13+ 預設偽裝成 MacIntel 桌面版 UA，須用觸控點數與 Mac 平台合併判斷才抓得到。
+      if (/iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+      if (/Android/.test(ua)) return 'android';
+      if (/Win/.test(platform) || /Windows/.test(ua)) return 'windows';
+      if (/Mac/.test(platform)) return 'macos';
+      if (/Linux/.test(platform)) return 'linux';
+      return 'unknown';
+    }
+
+    function detectDeviceType(os) {
+      var minScreenSide = Math.min(window.screen.width, window.screen.height);
+      if (os === 'ios') return /iPad/.test(ua) || (platform === 'MacIntel' && isTouch) ? 'tablet' : 'mobile';
+      if (os === 'android') return /Mobile/.test(ua) ? 'mobile' : 'tablet';
+      if (uaData && typeof uaData.mobile === 'boolean') {
+        if (!uaData.mobile) return 'desktop';
+        return minScreenSide >= 600 ? 'tablet' : 'mobile';
+      }
+      return isTouch && minScreenSide < 900 ? 'tablet' : 'desktop';
+    }
+
+    var os = detectOS();
+    var device = detectDeviceType(os);
+    var root = document.documentElement;
+    root.setAttribute('data-os', os);
+    root.setAttribute('data-device', device);
+    window.MyClassDevice = { os: os, device: device, isTouch: isTouch };
+  })();
+</script>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+  /* 學生端專屬色調：與教師端的藍色系區隔開來，比照 kyps-class 的天藍色學生識別色 */
+  :root {
+    --student-primary: #0284c7;
+    --student-primary-dark: #0369a1;
+    --student-primary-light: #38bdf8;
+    --student-primary-bg: #f0f9ff;
+    --student-primary-border: #bae6fd;
+  }
+
+  body {
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    margin: 0;
+    padding-bottom: 60px;
+  }
+  /* 44px 最小可點擊高度比照 kyps-class style.css 的明文規則：方便小學生在平板/手機上點按。
+     只在學生頁面套用（教師端沿用共用 style.css 的 .btn，不動它避免波及整個教師介面）。 */
+  .btn, .btn-secondary { min-height: 44px; }
+  .student-shell { width: 100%; max-width: 640px; margin: 0 auto; padding: 0 16px; box-sizing: border-box; }
+  @media (min-width: 760px) {
+    .student-shell { max-width: 820px; padding: 0 24px; }
+  }
+  /* 寬螢幕（筆電/桌機/2K 螢幕）再放寬一階，避免內容欄位在大螢幕上顯得過窄、兩側留白過多；
+     維持單欄置中（非改成側欄雙欄），單純讓卡片與清單有更多呼吸空間。 */
+  @media (min-width: 1200px) {
+    .student-shell { max-width: 1140px; }
+  }
+  .student-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .student-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin: 0 0 4px; }
+  .student-subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 20px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; }
+  .field select, .field input {
+    width: 100%; padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--input-border); background: var(--input-bg); color: var(--input-text);
+    font-size: 1rem; box-sizing: border-box;
+  }
+  .login-shell { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; }
+  .login-shell .student-shell { max-width: 420px; }
+  /* iOS Safari 的 100vh 會把可縮合的網址列高度也算進去，導致登入畫面被裁切或跳動；
+     用開頭 <script> 偵測到的 data-os="ios" 改用 -webkit-fill-available 修正。 */
+  html[data-os="ios"] body,
+  html[data-os="ios"] .login-shell {
+    min-height: -webkit-fill-available;
+  }
+
+  /* --- Top Nav (sticky) --- */
+  .top-nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--header-bg); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--header-border);
+    padding: 10px 16px; margin: 0 0 16px; box-sizing: border-box;
+  }
+  .top-nav-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .top-nav-brand img { height: 28px; }
+  .top-nav-brand-text { display: flex; flex-direction: column; min-width: 0; }
+  .top-nav-brand-title { font-size: 0.95rem; font-weight: 800; color: var(--text-main); white-space: nowrap; }
+  .top-nav-course-badge {
+    font-size: 0.72rem; font-weight: 700; color: var(--student-primary-dark);
+    background: var(--student-primary-bg); border: 1px solid var(--student-primary-border);
+    border-radius: var(--radius-full); padding: 1px 8px; align-self: flex-start; margin-top: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px;
+  }
+  /* position:relative 放在 actions 容器上，而非 bell 自己的 wrap，讓下拉選單無論
+     鈴鐺在窄螢幕上實際落在哪個 x 座標，都固定貼齊導覽列最右側，不會被螢幕邊緣裁切。 */
+  .top-nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; position: relative; }
+
+  .student-chip {
+    display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px;
+    border-radius: var(--radius-full); background: var(--card-bg); border: 1px solid var(--card-border);
+  }
+  .student-chip-avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--student-primary);
+    color: #fff; font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .student-chip-name { font-size: 0.82rem; font-weight: 700; color: var(--text-main); white-space: nowrap; }
+
+  /* --- Notification Bell --- */
+  .notif-bell-btn {
+    position: relative; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--card-border);
+    background: var(--card-bg); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .notif-badge {
+    position: absolute; top: -2px; right: -2px; min-width: 16px; height: 16px; padding: 0 3px;
+    border-radius: var(--radius-full); background: var(--accent-negative); color: #fff;
+    font-size: 0.62rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  .notif-dropdown {
+    position: absolute; top: calc(100% + 8px); right: 0; width: 280px; max-width: 80vw;
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg); z-index: 60; overflow: hidden;
+    /* pop+fade 開合比照 kyps-class NotificationBell.vue：0.16s，translateY(-6px) scale(0.98) -> 原位 */
+    opacity: 0; visibility: hidden; transform: translateY(-6px) scale(0.98); pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0s linear 0.16s;
+  }
+  .notif-dropdown.open {
+    opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+  .notif-dropdown-head { font-size: 0.85rem; font-weight: 800; color: var(--text-main); padding: 12px 14px; border-bottom: 1px solid var(--card-border); }
+  .notif-dropdown-empty { padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+  .notif-dropdown-empty .emoji { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+
+  /* --- Hero Banner --- */
+  .hero-banner {
+    background: linear-gradient(135deg, #ffffff 0%, var(--student-primary-bg) 100%);
+    border: 1.5px solid var(--student-primary-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    padding: 20px; margin-bottom: 16px;
+  }
+  .hero-banner-body { display: flex; flex-direction: column; gap: 14px; }
+  .hero-banner-main { min-width: 0; }
+  .hero-greeting { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0 0 4px; }
+  .hero-greeting .course-name { color: var(--student-primary-dark); }
+  .hero-subtext { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+  .my-group-card {
+    background: #fff7ed; border: 1px solid #fed7aa; border-radius: var(--radius-md);
+    padding: 12px 14px;
+  }
+  @media (min-width: 760px) {
+    .hero-banner-body { flex-direction: row; align-items: center; gap: 24px; }
+    .hero-banner-main { flex: 1 1 auto; }
+    .my-group-card { flex: 0 0 300px; }
+  }
+  .my-group-card.empty { background: var(--card-bg); border-color: var(--card-border); }
+  .my-group-title { font-size: 0.8rem; font-weight: 800; color: #9a5b13; margin: 0 0 8px; }
+  .my-group-card.empty .my-group-title { color: var(--text-muted); }
+  .my-group-members { display: flex; flex-wrap: wrap; gap: 6px; }
+  .member-pill {
+    font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full);
+    background: #ffffff; border: 1px solid #fed7aa; color: #9a5b13;
+  }
+  .member-pill.me { background: #f97316; border-color: #f97316; color: #fff; font-weight: 800; }
+  .my-group-empty-text { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* --- Tab Bar --- */
+  /* 手機窄螢幕：2x2 網格（4 顆分頁鍵在窄寬度以 flex-wrap 會擠成不對稱的 3+1）；
+     平板/桌機有足夠寬度後改為單排排列。 */
+  .student-tab-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .student-tab-btn {
+    min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--card-border); background: var(--card-bg); color: var(--text-muted);
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition-normal);
+    line-height: 1.3;
+  }
+  .student-tab-btn:hover { background: #f1f5f9; }
+  @media (min-width: 640px) {
+    .student-tab-bar { display: flex; flex-wrap: nowrap; }
+    .student-tab-btn { flex: 1 1 0; border-radius: var(--radius-full); white-space: nowrap; }
+  }
+  .student-tab-btn.active {
+    border-color: var(--student-primary); color: #fff; background: var(--student-primary);
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+  }
+  .student-tab-pane { transition: opacity 0.2s ease; }
+  .student-tab-pane.fading { opacity: 0; }
+
+  .coming-soon-card { text-align: center; padding: 40px 20px; }
+  .coming-soon-card .emoji { font-size: 2.4rem; display: block; margin-bottom: 10px; }
+  .coming-soon-card .title { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin: 0 0 6px; }
+  .coming-soon-card .desc { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+  .score-summary-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 12px; text-align: center; }
+  .score-summary-value { font-size: 1.6rem; font-weight: 800; color: var(--text-main); }
+  .score-summary-value.positive { color: var(--accent-positive); }
+  .score-summary-value.negative { color: var(--accent-negative); }
+  .score-summary-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+  .score-log-item {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+    padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .score-log-title { font-weight: 700; color: var(--text-main); font-size: 0.92rem; }
+  .score-log-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .score-log-value { font-size: 1.1rem; font-weight: 800; white-space: nowrap; }
+  .score-log-value.positive { color: var(--accent-positive); }
+  .score-log-value.negative { color: var(--accent-negative); }
+  .error-box {
+    background: var(--accent-negative-bg); border: 1px solid var(--accent-negative-border);
+    color: var(--accent-negative); border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 0.9rem; margin-bottom: 14px; display: none;
+  }
+  /* 章節（第一層）與小單元（第二層）需要有「附屬」的視覺層級：整個章節（標題列＋底下小單元）
+     包在同一張卡片裡，標題列用強調色標示是可點擊的抽屜開關，小單元則是卡片內縮排的內容，
+     而不是各自獨立、看起來對等的區塊（比照教師端 static/js/materials.js 的 renderUnit() 做法）。 */
+  .unit-block {
+    border: 1px solid var(--card-border); border-radius: var(--radius-md);
+    margin-bottom: 18px; overflow: hidden; background: var(--card-bg);
+  }
+  .unit-title {
+    font-size: 1.05rem; font-weight: 800; color: var(--student-primary-dark); margin: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    cursor: pointer; user-select: none;
+    background: var(--student-primary-bg); border-left: 4px solid var(--student-primary);
+    padding: 12px 16px;
+  }
+  .unit-title:hover { background: var(--student-primary-border); }
+  .unit-toggle-icon { font-size: 0.85rem; color: var(--student-primary-dark); transition: transform 0.2s; flex-shrink: 0; }
+  .unit-body { padding: 14px 16px; }
+  .unit-body .subunit-card:last-child { margin-bottom: 0; }
+  .unit-title.expanded .unit-toggle-icon { transform: rotate(90deg); }
+  .subunit-card {
+    background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md);
+    padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-xs);
+  }
+  .subunit-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; user-select: none; }
+  .subunit-title { font-weight: 700; color: var(--text-main); font-size: 1.02rem; }
+  .subunit-toggle-icon { font-size: 0.85rem; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+  .subunit-head.expanded .subunit-toggle-icon { transform: rotate(90deg); }
+  .subunit-body { margin-top: 10px; }
+  .viewed-badge {
+    font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-full);
+    background: var(--accent-positive-bg); color: var(--accent-positive); border: 1px solid var(--accent-positive-border);
+  }
+  .subunit-desc { color: var(--text-muted); font-size: 0.9rem; white-space: pre-wrap; margin: 8px 0; }
+  .material-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .material-link {
+    display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--card-border); text-decoration: none; color: var(--text-main); font-size: 0.92rem;
+  }
+  .material-link:hover { background: #f1f5f9; }
+  .yt-embed { position: relative; width: 100%; padding-top: 56.25%; border-radius: var(--radius-sm); overflow: hidden; margin-top: 8px; }
+  .yt-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  [hidden] { display: none !important; }
+
+  .assignment-panel { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--card-border); }
+  .assignment-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+  .assignment-status { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; }
+  .assignment-status.muted { color: var(--text-muted); }
+  .assignment-status.positive { color: var(--accent-positive); }
+  .assignment-status.warning { color: var(--accent-warning); }
+  .assignment-status.negative { color: var(--accent-negative); }
+  .assignment-files { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .assignment-file-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+  .assignment-file-row a { color: var(--text-main); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .assignment-file-del {
+    border: none; background: none; color: var(--accent-negative); cursor: pointer; font-size: 0.9rem; padding: 2px 6px;
+  }
+  .assignment-form { display: flex; flex-direction: column; gap: 8px; }
+  .assignment-form input[type="file"] { font-size: 0.85rem; }
+  .assignment-textarea, .assignment-link-input {
+    width: 100%; padding: 8px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--input-border);
+    background: var(--input-bg); color: var(--input-text); font-size: 0.92rem; box-sizing: border-box;
+  }
+  .assignment-textarea { min-height: 70px; resize: vertical; }
+
+  /* --- 📁 課堂檔案蒐集摺疊卡片 (Student File Collections Collapsible) --- */
+  .filecollect-card {
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    background: var(--card-bg);
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .filecollect-card:hover {
+    border-color: var(--student-primary-border);
+  }
+  .filecollect-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--card-bg);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+  }
+  .filecollect-card-header:hover {
+    background: var(--student-primary-bg);
+  }
+  .filecollect-card.expanded .filecollect-card-header {
+    border-bottom: 1px solid var(--card-border);
+    background: rgba(2, 132, 199, 0.03);
+  }
+  .filecollect-chevron-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--student-primary-dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    transition: transform 0.2s ease, background-color 0.15s ease;
+  }
+  .filecollect-card-header:hover .filecollect-chevron-icon {
+    background: var(--student-primary-border);
+    color: var(--student-primary-dark);
+  }
+  .filecollect-card.expanded .filecollect-chevron-icon {
+    transform: rotate(90deg);
+  }
+  .filecollect-card-body {
+    padding: 18px;
+  }
+  .filecollect-card:not(.expanded) .filecollect-card-body {
+    display: none;
+  }
+
+  /* --- 提問串（Submission Comments）：作業/測驗下方的師生一對一（或對小組）留言 --- */
+  .comment-thread { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--card-border); }
+  .comment-thread-toggle {
+    background: none; border: none; color: var(--student-primary-dark); font-size: 0.85rem;
+    font-weight: 700; cursor: pointer; padding: 4px 0;
+  }
+  .comment-thread-panel { margin-top: 8px; }
+  .comment-thread-messages {
+    /* 280px / light-slate 比照 kyps-class SubmissionCommentThread.vue 原設計 */
+    max-height: 280px; overflow-y: auto; background: #f1f5f9; border-radius: var(--radius-sm);
+    padding: 10px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .comment-thread-empty { font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 10px 0; }
+  .comment-bubble { max-width: 82%; padding: 8px 10px; border-radius: var(--radius-md); font-size: 0.85rem; word-break: break-word; }
+  .comment-bubble.student { align-self: flex-start; background: var(--card-bg); border: 1px solid var(--card-border); }
+  .comment-bubble.teacher { align-self: flex-end; background: #eef2ff; border: 1px solid #c7d2fe; }
+  .comment-bubble-meta { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 3px; font-weight: 700; }
+  .comment-bubble-text { white-space: pre-wrap; }
+  .comment-thread-composer { display: flex; gap: 6px; margin-top: 8px; }
+  .comment-thread-composer textarea {
+    flex: 1; min-height: 36px; max-height: 80px; padding: 7px 10px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--input-border); background: var(--input-bg); color: var(--input-text);
+    font-size: 0.85rem; resize: vertical; box-sizing: border-box; font-family: inherit;
+  }
+
+  /* --- 即時互動牆：手繪畫板色票 --- */
+  .livewall-color-swatch {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0;
+  }
+  .livewall-color-swatch.active { border-color: var(--student-primary, #0284c7); box-shadow: 0 0 0 2px var(--card-bg); }
+
+  .toast-stack { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+  .toast-item {
+    padding: 10px 16px; border-radius: var(--radius-sm); font-size: 0.88rem; font-weight: 600; color: #fff;
+    background: var(--text-main); box-shadow: var(--shadow-md); opacity: 0; transform: translateY(8px); transition: var(--transition-normal);
+  }
+  .toast-item.show { opacity: 1; transform: translateY(0); }
+  .toast-item.error { background: var(--accent-negative); }
+  .toast-item.success { background: var(--accent-positive); }
+
+  @media (max-width: 480px) {
+    .top-nav-brand-title { display: none; }
+    .student-chip-name { display: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div id="loginView" class="login-shell">
+    <div class="student-shell">
+      <div class="student-card">
+        <p class="student-title">📚 學生課程入口</p>
+        <p class="student-subtitle">輸入老師提供的登入帳號與密碼，瀏覽課程素材</p>
+        <div id="loginError" class="error-box"></div>
+
+        <form id="accountLoginForm">
+          <div class="field">
+            <label for="accountInput">帳號</label>
+            <input id="accountInput" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="accountPasswordInput">密碼</label>
+            <input id="accountPasswordInput" type="password" autocomplete="current-password" required>
+          </div>
+          <button type="submit" class="btn" style="width:100%;">登入</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="contentView" hidden>
+    <header class="top-nav">
+      <div class="top-nav-brand">
+        <img src="/api/system/logo" alt="logo">
+        <div class="top-nav-brand-text">
+          <span class="top-nav-brand-title">MyClass 學生入口</span>
+          <span class="top-nav-course-badge" id="topNavCourseBadge"></span>
+        </div>
+      </div>
+      <div class="top-nav-actions">
+        <a href="/student-quick-guide" target="_blank" rel="noopener" class="btn btn-secondary" style="padding: 8px 14px; text-decoration: none;" title="學生使用說明（簡報版）">❓ 說明</a>
+        <div class="notif-bell-wrap">
+          <button type="button" id="notifBellBtn" class="notif-bell-btn" title="通知">
+            🔔
+            <span id="notifBadge" class="notif-badge" hidden>0</span>
+          </button>
+          <div id="notifDropdown" class="notif-dropdown">
+            <div class="notif-dropdown-head">🔔 系統通知</div>
+            <div class="notif-dropdown-empty">
+              <span class="emoji">🛠️</span>
+              通知功能開發中，敬請期待！
+            </div>
+          </div>
+        </div>
+        <div class="student-chip">
+          <span class="student-chip-avatar" id="studentChipAvatar"></span>
+          <span class="student-chip-name" id="studentChipName"></span>
+        </div>
+        <button id="logoutBtn" class="btn btn-secondary" style="padding: 8px 14px;">登出</button>
+      </div>
+    </header>
+
+    <div class="student-shell">
+      <div class="hero-banner">
+        <div class="hero-banner-body">
+          <div class="hero-banner-main">
+            <p class="hero-greeting" id="heroGreeting"></p>
+            <p class="hero-subtext">瀏覽課程素材、完成作業與測驗，累積你的課堂點數！</p>
+          </div>
+          <div id="myGroupCard" class="my-group-card empty">
+            <p class="my-group-title">🧑‍🤝‍🧑 我的小組</p>
+            <p class="my-group-empty-text">目前尚未被編入分組。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="student-tab-bar">
+        <button type="button" id="btnContentTabMaterials" class="student-tab-btn active">📚 課程與作業</button>
+        <button type="button" id="btnContentTabFileCollect" class="student-tab-btn">📁 檔案蒐集</button>
+        <button type="button" id="btnContentTabQuizzes" class="student-tab-btn">📝 紙本小考</button>
+        <button type="button" id="btnContentTabScores" class="student-tab-btn">🌟 我的點數</button>
+        <button type="button" id="btnContentTabLiveWall" class="student-tab-btn">🎨 即時互動牆</button>
+        <button type="button" id="btnContentTabWordCloud" class="student-tab-btn">☁️ 課堂文字雲</button>
+        <button type="button" id="btnContentTabKahoot" class="student-tab-btn">🎮 答題競賽</button>
+        <button type="button" id="btnContentTabLeader" class="student-tab-btn" style="display: none;">👑 小組長專區</button>
+      </div>
+
+      <div id="materialsTabPane" class="student-tab-pane">
+        <div id="unitsContainer"></div>
+        <div id="emptyState" class="student-card" hidden>老師尚未發布任何課程素材。</div>
+      </div>
+
+      <!-- 📝 紙本小考分頁 -->
+      <div id="quizzesTabPane" class="student-tab-pane" hidden>
+        <div class="student-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h2 class="student-title" style="font-size: 1.25rem;">📝 平時紙本小考成績</h2>
+              <div class="student-subtitle" style="margin-bottom: 0;">自登成績時必須拍攝上傳考卷照片作為佐證</div>
+            </div>
+            <button type="button" id="btnRefreshQuizzes" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">🔄 重新整理</button>
+          </div>
+        </div>
+
+        <div id="studentQuizzesList" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Injected by student.js -->
+        </div>
+        <div id="studentQuizzesEmpty" class="student-card" style="text-align: center; color: var(--text-muted); display: none;">
+          目前尚無任何紙本測驗紀錄。
+        </div>
+      </div>
+
+      <!-- 👑 小組長專區分頁 -->
+      <div id="leaderTabPane" class="student-tab-pane" hidden>
+        <!-- 組長身分標頭 -->
+        <div class="student-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(234, 179, 8, 0.05)); border: 1.5px solid rgba(245, 158, 11, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div id="leaderGroupIconWrap" style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                👑
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span id="leaderGroupName" style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">我的小組</span>
+                  <span class="leader-badge-pill">👑 小組長</span>
+                </div>
+                <div id="leaderGroupMemberCount" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">組員共 0 人</div>
+              </div>
+            </div>
+            <button type="button" id="btnRefreshLeaderHub" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">🔄 重新整理</button>
+          </div>
+        </div>
+
+        <!-- 區塊一：組員小考成績代登 -->
+        <div class="student-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">📝 組員平時測驗成績代登</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted);">小組長可協助登記本組組員小考成績，由教師查驗審核</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="leaderQuizSelect" class="input-control" style="font-size: 0.9rem; padding: 6px 10px; width: auto; min-width: 170px;">
+                <option value="">載入中...</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="leaderQuizMembersWrapper" style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <thead>
+                <tr style="border-bottom: 1.5px solid var(--card-border); text-align: left; color: var(--text-muted); font-size: 0.82rem;">
+                  <th style="padding: 8px 6px;">座號</th>
+                  <th style="padding: 8px 6px;">姓名</th>
+                  <th style="padding: 8px 6px; width: 100px;">得分</th>
+                  <th style="padding: 8px 6px; text-align: center; width: 60px;">缺考</th>
+                  <th style="padding: 8px 6px;">考卷佐證</th>
+                  <th style="padding: 8px 6px;">備註說明</th>
+                </tr>
+              </thead>
+              <tbody id="leaderQuizMembersTbody">
+                <!-- Injected by student.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+            <button type="button" id="btnLeaderSaveQuizScores" class="btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; font-weight: 800; padding: 10px 20px;">
+              💾 儲存本組成績
+            </button>
+          </div>
+        </div>
+
+        <!-- 區塊二：小組討論與組務紀錄 -->
+        <div class="student-card">
+          <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">💬 小組討論與組務紀錄</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">記錄課堂小組討論進度、分工摘要或重要決議</div>
+
+          <form id="formLeaderDiscussion" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; padding: 14px; background: var(--input-bg); border-radius: var(--radius-md); border: 1px solid var(--card-border);">
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px;">
+              <input type="text" id="leaderDiscTitle" class="input-control" placeholder="討論主題（例：自然專案分工、報告討論...）" required style="font-size: 0.9rem;">
+              <input type="date" id="leaderDiscDate" class="input-control" style="font-size: 0.9rem; width: auto;">
+            </div>
+            <textarea id="leaderDiscContent" class="input-control" rows="3" placeholder="請填寫小組討論內容摘要或結論..." required style="font-size: 0.9rem; resize: vertical;"></textarea>
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="submit" class="btn btn-secondary" style="font-weight: 700; font-size: 0.88rem; padding: 8px 18px;">
+                ➕ 發布小組紀錄
+              </button>
+            </div>
+          </form>
+
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main);">📚 歷次討論紀錄</div>
+          <div id="leaderDiscussionsList" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Injected by student.js -->
+          </div>
+          <div id="leaderDiscussionsEmpty" style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 0.85rem; display: none;">
+            尚無小組討論紀錄。
+          </div>
+        </div>
+      </div>
+
+      <div id="scoresTabPane" class="student-tab-pane" hidden>
+        <!-- Scan Point Card Action Bar -->
+        <div style="margin-bottom: 14px; text-align: center;">
+          <button type="button" id="btnOpenCardScanner" class="student-primary-btn" style="width: 100%; padding: 14px; font-size: 1.05rem; font-weight: 800; border-radius: var(--radius-xl); background: linear-gradient(135deg, #5b7cd6 0%, #8073c4 100%); color: #fff; box-shadow: 0 4px 16px rgba(91, 124, 214, 0.35); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span style="font-size: 1.25rem;">📷</span> 掃描實體點數卡加分
+          </button>
+        </div>
+
+        <div class="student-card score-summary-card">
+          <div class="score-summary-item">
+            <div class="score-summary-value" id="scoreTotalValue">0</div>
+            <div class="score-summary-label">累積總分</div>
+          </div>
+          <div class="score-summary-item">
+            <div class="score-summary-value positive" id="scoreTodayValue">0</div>
+            <div class="score-summary-label">今日獲得</div>
+          </div>
+          <div class="score-summary-item">
+            <div class="score-summary-value positive" id="scorePositiveValue">0</div>
+            <div class="score-summary-label">正向加分</div>
+          </div>
+          <div class="score-summary-item">
+            <div class="score-summary-value negative" id="scoreNegativeValue">0</div>
+            <div class="score-summary-label">負向扣分</div>
+          </div>
+        </div>
+
+        <!-- 可用點數與審核預扣看板 -->
+        <div class="student-card" style="margin-top: 14px; background: linear-gradient(135deg, rgba(91, 124, 214, 0.08) 0%, rgba(128, 115, 196, 0.08) 100%); border: 1.5px solid var(--primary-light); padding: 14px 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">🎁 目前可用兌換點數</div>
+              <div style="font-size: 1.6rem; font-weight: 900; color: var(--primary); display: flex; align-items: baseline; gap: 4px;">
+                <span id="scoreAvailableValue">0</span>
+                <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">點</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.82rem; color: var(--text-muted);">
+                審核預扣中：<span id="scoreHeldValue" style="font-weight: 800; color: var(--accent-warning);">0</span> 點
+              </div>
+              <a href="#studentRewardsSection" style="display: inline-block; font-size: 0.82rem; font-weight: 800; color: var(--primary); text-decoration: none; margin-top: 4px;">前往獎勵兌換商城 ↓</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 得分紀錄清單（支援預設折疊、最近五筆、分頁、指定日期、顯示全部） -->
+        <div class="student-card" id="scoreLogsCard" style="margin-top: 16px;">
+          <!-- 折疊標題列（預設折疊） -->
+          <div id="btnToggleScoreLogs" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 2px 0;">
+            <div style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <span>📋</span> 得分紀錄清單
+              <span id="scoreLogsCountBadge" class="badge" style="font-size: 0.78rem; font-weight: 700; color: var(--primary); background: rgba(91, 124, 214, 0.12); padding: 2px 8px; border-radius: 10px;">共 0 筆</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">
+              <span id="scoreLogsToggleHint">點擊展開</span>
+              <span id="scoreLogsToggleIcon" style="transition: transform 0.2s ease; display: inline-block; font-size: 0.8rem;">▼</span>
+            </div>
+          </div>
+
+          <!-- 折疊內容區（預設隱藏） -->
+          <div id="scoreLogsBody" style="display: none; margin-top: 14px; border-top: 1px solid var(--card-border); padding-top: 14px;">
+            <!-- 篩選與工具列 -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 220px;">
+                <label for="inputScoreLogDate" style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); white-space: nowrap;">📅 指定日期：</label>
+                <input type="date" id="inputScoreLogDate" class="input-control" style="font-size: 0.82rem; padding: 4px 8px; flex: 1; max-width: 150px; border-radius: 8px;">
+                <button type="button" id="btnScoreLogsShowAll" class="btn btn-secondary" style="font-size: 0.8rem; padding: 5px 10px; white-space: nowrap;">顯示全部</button>
+              </div>
+              <div id="scoreLogsPaginationControls" style="display: flex; align-items: center; gap: 6px; margin-left: auto;">
+                <button type="button" id="btnScoreLogsPrevPage" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" disabled>上一頁</button>
+                <span id="textScoreLogsPageInfo" style="font-size: 0.82rem; font-weight: 700; color: var(--text-main); white-space: nowrap; min-width: 65px; text-align: center;">第 1 / 1 頁</span>
+                <button type="button" id="btnScoreLogsNextPage" class="btn btn-secondary" style="font-size: 0.8rem; padding: 4px 10px;" disabled>下一頁</button>
+              </div>
+            </div>
+
+            <!-- 清單項目區 -->
+            <div id="scoreLogsList"></div>
+            <div id="scoreEmptyState" style="text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.88rem; display: none;">目前還沒有符合條件的點數紀錄。</div>
+          </div>
+        </div>
+
+        <!-- My Point Cards Album Section -->
+        <div class="student-card" style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+              <span>🎴</span> 我的點數卡收集冊
+            </div>
+            <span id="myCardsTotalBadge" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); background: rgba(91, 124, 214, 0.12); padding: 3px 10px; border-radius: 12px;">共 0 張</span>
+          </div>
+          <div id="myCardsAlbumContainer">
+            <!-- Injected by student.js -->
+          </div>
+          <div id="myCardsEmptyState" style="text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.88rem;">
+            尚未獲得實體卡片，快點擊上方「掃描實體點數卡」開始收集吧！
+          </div>
+        </div>
+
+        <!-- 🎁 點數兌換商城 Section -->
+        <div class="student-card" id="studentRewardsSection" style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+              <span>🎁</span> 點數兌換商城
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              可用：<span id="storeUserPointsBadge" style="color: var(--primary); font-weight: 800;">0</span> 點
+            </div>
+          </div>
+
+          <!-- 分類藥丸切換 -->
+          <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;">
+            <button type="button" class="btn btn-sm btn-store-filter active" data-type="all" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px;">全部品項</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-store-filter" data-type="badge" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px;">🏅 榮譽徽章</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-store-filter" data-type="collectible_card" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px;">🎴 特殊圖卡</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-store-filter" data-type="physical" style="font-size: 0.8rem; padding: 4px 12px; border-radius: 20px;">🎁 實體獎品</button>
+          </div>
+
+          <!-- 商城網格 -->
+          <div id="studentStoreGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px;">
+            <!-- JS dynamically injects items -->
+          </div>
+          <div id="studentStoreEmpty" style="display:none; text-align: center; padding: 24px 10px; color: var(--text-muted); font-size: 0.88rem;">
+            目前老師尚未上架任何可兌換的獎勵品項。
+          </div>
+        </div>
+
+        <!-- 🏅 我的榮譽徽章館 Section -->
+        <div class="student-card" id="studentBadgesSection" style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+              <span>🏅</span> 我的榮譽徽章館
+            </div>
+            <span id="badgeOwnedTotal" style="font-size: 0.8rem; font-weight: 700; color: #ca8a04; background: rgba(234, 179, 8, 0.15); padding: 3px 10px; border-radius: 12px;">共 0 枚</span>
+          </div>
+
+          <div id="studentBadgesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 14px; text-align: center;">
+            <!-- JS dynamically injects badges -->
+          </div>
+          <div id="studentBadgesEmpty" style="text-align: center; padding: 20px 10px; color: var(--text-muted); font-size: 0.88rem;">
+            尚未收集任何榮譽徽章，快到上方商城換取吧！
+          </div>
+        </div>
+
+        <!-- 🎴 我的特殊圖卡圖鑑冊 Section -->
+        <div class="student-card" id="studentCardsSection" style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+              <span>🎴</span> 特殊圖卡圖鑑冊
+            </div>
+            <span id="cardsOwnedTotal" style="font-size: 0.8rem; font-weight: 700; color: #9333ea; background: rgba(168, 85, 247, 0.15); padding: 3px 10px; border-radius: 12px;">共 0 張</span>
+          </div>
+
+          <div id="studentCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 12px;">
+            <!-- JS dynamically injects collectible cards -->
+          </div>
+          <div id="studentCardsEmpty" style="text-align: center; padding: 20px 10px; color: var(--text-muted); font-size: 0.88rem;">
+            尚未收集任何特殊圖卡，快到上方商城探索吧！
+          </div>
+        </div>
+
+        <!-- 📦 我的實體獎品進度追蹤 Section -->
+        <div class="student-card" id="studentPhysicalSection" style="margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+              <span>📦</span> 實體獎品領取進度
+            </div>
+            <span id="physicalRedeemedTotal" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); background: rgba(91, 124, 214, 0.12); padding: 3px 10px; border-radius: 12px;">共 0 筆</span>
+          </div>
+
+          <div id="studentPhysicalGrid" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- JS dynamically injects physical redemptions -->
+          </div>
+          <div id="studentPhysicalEmpty" style="text-align: center; padding: 20px 10px; color: var(--text-muted); font-size: 0.88rem;">
+            目前沒有申請中的實體獎品紀錄。
+          </div>
+        </div>
+      </div>
+
+      <div id="liveWallTabPane" class="student-tab-pane" hidden>
+        <div id="livewallEmptyState" class="student-card coming-soon-card">
+          <span class="emoji">🎨</span>
+          <p class="title">目前沒有進行中的課堂互動</p>
+          <p class="desc">🎨 目前沒有進行中的課堂互動，請等待老師開始。</p>
+        </div>
+
+        <div id="livewallLockedState" class="student-card" hidden>
+          <p class="student-title" style="font-size:1.1rem;">✅ 已送出，等待老師查看囉！</p>
+          <div id="livewallMyPostPreview" style="margin-top:12px;"></div>
+        </div>
+
+        <div id="livewallInputState" hidden>
+          <div class="student-card">
+            <p id="livewallPromptTitle" style="font-weight:800; margin:0;"></p>
+          </div>
+
+          <div id="livewallInputText" class="student-card" hidden>
+            <textarea id="livewallTextarea" class="assignment-textarea" style="width:100%; box-sizing:border-box;" placeholder="輸入想分享的內容..."></textarea>
+          </div>
+
+          <div id="livewallInputPhoto" class="student-card" hidden>
+            <input type="file" id="livewallPhotoInput" accept="image/*" capture="environment">
+            <img id="livewallPhotoPreview" style="width:100%; margin-top:10px; border-radius:var(--radius-md);" hidden>
+          </div>
+
+          <div id="livewallInputDrawing" class="student-card" hidden>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+              <button type="button" class="livewall-color-swatch active" data-color="#1e293b" style="background:#1e293b;"></button>
+              <button type="button" class="livewall-color-swatch" data-color="#ef4444" style="background:#ef4444;"></button>
+              <button type="button" class="livewall-color-swatch" data-color="#f59e0b" style="background:#f59e0b;"></button>
+              <button type="button" class="livewall-color-swatch" data-color="#10b981" style="background:#10b981;"></button>
+              <button type="button" class="livewall-color-swatch" data-color="#0ea5e9" style="background:#0ea5e9;"></button>
+              <button type="button" class="livewall-color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;"></button>
+              <input type="range" id="livewallStrokeWidth" min="1" max="20" value="4" style="flex:1; min-width:80px;">
+              <button type="button" id="btnLivewallCanvasClear" class="btn btn-secondary" style="font-size:0.8rem; padding:6px 12px;">🗑️ 清除</button>
+            </div>
+            <div style="width:100%; aspect-ratio:3/2; touch-action:none;">
+              <canvas id="livewallCanvas" width="600" height="400" style="width:100%; height:100%; background:#fff; border-radius:var(--radius-md); border:1.5px solid var(--card-border); display:block;"></canvas>
+            </div>
+          </div>
+
+          <button type="button" id="btnLivewallSubmit" class="btn" style="width:100%;">📤 送出</button>
+        </div>
+
+        <!-- 我的歷史紀錄：唯讀，學生無法刪除自己的紀錄；預設摺疊避免版面混雜 -->
+        <div class="student-card" style="margin-top:16px;">
+          <p id="livewallHistoryToggle" style="font-weight:800; margin:0; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none;">
+            <span>📜 我的歷史紀錄</span>
+            <span id="livewallHistoryToggleIcon">▶</span>
+          </p>
+          <div id="livewallHistoryList" hidden style="margin-top:12px; display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+
+      <!-- 📁 檔案蒐集分頁 -->
+      <div id="fileCollectTabPane" class="student-tab-pane" hidden>
+        <div class="student-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h2 class="student-title" style="font-size: 1.25rem;">📁 課堂檔案上傳與成果</h2>
+              <div class="student-subtitle" style="margin-bottom: 0;">請查看下方老師開放的主題，上傳影音作品或檔案成果</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <button type="button" id="btnExpandAllStudentFileCollect" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 12px; min-height: 38px;">📂 全部展開</button>
+              <button type="button" id="btnCollapseAllStudentFileCollect" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 12px; min-height: 38px;">📁 全部收合</button>
+              <button type="button" id="btnRefreshStudentFileCollect" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 14px; min-height: 38px;">🔄 重新整理</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="studentFileCollectList" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Injected by student.js -->
+        </div>
+        <div id="studentFileCollectEmpty" class="student-card" style="text-align: center; color: var(--text-muted); display: none;">
+          目前老師尚未建立任何檔案蒐集項目。
+        </div>
+      </div>
+
+      <!-- ☁️ 課堂文字雲分頁 -->
+      <div id="wordCloudTabPane" class="student-tab-pane" hidden>
+        <!-- A. 尚未開始收集狀態 -->
+        <div id="studentWordCloudEmpty" class="student-card coming-soon-card" style="text-align: center; padding: 40px 16px;">
+          <span class="emoji" style="font-size: 3rem;">☁️</span>
+          <p class="title" style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 8px 0;">目前沒有進行中的文字雲活動</p>
+          <p class="desc" style="color: var(--text-muted); font-size: 0.9rem;">請等待老師於課堂中啟動文字雲，開啟後將可直接在此輸入並提交你的關鍵字！</p>
+        </div>
+
+        <!-- B. 進行中收集狀態 -->
+        <div id="studentWordCloudActive" class="student-card" hidden style="border: 2px solid var(--student-primary); box-shadow: var(--shadow-md);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.8rem;">☁️</span>
+              <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--student-primary-dark); margin: 0;">課堂即時文字雲</h3>
+            </div>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 800; padding: 4px 10px; border-radius: 9999px; font-size: 0.8rem;">🟢 收集進行中</span>
+          </div>
+
+          <div id="studentTabWordCloudTitle" style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); background: var(--student-primary-bg); border-left: 4px solid var(--student-primary); padding: 12px 16px; border-radius: 4px; margin-bottom: 18px;">
+            請用一個詞分享你的想法
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="studentTabWordCloudInput" class="input-control" placeholder="請輸入一個詞（最多 20 字）..." maxlength="20" style="text-align: center; font-size: 1.15rem; padding: 12px; font-weight: 700;">
+            <button type="button" id="btnStudentTabWordCloudSubmit" class="btn" style="padding: 12px; font-size: 1.05rem; font-weight: 800; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff;">
+              🚀 送出詞彙
+            </button>
+          </div>
+
+          <!-- 已送出詞彙 -->
+          <div style="background: var(--input-bg); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 14px;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;" id="studentTabWordCloudMyWordsLabel">你已送出的詞彙：</div>
+            <div id="studentTabWordCloudMyWords" style="display: flex; gap: 8px; flex-wrap: wrap; min-height: 28px;">
+              <span style="font-size: 0.85rem; color: var(--text-muted);">尚未送出任何詞彙</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 🎮 課堂答題競賽 (Kahoot) 分頁 -->
+      <div id="kahootTabPane" class="student-tab-pane" hidden>
+        <!-- A. 尚未開始題目狀態 -->
+        <div id="studentKahootEmpty" class="student-card coming-soon-card" style="text-align: center; padding: 40px 16px;">
+          <span class="emoji" style="font-size: 3rem;">🎮</span>
+          <p class="title" style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin: 8px 0;">目前沒有進行中的答題競賽</p>
+          <p class="desc" style="color: var(--text-muted); font-size: 0.9rem;">請等待老師在課堂中啟動題目，出題時畫面將即時出現四色答題卡片！</p>
+        </div>
+
+        <!-- B. 題目進行中 / 答題狀態 -->
+        <div id="studentKahootActive" class="student-card" hidden style="background: linear-gradient(145deg, #0f172a, #1e293b); color: #fff; border: 2px solid #3b82f6; border-radius: var(--radius-lg); padding: 20px;">
+          <!-- 頂部資訊列：題號、倒數、小組/個人 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.08); padding: 10px 16px; border-radius: 9999px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1);">
+            <span id="studentTabKahootQBadge" style="font-weight: 800; font-size: 0.95rem; color: #60a5fa;">第 1 題</span>
+            <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 1.2rem; color: #fde047;">
+              <span>⏱️</span>
+              <span id="studentTabKahootTimer">20</span>
+              <span>秒</span>
+            </div>
+            <span id="studentTabKahootModeBadge" style="font-size: 0.82rem; color: #cbd5e1; background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 9999px;">個人模式</span>
+          </div>
+
+          <!-- 題目文字 -->
+          <div id="studentTabKahootPrompt" style="font-size: 1.25rem; font-weight: 800; line-height: 1.4; text-align: center; margin-bottom: 16px; color: #ffffff; min-height: 48px; display: flex; align-items: center; justify-content: center;">
+            請看大螢幕題目，點擊下方四色卡片作答！
+          </div>
+
+          <!-- 四色大按鈕網格 -->
+          <div id="studentTabKahootOptionsGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+            <button type="button" class="student-kahoot-opt-btn" data-opt="0" style="background: #2563eb; color: #fff; border: none; border-radius: 14px; padding: 24px 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+              <span style="font-size: 1.6rem;">▲</span>
+              <span class="student-kahoot-btn-text" id="student-tab-kahoot-text-0">A</span>
+            </button>
+            <button type="button" class="student-kahoot-opt-btn" data-opt="1" style="background: #dc2626; color: #fff; border: none; border-radius: 14px; padding: 24px 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+              <span style="font-size: 1.6rem;">◆</span>
+              <span class="student-kahoot-btn-text" id="student-tab-kahoot-text-1">B</span>
+            </button>
+            <button type="button" class="student-kahoot-opt-btn" data-opt="2" style="background: #16a34a; color: #fff; border: none; border-radius: 14px; padding: 24px 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+              <span style="font-size: 1.6rem;">●</span>
+              <span class="student-kahoot-btn-text" id="student-tab-kahoot-text-2">C</span>
+            </button>
+            <button type="button" class="student-kahoot-opt-btn" data-opt="3" style="background: #9333ea; color: #fff; border: none; border-radius: 14px; padding: 24px 10px; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: 0 6px 16px rgba(147, 51, 234, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+              <span style="font-size: 1.6rem;">■</span>
+              <span class="student-kahoot-btn-text" id="student-tab-kahoot-text-3">D</span>
+            </button>
+          </div>
+
+          <!-- 送出後等待揭曉提示 -->
+          <div id="studentTabKahootSubmittedNotice" style="display: none; background: rgba(59, 130, 246, 0.2); border: 1.5px solid #3b82f6; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 12px;">
+            <div style="font-size: 1.8rem; margin-bottom: 4px;">⏳</div>
+            <div style="font-weight: 800; font-size: 1.15rem; color: #93c5fd;">已送出答案！</div>
+            <div style="font-size: 0.88rem; color: #cbd5e1; margin-top: 4px;">請看大螢幕，等待老師揭曉正確解答...</div>
+          </div>
+
+          <!-- 答案揭曉狀態 -->
+          <div id="studentTabKahootResultNotice" style="display: none; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 12px;">
+            <div id="studentTabKahootResultIcon" style="font-size: 2.8rem; margin-bottom: 4px;">🎉</div>
+            <div id="studentTabKahootResultTitle" style="font-weight: 900; font-size: 1.35rem; margin-bottom: 4px;">答對了！</div>
+            <div id="studentTabKahootResultScore" style="font-size: 1.1rem; font-weight: 800; color: #fde047;">+1000 分</div>
+            <div id="studentTabKahootResultExplanation" style="font-size: 0.88rem; color: #cbd5e1; margin-top: 8px; line-height: 1.5;"></div>
+          </div>
+
+          <!-- 測驗結束總結 -->
+          <div id="studentTabKahootFinalSummary" style="display: none; background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(15, 23, 42, 0.8)); border: 2px solid #eab308; border-radius: 14px; padding: 22px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 6px;">🏆</div>
+            <h3 style="font-size: 1.4rem; font-weight: 900; color: #facc15; margin-bottom: 4px;">競賽圓滿結束！</h3>
+            <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0;">感謝你的熱情參與！請抬頭觀看大螢幕頒獎台 🎉</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack"></div>
+
+  <!-- Modal: 學生掃描點數卡對話框 -->
+  <div id="modalStudentScanner" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); z-index: 100000; align-items: center; justify-content: center; padding: 16px;">
+    <div class="student-card" style="width: 100%; max-width: 440px; margin: 0; padding: 22px; position: relative; max-height: 90vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+          <span>📷</span> 掃描實體點數卡
+        </div>
+        <button type="button" id="btnCloseScannerModal" class="btn-icon" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">✕</button>
+      </div>
+
+      <!-- 相機選擇選單 (若有多鏡頭) 與 切換鏡頭按鈕 -->
+      <div id="scannerCameraSelectWrap" style="display: none; margin-bottom: 10px; gap: 8px; align-items: center;">
+        <select id="scannerCameraSelect" class="input-control" style="font-size: 0.85rem; padding: 6px 10px; flex: 1;"></select>
+        <button type="button" id="btnSwitchCamera" class="btn btn-secondary" style="font-size: 0.82rem; padding: 6px 12px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;" title="切換前後鏡頭">
+          🔄 切換鏡頭
+        </button>
+      </div>
+
+      <!-- 相機掃描視訊區域（正方形視窗與對焦框） -->
+      <div class="scanner-square-viewport">
+        <div id="ptcard-qr-reader"></div>
+        <div class="scanner-target-square">
+          <div class="scanner-laser-line"></div>
+        </div>
+        <div id="scannerLoadingOverlay" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.85); color: #fff; z-index: 10;">
+          <div style="font-size: 2rem; margin-bottom: 8px;">📷</div>
+          <div style="font-size: 0.9rem; font-weight: 600;">正在啟動相機鏡頭...</div>
+        </div>
+      </div>
+
+      <!-- 掃描提示或錯誤 -->
+      <div id="scannerStatusMsg" style="font-size: 0.85rem; text-align: center; color: var(--text-muted); margin-bottom: 12px;">
+        請將卡片上的 QR Code 對準上方鏡頭方框
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: 獲得卡片動畫揭曉對話框 -->
+  <div id="modalCardRewardReveal" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); z-index: 100010; align-items: center; justify-content: center; padding: 20px;">
+    <div class="student-card" style="width: 100%; max-width: 380px; margin: 0; padding: 28px 22px; text-align: center; position: relative; border: 2px solid var(--primary-light); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div style="font-size: 2.2rem; margin-bottom: 6px;">🎉</div>
+      <div style="font-size: 1.3rem; font-weight: 900; color: var(--text-main); margin-bottom: 4px;">恭喜獲得點數卡！</div>
+      <div id="revealCardLabel" style="font-size: 1.1rem; color: var(--primary); font-weight: 800; margin-bottom: 4px;">認真發言</div>
+      <div id="revealCardNo" style="font-size: 0.88rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; display: none;">卡號：A_001</div>
+
+      <!-- 卡片圖檔展示（支援點擊放大） -->
+      <div id="btnZoomRevealedCard" style="width: 190px; height: 190px; margin: 0 auto 16px auto; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(91, 124, 214, 0.35); border: 2px solid rgba(255,255,255,0.8); background: #fff; display: flex; align-items: center; justify-content: center; cursor: zoom-in;" title="點擊放大卡片">
+        <img id="revealCardImg" src="" alt="卡片" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;">
+      </div>
+
+      <!-- 分數標籤 -->
+      <div id="revealScoreBadge" style="display: inline-block; font-size: 1.5rem; font-weight: 900; color: var(--accent-positive); background: rgba(79, 174, 130, 0.15); padding: 6px 20px; border-radius: 30px; margin-bottom: 20px;">
+        +5 分
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" id="btnRevealClose" class="btn btn-secondary" style="flex: 1; padding: 10px;">關閉</button>
+        <button type="button" id="btnRevealContinueScan" class="btn" style="flex: 1; padding: 10px;">📷 繼續掃描</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 卡片大圖檢視 (點選卡片放大檢視) -->
+  <div id="modalCardZoom" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); z-index: 100020; align-items: center; justify-content: center; padding: 16px; cursor: pointer;">
+    <div class="student-card" style="width: 100%; max-width: 420px; margin: 0; padding: 20px; text-align: center; position: relative; border: 2px solid var(--primary-light); box-shadow: 0 25px 60px rgba(0,0,0,0.6); animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: default;" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div id="zoomCardTitle" style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+          <span>🏷️</span> <span id="zoomCardLabel">點數卡大圖</span>
+        </div>
+        <button type="button" id="btnCloseCardZoom" class="btn-icon" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted); padding: 4px 8px;">✕</button>
+      </div>
+
+      <div style="width: 100%; height: 50vh; max-height: 460px; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 10px 30px rgba(91, 124, 214, 0.25); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; border: 1.5px solid rgba(255,255,255,0.8);">
+        <img id="zoomCardImg" src="" alt="卡片大圖" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 6px;">
+        <span id="zoomCardNo" style="font-size: 0.95rem; color: var(--primary); font-weight: 800;">卡號：-</span>
+        <span id="zoomCardScore" style="font-size: 1.25rem; font-weight: 900; color: var(--accent-positive);">+5 分</span>
+      </div>
+      <div id="zoomCardSeries" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-align: left; padding: 4px 6px 0 6px;">系列：-</div>
+    </div>
+  </div>
+
+  <!-- Modal: 學生兌換確認對話框 -->
+  <div id="modalStudentRedeemConfirm" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); z-index: 100030; align-items: center; justify-content: center; padding: 20px;">
+    <div class="student-card" style="width: 100%; max-width: 380px; margin: 0; padding: 24px 20px; text-align: center; position: relative; border: 2px solid var(--primary-light); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div style="font-size: 2rem; margin-bottom: 6px;" id="confirmRewardIcon">🎁</div>
+      <div style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 4px;" id="confirmRewardTitle">確認兌換此獎勵？</div>
+      <div id="confirmRewardName" style="font-size: 1.05rem; font-weight: 800; color: var(--primary); margin-bottom: 12px;">高級自動鉛筆</div>
+
+      <div style="width: 120px; height: 120px; margin: 0 auto 14px auto; border-radius: 14px; overflow: hidden; background: #fff; border: 1.5px solid var(--card-border); display: flex; align-items: center; justify-content: center;">
+        <img id="confirmRewardImg" src="" style="width: 90%; height: 90%; object-fit: contain;">
+      </div>
+
+      <!-- 點數試算資訊 -->
+      <div style="background: var(--input-bg); border-radius: var(--radius-lg); padding: 10px 14px; border: 1px solid var(--card-border); margin-bottom: 14px; text-align: left; font-size: 0.88rem; line-height: 1.6;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">所需點數：</span>
+          <span id="confirmRewardCost" style="font-weight: 900; color: var(--accent-negative);">-15 點</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">目前可用點數：</span>
+          <span id="confirmUserAvailable" style="font-weight: 800; color: var(--text-main);">45 點</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--card-border); margin-top: 6px; padding-top: 6px;">
+          <span style="color: var(--text-muted);">兌換後剩餘：</span>
+          <span id="confirmRemainingPoints" style="font-weight: 900; color: var(--primary);">30 點</span>
+        </div>
+      </div>
+
+      <!-- 實體獎品可選填備註 -->
+      <div id="confirmPhysicalNoteWrap" style="display: none; text-align: left; margin-bottom: 14px;">
+        <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 4px;">提出備註 (選填，例如款式/時間)：</label>
+        <input type="text" id="inputConfirmRedeemNote" class="input-control" placeholder="例如：希望選藍色、自選座位排在第一組" style="font-size: 0.85rem; padding: 6px 10px;">
+      </div>
+
+      <div id="confirmFlowTip" style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.4;">
+        <!-- Tip injected by JS -->
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" id="btnCancelRedeemConfirm" class="btn btn-secondary" style="flex: 1; padding: 10px;">取消</button>
+        <button type="button" id="btnSubmitRedeemConfirm" class="btn" style="flex: 1; padding: 10px; font-weight: 800;">確認送出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 學生端考卷照片放大檢視 -->
+  <div id="modalStudentPhotoViewer" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); z-index: 100050; align-items: center; justify-content: center; padding: 16px;">
+    <div class="student-card" style="width: 100%; max-width: 600px; margin: 0; padding: 16px; position: relative; max-height: 90vh; display: flex; flex-direction: column; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div id="studentPhotoViewerTitle" style="font-weight: 800; font-size: 1rem; color: var(--text-main);">📷 考卷佐證照片</div>
+        <button type="button" id="btnCloseStudentPhotoViewer" class="btn-icon" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);">✕</button>
+      </div>
+      <div style="flex: 1; overflow: auto; max-height: 70vh;">
+        <img id="studentPhotoViewerImg" src="" alt="考卷照片" style="max-width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic Beautified Confirm Modal (取代原生 window.confirm()) -->
+  <div id="modalStudentGenericConfirm" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); z-index: 100060; align-items: center; justify-content: center; padding: 20px;">
+    <div class="student-card" style="width: 100%; max-width: 380px; margin: 0; padding: 28px 22px; text-align: center; position: relative; border: 2px solid var(--primary-light); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div id="studentGenericConfirmIconWrap" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 14px; background: rgba(123, 152, 224, 0.15); border: 2px solid rgba(123, 152, 224, 0.4);">
+        <span id="studentGenericConfirmIcon">❓</span>
+      </div>
+      <div id="studentGenericConfirmTitle" style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin-bottom: 6px;"></div>
+      <div id="studentGenericConfirmDesc" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 18px; display: none; white-space: pre-line;"></div>
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" id="btnStudentGenericConfirmCancel" class="btn btn-secondary" style="flex: 1; padding: 10px;">取消</button>
+        <button type="button" id="btnStudentGenericConfirmOk" class="btn" style="flex: 1; padding: 10px; font-weight: 800;">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic Beautified Prompt Modal (取代原生 window.prompt()) -->
+  <div id="modalStudentGenericPrompt" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); z-index: 100060; align-items: center; justify-content: center; padding: 20px;">
+    <div class="student-card" style="width: 100%; max-width: 380px; margin: 0; padding: 28px 22px; text-align: center; position: relative; border: 2px solid var(--primary-light); box-shadow: 0 20px 50px rgba(0,0,0,0.5); animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <div id="studentGenericPromptIconWrap" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 14px; background: rgba(123, 152, 224, 0.15); border: 2px solid rgba(123, 152, 224, 0.4);">
+        <span id="studentGenericPromptIcon">✏️</span>
+      </div>
+      <div id="studentGenericPromptTitle" style="font-size: 1.1rem; font-weight: 900; color: var(--text-main); margin-bottom: 6px;"></div>
+      <div id="studentGenericPromptDesc" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; display: none;"></div>
+      <input type="text" id="studentGenericPromptInput" class="input-control" style="width: 100%; box-sizing: border-box; padding: 9px 12px; margin-bottom: 18px; text-align: center; font-size: 0.95rem;">
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" id="btnStudentGenericPromptCancel" class="btn btn-secondary" style="flex: 1; padding: 10px;">取消</button>
+        <button type="button" id="btnStudentGenericPromptOk" class="btn" style="flex: 1; padding: 10px; font-weight: 800;">確定</button>
+      </div>
+    </div>
+  <!-- Modal: 學生端文字雲互動 -->
+  <div id="modalStudentWordCloud" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(16px); z-index: 100070; align-items: center; justify-content: center; padding: 20px;">
+    <div class="student-card" style="width: 100%; max-width: 440px; margin: 0; padding: 26px 20px; text-align: center; border: 2px solid #60a5fa; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <div style="font-size: 2.8rem; margin-bottom: 6px;">☁️</div>
+      <h3 style="font-size: 1.25rem; font-weight: 900; color: #93c5fd; margin-bottom: 6px;">課堂文字雲互動</h3>
+      <div id="studentWordCloudTitle" style="font-size: 1.05rem; font-weight: 800; color: #ffffff; background: rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.1);">
+        題目載入中...
+      </div>
+
+      <div id="studentWordCloudInputArea" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+        <input type="text" id="studentWordCloudInput" class="input-control" placeholder="請輸入一個詞（最多 20 字）..." maxlength="20" style="text-align: center; font-size: 1.1rem; padding: 12px; font-weight: 700;">
+        <button type="button" id="btnStudentWordCloudSubmit" class="btn btn-primary" style="padding: 12px; font-size: 1.05rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+          🚀 送出詞彙
+        </button>
+      </div>
+
+      <!-- 已送出的詞彙清單 -->
+      <div style="text-align: left; background: rgba(0,0,0,0.25); border-radius: 8px; padding: 10px 14px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 6px;" id="studentWordCloudMyWordsLabel">你已送出的詞彙：</div>
+        <div id="studentWordCloudMyWords" style="display: flex; gap: 6px; flex-wrap: wrap; min-height: 24px;">
+          <span style="font-size: 0.82rem; color: #64748b;">尚未送出任何詞彙</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px;">
+        <button type="button" id="btnStudentWordCloudClose" class="btn btn-secondary btn-sm" style="font-size: 0.82rem; padding: 5px 16px;">
+          收起視窗（稍後可再開啟）
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: 學生端 Kahoot 答題介面 -->
+  <div id="modalStudentKahoot" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(20px); z-index: 100080; flex-direction: column; padding: 16px; overflow-y: auto;">
+    <div style="max-width: 500px; width: 100%; margin: auto; display: flex; flex-direction: column; gap: 14px;">
+      <!-- 頂部資訊：題號、倒數、小組/個人 -->
+      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.1);">
+        <span id="studentKahootQBadge" style="font-weight: 800; font-size: 0.95rem; color: #60a5fa;">第 1 題</span>
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 1.15rem; color: #fde047;">
+          <span>⏱️</span>
+          <span id="studentKahootTimer">20</span>
+          <span>秒</span>
+        </div>
+        <span id="studentKahootModeBadge" style="font-size: 0.82rem; color: #cbd5e1; background: rgba(255,255,255,0.1); padding: 3px 10px; border-radius: 9999px;">個人模式</span>
+      </div>
+
+      <!-- 題目預覽（或提示看大螢幕） -->
+      <div style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center;">
+        <div id="studentKahootPrompt" style="font-size: 1.15rem; font-weight: 800; color: #fff; line-height: 1.4;">題目載入中...</div>
+      </div>
+
+      <!-- 4 大彩色答題按鈕 -->
+      <div id="studentKahootBtnGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px;">
+        <button type="button" class="student-kahoot-opt-btn" data-opt="0" style="background: #2563eb; color: #fff; border: none; border-radius: 14px; padding: 26px 12px; font-size: 1.35rem; font-weight: 900; cursor: pointer; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+          <span style="font-size: 1.8rem;">▲</span>
+          <span class="student-kahoot-btn-text" id="student-kahoot-text-0">A</span>
+        </button>
+        <button type="button" class="student-kahoot-opt-btn" data-opt="1" style="background: #dc2626; color: #fff; border: none; border-radius: 14px; padding: 26px 12px; font-size: 1.35rem; font-weight: 900; cursor: pointer; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+          <span style="font-size: 1.8rem;">◆</span>
+          <span class="student-kahoot-btn-text" id="student-kahoot-text-1">B</span>
+        </button>
+        <button type="button" class="student-kahoot-opt-btn" data-opt="2" style="background: #16a34a; color: #fff; border: none; border-radius: 14px; padding: 26px 12px; font-size: 1.35rem; font-weight: 900; cursor: pointer; box-shadow: 0 8px 20px rgba(22, 163, 74, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+          <span style="font-size: 1.8rem;">●</span>
+          <span class="student-kahoot-btn-text" id="student-kahoot-text-2">C</span>
+        </button>
+        <button type="button" class="student-kahoot-opt-btn" data-opt="3" style="background: #9333ea; color: #fff; border: none; border-radius: 14px; padding: 26px 12px; font-size: 1.35rem; font-weight: 900; cursor: pointer; box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; transition: transform 0.1s, opacity 0.2s;">
+          <span style="font-size: 1.8rem;">■</span>
+          <span class="student-kahoot-btn-text" id="student-kahoot-text-3">D</span>
+        </button>
+      </div>
+
+      <!-- 送出後等待揭曉提示 -->
+      <div id="studentKahootSubmittedNotice" style="display: none; background: rgba(59, 130, 246, 0.2); border: 2px solid #3b82f6; border-radius: 12px; padding: 18px; text-align: center;">
+        <div style="font-size: 2rem; margin-bottom: 4px;">⏳</div>
+        <div style="font-weight: 800; font-size: 1.2rem; color: #93c5fd;">已送出答案！</div>
+        <div style="font-size: 0.9rem; color: #cbd5e1; margin-top: 4px;">請看大螢幕，等待老師揭曉正確解答...</div>
+      </div>
+
+      <!-- 答案揭曉狀態 -->
+      <div id="studentKahootResultNotice" style="display: none; border-radius: 12px; padding: 20px; text-align: center;">
+        <div id="studentKahootResultIcon" style="font-size: 3rem; margin-bottom: 6px;">🎉</div>
+        <div id="studentKahootResultTitle" style="font-weight: 900; font-size: 1.4rem; margin-bottom: 4px;">答對了！</div>
+        <div id="studentKahootResultScore" style="font-size: 1.1rem; font-weight: 800; color: #fde047;">+1000 分</div>
+        <div id="studentKahootResultExplanation" style="font-size: 0.88rem; color: #cbd5e1; margin-top: 8px; line-height: 1.5;"></div>
+      </div>
+
+      <!-- 測驗結束總結 -->
+      <div id="studentKahootFinalSummary" style="display: none; background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(15, 23, 42, 0.8)); border: 2px solid #eab308; border-radius: 14px; padding: 24px; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 8px;">🏆</div>
+        <h3 style="font-size: 1.5rem; font-weight: 900; color: #facc15; margin-bottom: 6px;">競賽圓滿結束！</h3>
+        <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 16px;">感謝你的熱情參與！請抬頭觀看大螢幕頒獎台 🎉</p>
+        <button type="button" id="btnStudentKahootClose" class="btn btn-secondary" style="padding: 10px 24px; font-weight: 700;">
+          關閉答題畫面
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/static/js/vendor/html5-qrcode.min.js"></script>
+  <script src="/static/js/realtime.js?v=3.2"></script>
+  <script src="/static/js/student.js?v=3.2"></script>
+</body>
+</html>

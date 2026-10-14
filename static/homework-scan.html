@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>📥 作業掃描登記 ｜ 小助手工作台 - 國小課堂即時記錄系統</title>
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+  <link rel="shortcut icon" href="/static/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link id="app-favicon" rel="icon" type="image/png" href="/api/system/logo">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.5">
+  <style>
+    :root {
+      --hw-primary: #4f46e5;
+      --hw-primary-light: #6366f1;
+      --hw-ok: #16a34a;
+      --hw-ok-bg: rgba(34, 197, 94, 0.16);
+      --hw-warn: #d97706;
+      --hw-warn-bg: rgba(245, 158, 11, 0.16);
+      --hw-missing: #dc2626;
+      --hw-missing-bg: rgba(239, 68, 68, 0.14);
+      --hw-leave: #6b7280;
+      --hw-leave-bg: rgba(107, 114, 128, 0.16);
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #edf2f9 0%, #f7f9fc 55%, #eef2f8 100%) !important;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+    }
+
+    .hw-popup-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--card-border);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .hw-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hw-brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #4f46e5, #8b5cf6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.28);
+    }
+
+    .hw-brand-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-main);
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hw-helper-pill {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff;
+      border-radius: 100px;
+      letter-spacing: 0.5px;
+    }
+
+    .hw-popup-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .hw-container {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Core scan input box styling */
+    .hw-scan-box {
+      border: 2px solid rgba(79, 70, 229, 0.25);
+      border-radius: 16px;
+      padding: 18px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 8px 30px rgba(79, 70, 229, 0.08);
+      transition: all 0.2s ease;
+    }
+
+    .hw-scan-box:focus-within {
+      border-color: #4f46e5;
+      box-shadow: 0 10px 32px rgba(79, 70, 229, 0.16);
+    }
+
+    .hw-input-large {
+      font-size: 1.25rem !important;
+      font-weight: 700 !important;
+      padding: 12px 18px !important;
+      border-radius: 12px !important;
+      border: 2px solid var(--input-border) !important;
+      background: #ffffff !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+    }
+
+    .hw-input-large:focus {
+      border-color: #4f46e5 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3.5px rgba(79, 70, 229, 0.18) !important;
+    }
+
+    /* Feedback Display */
+    .hw-feedback-banner {
+      margin-top: 14px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      font-size: 1.35rem;
+      font-weight: 900;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-height: 80px;
+      background: var(--input-bg);
+      box-sizing: border-box;
+    }
+
+    .hw-feedback-banner.hw-state-ok {
+      background: var(--hw-ok-bg);
+      border-color: var(--hw-ok);
+      color: #14532d;
+      animation: popIn 0.28s ease;
+    }
+
+    .hw-feedback-banner.hw-state-warn {
+      background: var(--hw-warn-bg);
+      border-color: var(--hw-warn);
+      color: #78350f;
+      animation: popIn 0.28s ease;
+    }
+
+    .hw-feedback-banner.hw-state-bad {
+      background: var(--hw-missing-bg);
+      border-color: var(--hw-missing);
+      color: #7f1d1d;
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.96); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* Student grid */
+    .hw-student-card {
+      background: #ffffff;
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      position: relative;
+    }
+
+    .hw-student-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+      border-color: #4f46e5;
+    }
+
+    .hw-student-card.hw-card-ok {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .hw-student-card.hw-card-missing {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+
+    .hw-student-card.hw-card-late {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    .hw-student-card.hw-card-leave {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    /* Progress bar */
+    .hw-progress-track {
+      background: #e2e8f0;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      width: 100%;
+      margin: 8px 0;
+    }
+
+    .hw-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #22c55e);
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+
+    /* Chip buttons */
+    .hw-chip-btn {
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .hw-chip-btn.active {
+      background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.28);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="hw-popup-header">
+    <div class="hw-brand">
+      <div class="hw-brand-icon">📥</div>
+      <div>
+        <div class="hw-brand-title">
+          作業掃描登記
+          <span class="hw-helper-pill">小助手工作台</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hw-popup-controls">
+      <!-- 選擇班級 -->
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="hw-course-select" style="font-size:0.85rem;font-weight:700;color:var(--text-muted);">班級：</label>
+        <select id="hw-course-select" class="input-control" style="font-weight:700;padding:5px 12px;font-size:0.9rem;min-width:140px;"></select>
+      </div>
+
+      <!-- 選擇日期 -->
+      <div style="display:flex;align-items:center;gap:6px;">
+        <label for="hw-date" style="font-size:0.85rem;font-weight:700;color:var(--text-muted);">日期：</label>
+        <input type="date" id="hw-date" class="input-control" style="padding:5px 10px;font-size:0.9rem;width:auto;">
+        <button type="button" class="btn btn-secondary" id="hw-today" style="padding:5px 12px;font-size:0.85rem;">回到今天</button>
+      </div>
+
+      <!-- 音效開關 -->
+      <button type="button" class="btn btn-secondary" id="btn-toggle-sound" style="padding:5px 12px;font-size:0.85rem;" title="切換掃描提示音效">
+        🔊 音效開啟
+      </button>
+
+      <!-- 全螢幕切換 -->
+      <button type="button" class="btn btn-secondary" id="btn-toggle-fullscreen" style="padding:5px 12px;font-size:0.85rem;" title="切換全螢幕模式">
+        📺 全螢幕
+      </button>
+
+      <span style="font-size:0.8rem;color:var(--text-muted);display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:rgba(34,197,94,0.12);color:#15803d;border-radius:6px;font-weight:700;">
+        🔒 本機安全連線
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="hw-container">
+    <div id="hw-loading-state" class="glass-card" style="text-align:center;padding:50px;">
+      <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+      <div style="font-size:1.1rem;font-weight:700;">正在載入班級作業資料…</div>
+    </div>
+
+    <div id="hw-main-app" style="display:none;flex-direction:column;gap:16px;">
+      <!-- ① 今日要收哪些作業 -->
+      <div class="glass-card" style="margin-bottom:0;padding:16px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <h4 style="margin:0;font-size:1.05rem;display:flex;align-items:center;gap:6px;">
+            <span>① 這天要收哪些作業？</span>
+            <span style="font-weight:400;font-size:0.85rem;color:var(--text-muted);">（點選作業加入或取消；掃描專屬 QR Code 時自動識別作業）</span>
+          </h4>
+          <span id="hw-plan-summary" style="font-size:0.85rem;font-weight:700;color:var(--hw-primary);"></span>
+        </div>
+        <div id="hw-plan-chips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- ② 掃描核心區 -->
+      <div class="glass-card hw-scan-box" style="margin-bottom:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+          <h4 style="margin:0;font-size:1.05rem;display:flex;align-items:center;gap:6px;">
+            <span>② 掃描作業上的 QR Code 或借書證條碼</span>
+            <span style="font-weight:400;font-size:0.82rem;color:var(--text-muted);">（條碼掃描槍已自動就緒，可連續刷碼）</span>
+          </h4>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn btn-secondary" id="hw-undo" disabled style="padding:6px 14px;font-size:0.9rem;">↩️ 復原上一筆 (<span id="hw-undo-count">0</span>)</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" id="hw-input" class="input-control hw-input-large" style="flex:1;min-width:240px;" placeholder="請刷條碼或掃描作業上的專屬 QR Code…" autocomplete="off" autofocus>
+          <button type="button" class="btn btn-secondary" id="hw-cam-btn" style="padding:10px 18px;font-size:0.95rem;font-weight:700;">📷 開啟相機鏡頭</button>
+        </div>
+
+        <!-- 相機視訊區 -->
+        <div id="hw-cam" style="display:none;max-width:440px;margin:12px auto 0;border-radius:12px;overflow:hidden;border:2px solid var(--card-border);background:#000;"></div>
+
+        <!-- 超大動態反饋看板 -->
+        <div id="hw-feedback" class="hw-feedback-banner">
+          <div>⌛ 等待掃描…</div>
+          <div style="font-size:0.88rem;font-weight:500;color:var(--text-muted);margin-top:2px;">請將掃描槍對準作業簿上的 QR Code 標籤</div>
+        </div>
+
+        <!-- 最近登記動態 -->
+        <div id="hw-recent" style="margin-top:10px;font-size:0.88rem;color:var(--text-muted);"></div>
+
+        <!-- 無 QR Code 借書證登記模式 -->
+        <details style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--card-border);">
+          <summary style="cursor:pointer;font-weight:700;font-size:0.9rem;color:var(--text-muted);">
+            作業上沒有印 QR Code 標籤？改用學生借書證條碼登記 ▾
+          </summary>
+          <div style="margin-top:8px;padding:12px 14px;background:rgba(0,0,0,0.02);border-radius:10px;font-size:0.85rem;">
+            <p style="margin:0 0 8px 0;color:var(--text-muted);">請先點選目前正在收的作業（可多選），再刷學生的借書證條碼，系統會一次登記所有勾選的作業：</p>
+            <div id="hw-cur-chips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- ③ 即時進度與名單網格 -->
+      <div class="glass-card" style="margin-bottom:0;padding:18px 20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
+          <div>
+            <h4 style="margin:0 0 4px 0;font-size:1.05rem;">③ 全班繳交進度</h4>
+            <div id="hw-progress-text" style="font-size:0.9rem;font-weight:700;color:var(--text-main);"></div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div class="btn-group" style="display:inline-flex;border:1px solid var(--card-border);border-radius:var(--radius-md);overflow:hidden;">
+              <button type="button" class="btn btn-secondary active" id="hw-filter-all" style="padding:6px 14px;font-size:0.85rem;border-radius:0;border:none;">全部學生</button>
+              <button type="button" class="btn btn-secondary" id="hw-filter-missing" style="padding:6px 14px;font-size:0.85rem;border-radius:0;border:none;border-left:1px solid var(--card-border);">🚨 只看未交</button>
+            </div>
+            <button type="button" class="btn btn-secondary" id="hw-export-day" style="padding:6px 14px;font-size:0.85rem;">📤 匯出今日名單</button>
+          </div>
+        </div>
+
+        <!-- 進度條 -->
+        <div id="hw-progress-bars"></div>
+
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:12px 0 8px;">💡 提示：點擊下方學生卡片可快速手動切換狀態（已繳交、補繳、請假、改回未交）。</p>
+
+        <!-- 學生卡片網格 -->
+        <div id="hw-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));gap:10px;margin-top:10px;"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/api.js?v=3.0"></script>
+  <script src="/static/js/vendor/html5-qrcode.min.js"></script>
+  <script src="/static/js/homework-scan-popup.js?v=1.0"></script>
+</body>
+</html>

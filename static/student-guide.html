@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學生使用說明 - MyClass</title>
+<style>
+  :root {
+    --primary: #0284c7;
+    --primary-dark: #0369a1;
+    --primary-bg: #f0f9ff;
+    --primary-border: #bae6fd;
+    --text: #1e293b;
+    --muted: #64748b;
+    --card: #ffffff;
+    --bg: #f1f5f9;
+    --warn-bg: #fffbeb;
+    --warn-border: #fcd34d;
+    --warn-text: #92400e;
+    --ok-bg: #ecfdf5;
+    --ok-border: #6ee7b7;
+    --ok-text: #065f46;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #38bdf8;
+      --primary-dark: #7dd3fc;
+      --primary-bg: #0c2a3d;
+      --primary-border: #1e4a66;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --card: #1e293b;
+      --bg: #0f172a;
+      --warn-bg: #3a2e0f;
+      --warn-border: #7a5d10;
+      --warn-text: #fcd34d;
+      --ok-bg: #0f2e25;
+      --ok-border: #1f6b54;
+      --ok-text: #6ee7b7;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+    line-height: 1.7;
+    font-size: 16px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .hero {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #fff;
+    border-radius: 16px;
+    padding: 22px 20px;
+    margin-bottom: 16px;
+  }
+  .hero h1 { margin: 0 0 6px; font-size: 1.5rem; }
+  .hero p { margin: 0; opacity: 0.95; font-size: 0.95rem; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .toolbar a {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--primary-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  nav.toc h2 { margin: 0 0 8px; font-size: 1rem; color: var(--primary); }
+  nav.toc ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 12px; }
+  nav.toc a { color: var(--text); text-decoration: none; font-weight: 600; font-size: 0.92rem; display: block; padding: 6px 8px; border-radius: 8px; }
+  nav.toc a:hover { background: var(--primary-bg); color: var(--primary); }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--primary-border);
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    margin-bottom: 14px;
+    scroll-margin-top: 12px;
+  }
+  section.card h2 { margin: 0 0 10px; font-size: 1.2rem; color: var(--primary-dark); }
+  section.card h3 { margin: 14px 0 6px; font-size: 1rem; }
+  section.card p { margin: 6px 0; }
+  section.card ul, section.card ol { margin: 6px 0; padding-left: 22px; }
+  section.card li { margin: 4px 0; }
+  .tip, .warn {
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 10px 0;
+    font-size: 0.93rem;
+  }
+  .tip { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+  .warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text); }
+  code { background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: 5px; padding: 1px 6px; font-size: 0.9em; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--primary-border); padding: 7px 9px; text-align: left; vertical-align: top; }
+  th { background: var(--primary-bg); }
+  details { border: 1px solid var(--primary-border); border-radius: 10px; padding: 8px 12px; margin: 8px 0; }
+  details summary { cursor: pointer; font-weight: 700; }
+  details[open] summary { margin-bottom: 6px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 12px 0 24px; }
+  @media (max-width: 520px) {
+    .wrap { padding: 12px; }
+    .hero h1 { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1>📖 學生使用說明</h1>
+    <p>登入後可以看課程、交作業、上傳檔案、累積點數，還能玩課堂互動遊戲。這裡教你怎麼用。</p>
+    <div class="toolbar">
+      <a href="javascript:history.length > 1 ? history.back() : window.close()">← 返回</a>
+      <a href="/student-quick-guide">🎞️ 看簡單版簡報</a>
+      <a href="#faq">遇到問題？看常見問題</a>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="目錄">
+    <h2>目錄</h2>
+    <ul>
+      <li><a href="#login">🔑 1. 登入與登出</a></li>
+      <li><a href="#materials">📚 2. 課程與作業</a></li>
+      <li><a href="#filecollect">📁 3. 檔案蒐集與拍攝上傳</a></li>
+      <li><a href="#quizzes">📝 4. 紙本小考成績</a></li>
+      <li><a href="#scores">🌟 5. 我的點數與掃描點數卡</a></li>
+      <li><a href="#livewall">🎨 6. 即時互動牆</a></li>
+      <li><a href="#wordcloud">☁️ 7. 課堂文字雲</a></li>
+      <li><a href="#kahoot">🎮 8. 答題競賽</a></li>
+      <li><a href="#leader">👑 9. 小組長專區</a></li>
+      <li><a href="#faq">💡 10. 常見問題</a></li>
+    </ul>
+  </nav>
+
+  <section class="card" id="login">
+    <h2>🔑 1. 登入與登出</h2>
+    <ul>
+      <li>用老師給你的 <b>帳號</b> 與 <b>密碼</b> 登入。可以掃老師投影出來的 <b>QR Code</b> 直接打開登入頁。</li>
+      <li>忘記帳號或密碼，請告訴老師，不要借用別人的帳號。</li>
+      <li>用完請按右上角的 <b>登出</b>，特別是在共用的平板或電腦上。</li>
+    </ul>
+  </section>
+
+  <section class="card" id="materials">
+    <h2>📚 2. 課程與作業</h2>
+    <p>在 <b>📚 課程與作業</b> 分頁可以：</p>
+    <ul>
+      <li>瀏覽老師上傳的課程教材與影片。</li>
+      <li>查看並繳交作業，按照畫面提示上傳檔案或填寫內容。</li>
+      <li>參加老師出的線上測驗，送出後系統會自動批改。</li>
+    </ul>
+    <div class="tip">💡 作業若有截止時間，請在期限內完成。送出前先檢查一次內容。</div>
+  </section>
+
+  <section class="card" id="filecollect">
+    <h2>📁 3. 檔案蒐集與拍攝上傳</h2>
+    <p>老師在課堂上請你交照片、錄音或影片時，到 <b>📁 檔案蒐集</b> 分頁，找到老師建立的主題卡片（點一下標題可展開或收合）。</p>
+    <p>卡片顯示 <b>🟢 開放上傳中</b> 才能上傳；顯示 <b>🔒 教師已停止上傳</b> 就不能再上傳、改名或刪除。</p>
+
+    <h3>方法一：🎥 高畫質拍攝（建議用來錄影、拍照）</h3>
+    <ol>
+      <li>按 <b>🎥 高畫質拍攝</b>，第一次使用時，瀏覽器會問你要不要允許使用相機和麥克風，請按 <b>允許</b>。</li>
+      <li>選擇要 <b>📸 拍照</b> 還是 <b>⏺ 開始錄影</b>。可以按 <b>🔄 切換鏡頭</b> 換前後鏡頭。</li>
+      <li>錄影時按 <b>⏹ 停止錄影</b>，畫面會讓你先預覽。</li>
+      <li>滿意就按 <b>✅ 上傳</b>，不滿意就按 <b>↩ 重拍</b>。</li>
+    </ol>
+    <p>拍攝視窗上方會顯示「偵測到幾個相機」、目前的解析度，還有兩個下拉選單：</p>
+    <table>
+      <tr><th>選項</th><th>說明</th></tr>
+      <tr><td>相機</td><td>裝置有多個鏡頭時才會出現，可以指定要用哪一個。</td></tr>
+      <tr><td>畫質</td><td>最高（自動）、4K、1080p、720p。檔案要小一點就選 1080p 或 720p。顯示「不支援」的選項代表你的相機做不到。</td></tr>
+    </table>
+
+    <h3>方法二：📤 選擇檔案上傳</h3>
+    <p>如果你已經用手機或平板的 <b>相機 App</b> 拍好了，按 <b>📤 選擇檔案上傳</b>，從「檔案」或「相簿」選取就可以，可以一次選很多個。</p>
+
+    <div class="tip">💡 <b>想要畫質好</b>：用「高畫質拍攝」，或先用相機 App 拍好再選檔案。不要用其他網頁裡的「拍照或錄影」，那種方式常常會被系統壓成很模糊的畫質。</div>
+    <div class="warn">⚠️ <b>檔案大小</b>：每個檔案最大 <b>250MB</b>。高畫質錄影大約錄 <b>4 分鐘</b>就會接近上限，系統會自動停止。更長的內容請分成幾段錄。</div>
+    <div class="warn">⚠️ 老師如果限制了檔案格式（例如只收 <code>mp4</code>），格式不符的檔案會被擋下來，畫面會告訴你原因。</div>
+
+    <h3>上傳完成之後</h3>
+    <ul>
+      <li>在 <b>📁 我已繳交的檔案</b> 可以看到你上傳的檔案，照片與影片可以直接預覽。</li>
+      <li>老師還沒停止上傳前，你可以 <b>✏️ 重新命名</b>、<b>🗑️ 刪除</b> 或 <b>📥 下載</b>。</li>
+    </ul>
+  </section>
+
+  <section class="card" id="quizzes">
+    <h2>📝 4. 紙本小考成績</h2>
+    <p>在 <b>📝 紙本小考</b> 分頁可以看到老師登記的平時小考成績，按 <b>🔄 重新整理</b> 取得最新資料。</p>
+  </section>
+
+  <section class="card" id="scores">
+    <h2>🌟 5. 我的點數與掃描點數卡</h2>
+    <ul>
+      <li><b>🌟 我的點數</b> 分頁會顯示你目前累積的點數、可用兌換點數，以及每一筆加分紀錄。</li>
+      <li>有實體點數卡時，按 <b>📷 掃描實體點數卡加分</b>，把鏡頭對準卡片上的 QR Code 就會自動加分。</li>
+      <li>如果相機打不開，請確認瀏覽器有允許相機權限。</li>
+      <li>點數可以到 <b>🎁 點數兌換商城</b> 兌換老師上架的獎勵，兌換前會跟你確認一次。</li>
+    </ul>
+    <div class="warn">⚠️ 同一張卡片，同一個人 <b>每天只能刷一次</b>。老師也可能限定某些班級才能使用某個系列的卡片。</div>
+  </section>
+
+  <section class="card" id="livewall">
+    <h2>🎨 6. 即時互動牆</h2>
+    <p>老師開放時，你可以在這個分頁拍照，或用手指在畫板上畫圖，再按 <b>📤 送出</b>，作品會出現在大螢幕的互動牆上。</p>
+    <ul>
+      <li>畫錯了可以按 <b>🗑️ 清除</b> 重畫。</li>
+      <li>拍照時瀏覽器會詢問相機權限，請按允許。</li>
+    </ul>
+  </section>
+
+  <section class="card" id="wordcloud">
+    <h2>☁️ 7. 課堂文字雲</h2>
+    <ol>
+      <li>老師開始文字雲時，你的畫面會自動跳出作答視窗。</li>
+      <li>輸入想到的詞彙，按送出。每個人有送出數量上限，老師也可能不允許重複的詞。</li>
+      <li>大家送出的詞會一起長成文字雲，出現越多次的詞，字就越大。</li>
+    </ol>
+  </section>
+
+  <section class="card" id="kahoot">
+    <h2>🎮 8. 答題競賽</h2>
+    <ol>
+      <li>老師開始競賽後，畫面會自動出現題目與 <b>四個彩色按鈕</b>（藍、紅、綠、紫）。</li>
+      <li>在倒數時間結束前，點選你認為正確的答案。送出後就鎖定，不能改。</li>
+      <li>老師公布答案後，會看到對錯與全班的選擇分布。</li>
+      <li>比賽結束會有頒獎台。老師可能會依名次發放獎勵點數。</li>
+    </ol>
+    <div class="tip">💡 <b>答對又快</b> 分數更高。小組賽時，你的分數會加到全組的總分。</div>
+  </section>
+
+  <section class="card" id="leader" >
+    <h2>👑 9. 小組長專區</h2>
+    <p>只有被老師指定為 <b>小組長</b> 的同學才看得到這個分頁。小組長可以協助登記本組組員的小考成績，最後由老師查驗審核。</p>
+  </section>
+
+  <section class="card" id="faq">
+    <h2>💡 10. 常見問題</h2>
+
+    <details>
+      <summary>我拍的照片或影片很模糊？</summary>
+      <p>請改用 <b>🎥 高畫質拍攝</b>，並在畫質選單選「最高」。或者先用手機／平板的 <b>相機 App</b> 拍好，再用「📤 選擇檔案上傳」。</p>
+      <p>iPad 與 iPhone 的網頁錄影通常最高到 1080p，這是裝置限制。</p>
+    </details>
+
+    <details>
+      <summary>按「高畫質拍攝」沒有反應，或說無法開啟相機？</summary>
+      <ul>
+        <li>第一次使用要按 <b>允許</b> 相機與麥克風權限。不小心按了拒絕，請到瀏覽器或系統設定，把這個網站的相機權限改回允許，再重新整理。</li>
+        <li>網址必須是 <code>https://</code> 開頭才能使用相機。如果不是，請請老師提供正確的連線 QR Code。</li>
+        <li>相機可能正在被別的 App 使用，先把其他用相機的 App 關掉。</li>
+        <li>還是不行，就用手機的相機 App 拍好，再選檔案上傳。</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>上傳失敗了怎麼辦？</summary>
+      <ul>
+        <li>看畫面上方的提示訊息：可能是檔案超過 250MB、檔案格式不符，或是老師已經停止上傳。</li>
+        <li>確認網路連線正常，再試一次。</li>
+        <li>檔案太大時，把畫質改成 1080p 或 720p，或分成幾段錄影。</li>
+      </ul>
+    </details>
+
+    <details>
+      <summary>為什麼我不能刪除或改名我交的檔案？</summary>
+      <p>老師停止上傳之後，已繳交的檔案就會鎖定，不能再修改。需要修改時，請告訴老師。</p>
+    </details>
+
+    <details>
+      <summary>文字雲或答題競賽的視窗沒有跳出來？</summary>
+      <p>請確認你已經登入，並按一下頁面上的 <b>🔄 重新整理</b>，或重新整理瀏覽器。仍然沒有的話，告訴老師。</p>
+    </details>
+
+    <details>
+      <summary>忘記帳號或密碼？</summary>
+      <p>請直接告訴老師，由老師協助你重新設定。</p>
+    </details>
+  </section>
+
+  <footer>MyClass 學生使用說明</footer>
+</div>
+</body>
+</html>

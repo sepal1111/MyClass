@@ -1,0 +1,896 @@
+// MyClass Prisma Schema
+//
+// 資料庫路徑在執行時才會決定（隨身碟/bin 目錄，見 src/paths.ts），因此不使用
+// `prisma migrate`；改由 src/db.ts 的 initSchema() 在啟動時執行等冪的
+// CREATE TABLE IF NOT EXISTS / ALTER TABLE ADD COLUMN（與原 Python
+// app/database.py 的 init_db() 行為一致）。這裡的 schema.prisma 僅用於產生
+// 型別安全的 Prisma Client，欄位定義必須與 db.ts 的建表 SQL 保持一致。
+//
+// 開發時的 DATABASE_URL 由 .env 提供；正式執行時由 src/db.ts 透過
+// `datasourceUrl` 動態覆寫為 bin/classroom_record.db 的實際路徑。
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "darwin", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Course {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  teacherType        String   @default("homeroom") @map("teacher_type")
+  description        String?
+  seatRows           Int      @default(5) @map("seat_rows")
+  seatCols           Int      @default(6) @map("seat_cols")
+  blackboardPosition String   @default("top") @map("blackboard_position")
+  createdAt          String?  @map("created_at")
+
+  students         Student[]
+  groups           Group[]
+  groupPlans       GroupPlan[]
+  attendance       Attendance[]
+  evaluationRules  EvaluationRule[]
+  scoreLogs        ScoreLog[]
+  qualitativeNotes QualitativeNote[]
+  units            Unit[]
+  lessonLogs       LessonLog[]
+  liveSessions     LiveSession[]
+  pointCards       PointCard[]
+  pointCardSeries  PointCardSeries[]
+  rewardItems      RewardItem[]
+  rewardRedemptions RewardRedemption[]
+  paperQuizzes     PaperQuiz[]
+  discussionLogs   GroupDiscussionLog[]
+  bulletinPosts    BulletinPost[]
+  fileCollections  FileCollection[]
+  fileCollectionItems FileCollectionItem[]
+  whereaboutsRecords  WhereaboutsRecord[]
+  whereaboutsKiosk    WhereaboutsKiosk?
+  homeworkItems    HomeworkItem[]
+  homeworkPlans    HomeworkPlan[]
+  homeworkRecords  HomeworkRecord[]
+  quizSets         QuizSet[]
+  wordCloudSessions WordCloudSession[]
+  timetableEntries TimetableEntry[]
+  teachingAssignments TeachingAssignment[]
+
+  @@map("courses")
+}
+
+// 教師的任教清單：哪一班的什麼科目。導師只有一個班、多個科目；科任有多個班與科目。
+model TeachingAssignment {
+  id       Int    @id @default(autoincrement())
+  courseId Int    @map("course_id")
+  subject  String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, subject])
+  @@map("teaching_assignments")
+}
+
+// ==========================================================================
+// 課表 (Timetable)：作息節次與科目清單為全域設定（一套軟體＝一位教師）；每格課表
+// （星期 × 節次）可指定班級與科目，供開啟軟體時比對當下時間提醒教師。
+// ==========================================================================
+
+model TimetablePeriod {
+  id        Int    @id @default(autoincrement())
+  name      String
+  startTime String @map("start_time") // HH:MM
+  endTime   String @map("end_time") // HH:MM
+
+  entries TimetableEntry[]
+
+  @@map("timetable_periods")
+}
+
+model TimetableSubject {
+  id        Int    @id @default(autoincrement())
+  name      String @unique
+  sortOrder Int    @default(0) @map("sort_order")
+
+  @@map("timetable_subjects")
+}
+
+model TimetableEntry {
+  id       Int     @id @default(autoincrement())
+  weekday  Int // 1=週一 … 5=週五
+  periodId Int     @map("period_id")
+  // null＝不指定班級（例如導師班去上科任課、會議、空堂註記）
+  courseId Int?    @map("course_id")
+  subject  String  @default("")
+  note     String?
+
+  period TimetablePeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  course Course?         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([weekday, periodId])
+  @@map("timetable_entries")
+}
+
+model GroupPlan {
+  id        Int      @id @default(autoincrement())
+  courseId  Int      @map("course_id")
+  name      String
+  isActive  Int      @default(1) @map("is_active")
+  createdAt String?  @map("created_at")
+
+  course   Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  groups   Group[]
+  members  GroupMember[]
+  subUnits SubUnit[]
+  discussionLogs GroupDiscussionLog[]
+
+  @@map("group_plans")
+}
+
+model Group {
+  id         Int     @id @default(autoincrement())
+  courseId   Int     @map("course_id")
+  groupName  String  @map("group_name")
+  iconUrl    String? @map("icon_url")
+  orderIndex Int     @default(0) @map("order_index")
+  planId     Int?    @map("plan_id")
+
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  plan          GroupPlan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
+  members       GroupMember[]
+  directStudents Student[]
+  submissions   Submission[]
+  submissionComments SubmissionComment[]
+  discussionLogs GroupDiscussionLog[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id        Int @id @default(autoincrement())
+  planId    Int @map("plan_id")
+  groupId   Int @map("group_id")
+  studentId Int @map("student_id")
+  isLeader  Int @default(0) @map("is_leader")
+
+  plan    GroupPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  group   Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, studentId])
+  @@map("group_members")
+}
+
+model Student {
+  id            Int     @id @default(autoincrement())
+  courseId      Int     @map("course_id")
+  studentNumber Int     @map("student_number")
+  studentCode   String? @map("student_code")
+  name          String
+  englishName   String? @map("english_name")
+  gender        String  @default("M")
+  groupId       Int?    @map("group_id")
+  seatRow       Int?    @map("seat_row")
+  seatCol       Int?    @map("seat_col")
+  isActive      Int     @default(1) @map("is_active")
+  // LMS 學生登入帳密（見第三節架構決策：完全自建，不依賴 Google）。null 代表尚未設定密碼。
+  passwordHash  String? @map("password_hash")
+  // 獨立自訂登入帳號（與座號/學號無關，教師可自行設定或系統自動產生），全系統唯一，
+  // 讓學生免選課程即可直接用「帳號＋密碼」登入（見 routes/studentAuth.ts login_by_account）。
+  loginAccount  String? @unique @map("login_account")
+
+  course           Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  group            Group?            @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groupMemberships GroupMember[]
+  attendance       Attendance[]
+  scoreLogs        ScoreLog[]
+  qualitativeNotes QualitativeNote[]
+  readingProgress  ReadingProgress[]
+  submissions      Submission[]
+  submissionComments SubmissionComment[]
+  liveWallPosts    LiveWallPost[]
+  pointCardRedemptions PointCardRedemption[]
+  rewardRedemptions RewardRedemption[]
+  paperQuizRecords PaperQuizRecord[]
+  leaderDiscussionLogs GroupDiscussionLog[]
+  fileCollectionItems  FileCollectionItem[]
+  homeworkRecords      HomeworkRecord[]
+  whereaboutsRecords   WhereaboutsRecord[]
+
+  @@map("students")
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  courseId  Int      @map("course_id")
+  studentId Int      @map("student_id")
+  date      String
+  status    String   @default("present")
+  updatedAt String   @map("updated_at")
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, studentId, date])
+  @@map("attendance")
+}
+
+model EvaluationRule {
+  id         Int     @id @default(autoincrement())
+  courseId   Int     @map("course_id")
+  title      String
+  category   String  @default("positive")
+  scoreValue Int     @map("score_value")
+  icon       String  @default("⭐")
+  isDefault  Int     @default(0) @map("is_default")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("evaluation_rules")
+}
+
+model ScoreLog {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  studentId Int     @map("student_id")
+  ruleId    Int?    @map("rule_id")
+  ruleTitle String  @map("rule_title")
+  score     Int
+  category  String
+  date      String
+  timestamp String
+  isUndone  Int     @default(0) @map("is_undone")
+  planId    Int?    @map("plan_id")
+  groupId   Int?    @map("group_id")
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("score_logs")
+}
+
+model QualitativeNote {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  studentId Int     @map("student_id")
+  noteText  String  @map("note_text")
+  date      String
+  mediaUrl  String? @map("media_url")
+  mediaType String? @map("media_type")
+  timestamp String
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("qualitative_notes")
+}
+
+// 教學日誌（Lesson Log）：以課程為單位的教學進度／課堂記事，跟 QualitativeNote（針對個別學生）
+// 是不同維度的紀錄。subUnitId 選填，讓老師可以選擇性關聯到已建立的單元結構標示「教到哪」，
+// 沒有建立單元結構的老師仍可純文字記錄。tag=todo 時 isDone 才有意義（待辦事項追蹤）。
+model LessonLog {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  subUnitId Int?    @map("sub_unit_id")
+  content   String
+  tag       String  @default("general")
+  isDone    Int     @default(0) @map("is_done")
+  mediaUrl  String? @map("media_url")
+  mediaType String? @map("media_type")
+  date      String
+  timestamp String
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subUnit SubUnit? @relation(fields: [subUnitId], references: [id], onDelete: SetNull)
+
+  @@map("lesson_logs")
+}
+
+model UndoLog {
+  id          Int     @id @default(autoincrement())
+  actionType  String  @map("action_type")
+  targetId    Int     @map("target_id")
+  payloadJson String  @map("payload_json")
+  createdAt   String  @map("created_at")
+  isUndone    Int     @default(0) @map("is_undone")
+
+  @@map("undo_logs")
+}
+
+model SystemSetting {
+  key   String @id
+  value String
+
+  @@map("system_settings")
+}
+
+model SystemSession {
+  token       String @id
+  createdDate String @map("created_date")
+  expiresAt   String @map("expires_at")
+  createdAt   String @map("created_at")
+
+  @@map("system_sessions")
+}
+
+// ==========================================================================
+// Phase 2 — 課程素材與單元結構模組 (Course Materials & Units Module)
+// 課程 (Course) -> 大單元 (Unit) -> 小單元 (SubUnit) -> 教材 (Material)
+// ==========================================================================
+
+model Unit {
+  id         Int     @id @default(autoincrement())
+  courseId   Int     @map("course_id")
+  title      String
+  orderIndex Int     @default(0) @map("order_index")
+  isHidden   Int     @default(0) @map("is_hidden")
+  createdAt  String? @map("created_at")
+
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subUnits SubUnit[]
+
+  @@map("units")
+}
+
+model SubUnit {
+  id          Int     @id @default(autoincrement())
+  unitId      Int     @map("unit_id")
+  title       String
+  orderIndex  Int     @default(0) @map("order_index")
+  isHidden    Int     @default(0) @map("is_hidden")
+  // 定時開放：YYYY-MM-DD HH:MM，null=不限制。與 isHidden 是兩道獨立的可見性條件（皆需通過學生端才看得到），
+  // 教師端一律看得到全部內容，不受此欄位影響（見 studentContent.ts 的 visibleSubUnitWhere()）。
+  publishAt   String? @map("publish_at")
+  // material（教材）｜ assignment（作業，Phase 3）｜ quiz（測驗，Phase 3）
+  category    String  @default("material")
+  description String?
+  createdAt   String? @map("created_at")
+
+  // --- Phase 3：作業欄位（category = "assignment" 時才有意義） ---
+  // 逗號分隔："file,text,link" 的子集，決定學生繳交表單顯示哪些輸入方式。
+  submissionTypes String? @map("submission_types")
+  // individual（個人）｜ group（小組，需搭配 groupPlanId 指定沿用哪套分組方案）。quiz 恆為 individual。
+  assignmentType  String  @default("individual") @map("assignment_type")
+  groupPlanId     Int?    @map("group_plan_id")
+  // YYYY-MM-DD（比照系統其他日期欄位僅到「天」，比對用 getTodayStrTaipei()）。assignment/quiz 皆可用。
+  dueDate         String? @map("due_date")
+  // 開啟後，超過 dueDate 即拒絕（重新）繳交，除非教師手動解鎖（teacher_reopened）
+  autoLockOverdue Int     @default(0) @map("auto_lock_overdue")
+
+  // --- Phase 3：測驗欄位（category = "quiz" 時才有意義） ---
+  // JSON: [{ id, type: multiple_choice|true_false|short_answer, question_text, options[], correct_answer, points }]
+  // 學生尚未作答前，API 絕不能回傳 correct_answer（見 studentContent.ts）。
+  quizQuestions             String? @map("quiz_questions")
+  revealAnswersAfterSubmit  Int     @default(1) @map("reveal_answers_after_submit")
+
+  unit            Unit              @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  groupPlan       GroupPlan?        @relation(fields: [groupPlanId], references: [id], onDelete: SetNull)
+  materials       Material[]
+  readingProgress ReadingProgress[]
+  submissions     Submission[]
+  submissionComments SubmissionComment[]
+  lessonLogs      LessonLog[]
+  paperQuizzes    PaperQuiz[]
+
+  @@map("sub_units")
+}
+
+// ==========================================================================
+// Phase 3 — 作業與小組共同作業模組 (Assignments & Group Collaboration)
+// ==========================================================================
+
+model Submission {
+  id        Int @id @default(autoincrement())
+  subUnitId Int @map("sub_unit_id")
+
+  // 個人作業：studentId 有值、groupId 為 null。小組作業：groupId 有值、studentId 為 null，
+  // 實際代表小組送出的學生記在 submitterId。兩個 @@unique 各自允許另一欄為 null
+  // （SQLite 視多個 NULL 為互不相同），因此同一張表能同時滿足「一生一筆」與「一組一筆」。
+  studentId   Int? @map("student_id")
+  groupId     Int? @map("group_id")
+  submitterId Int? @map("submitter_id")
+
+  filesJson   String? @map("files_json") // JSON: [{ file_name, url }]
+  link        String?
+  textContent String? @map("text_content")
+  // 測驗作答（category = "quiz" 時才有意義）：JSON { [questionId]: studentAnswer }
+  answersJson String? @map("answers_json")
+  // 測驗滿分（自動批改當下依 quiz_questions 加總算出，questions 事後被教師編輯也不會變動舊紀錄）
+  maxScore    Int?    @map("max_score")
+
+  submittedAt String? @map("submitted_at")
+  isLate      Int     @default(0) @map("is_late")
+  turnedIn    Int     @default(0) @map("turned_in")
+  locked      Int     @default(0)
+  // 教師手動解鎖／退回過，即使已逾期也視為允許重新繳交
+  teacherReopened     Int     @default(0) @map("teacher_reopened")
+  resubmitRequested   Int     @default(0) @map("resubmit_requested")
+  resubmitRequestedAt String? @map("resubmit_requested_at")
+
+  score    Int?
+  feedback String?
+  // 小組作業教師微調個別組員分數：JSON { [studentId]: score }
+  memberScoresJson String? @map("member_scores_json")
+  gradedAt         String? @map("graded_at")
+  // 本次評分寫入 score_logs 的 id 清單（JSON number[]），重新評分時先沖銷舊的再建新的，
+  // 避免總分因反覆評分而重複累計。
+  scoreLogIdsJson String? @map("score_log_ids_json")
+
+  subUnit   SubUnit  @relation(fields: [subUnitId], references: [id], onDelete: Cascade)
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group     Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([subUnitId, studentId])
+  @@unique([subUnitId, groupId])
+  @@map("submissions")
+}
+
+// 提問串（Submission Comments）：作業/測驗下的師生一對一（或對小組）留言，建立後不可編輯刪除，
+// 做為師生溝通的永久稽核紀錄（見 node_migration_and_lms_plan.md 第五節模組 2）。以 subUnitId +
+// studentId（個人）或 subUnitId + groupId（小組）定位討論串，不掛在 Submission 底下，因為學生
+// 在正式繳交前就應該能先發問。
+model SubmissionComment {
+  id         Int    @id @default(autoincrement())
+  subUnitId  Int    @map("sub_unit_id")
+  studentId  Int?   @map("student_id")
+  groupId    Int?   @map("group_id")
+  authorRole String @map("author_role") // "teacher" | "student"
+  authorId   Int?   @map("author_id") // 發言學生的 id（teacher 發言時為 null；小組討論串由組內任一人發言仍記錄實際發言人）
+  message    String
+  createdAt  String @map("created_at")
+
+  subUnit SubUnit  @relation(fields: [subUnitId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  group   Group?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@map("submission_comments")
+}
+
+// ==========================================================================
+// Phase 4 — 即時互動牆 (Live Wall)：教師開一個限時場次，學生每人限交一則
+// 文字/手繪/拍照貼文，教師端與投影大螢幕即時呈現，可一鍵清空（見
+// node_migration_and_lms_plan.md 第五節模組 4）。同一課程同時只能有一個
+// isActive=1 的場次，由 db.ts 的 partial unique index 在 DB 層強制。
+// ==========================================================================
+
+model LiveSession {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  mode      String // "text" | "drawing" | "photo"
+  title     String? // 選填的提示/題目文字
+  showNames Int     @default(1) @map("show_names") // 0=投影/學生視角匿名，教師視角一律看得到真名
+  isActive  Int     @default(1) @map("is_active")
+  createdAt String  @map("created_at")
+
+  course Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  posts  LiveWallPost[]
+
+  @@map("live_sessions")
+}
+
+model LiveWallPost {
+  id          Int     @id @default(autoincrement())
+  sessionId   Int     @map("session_id")
+  studentId   Int     @map("student_id")
+  textContent String? @map("text_content")
+  imageUrl    String? @map("image_url") // 手繪/拍照皆存成 PNG/JPG 檔案，此欄位僅存路徑
+  createdAt   String  @map("created_at")
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, studentId])
+  @@map("live_wall_posts")
+}
+
+model Material {
+  id         Int     @id @default(autoincrement())
+  subUnitId  Int     @map("sub_unit_id")
+  // file（上傳檔案）｜ link（外部連結）｜ youtube（YouTube 影片內嵌）
+  type       String
+  title      String
+  url        String
+  orderIndex Int     @default(0) @map("order_index")
+  createdAt  String? @map("created_at")
+
+  subUnit SubUnit @relation(fields: [subUnitId], references: [id], onDelete: Cascade)
+
+  @@map("materials")
+}
+
+model ReadingProgress {
+  id            Int    @id @default(autoincrement())
+  subUnitId     Int    @map("sub_unit_id")
+  studentId     Int    @map("student_id")
+  firstViewedAt String @map("first_viewed_at")
+  lastViewedAt  String @map("last_viewed_at")
+  viewCount     Int    @default(1) @map("view_count")
+
+  subUnit SubUnit @relation(fields: [subUnitId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([subUnitId, studentId])
+  @@map("reading_progress")
+}
+
+// ==========================================================================
+// 點數卡（Point Cards）：教師匯入實體卡片的「QR 內容 -> 分數」對照表，學生用
+// 自己裝置的相機掃描卡片後自動為自己加分，同一張卡同一位學生每天限刷一次
+// （PointCardRedemption 的 @@unique 強制）。刷卡會另外建立一筆 ScoreLog（見
+// routes/studentPointCards.ts），讓既有的總分/儀表板/排行榜/歷史紀錄完全
+// 不用跟著改；PointCardRedemption 純粹是防重複刷 + 稽核用的輔助表。
+// ==========================================================================
+
+model PointCardSeries {
+  id               Int         @id @default(autoincrement())
+  courseId         Int?        @map("course_id")
+  name             String
+  cardTheme        String      @default("score_card_A") @map("card_theme")
+  allowedCourseIds String      @default("") @map("allowed_course_ids")
+  layoutConfig     String?     @map("layout_config")
+  customImagesJson String?     @map("custom_images_json")
+  createdAt        String      @map("created_at")
+
+  course Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  cards  PointCard[]
+
+  @@map("point_card_series")
+}
+
+model PointCard {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  seriesId  Int?    @map("series_id")
+  cardNo    String? @map("card_no")
+  code      String
+  label     String
+  score     Int
+  image     String?
+  createdAt String  @map("created_at")
+
+  course      Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  series      PointCardSeries?      @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  redemptions PointCardRedemption[]
+
+  @@unique([courseId, code])
+  @@map("point_cards")
+}
+
+model PointCardRedemption {
+  id          Int     @id @default(autoincrement())
+  pointCardId Int     @map("point_card_id")
+  studentId   Int     @map("student_id")
+  scoreLogId  Int?    @map("score_log_id")
+  date        String
+  timestamp   String
+
+  pointCard PointCard @relation(fields: [pointCardId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([pointCardId, studentId, date])
+  @@map("point_card_redemptions")
+}
+
+model RewardItem {
+  id          Int     @id @default(autoincrement())
+  courseId    Int     @map("course_id")
+  name        String
+  description String?
+  rewardType  String  @map("reward_type") // "badge" | "collectible_card" | "physical"
+  pointsCost  Int     @map("points_cost")
+  stock       Int     @default(-1) // -1 is unlimited
+  imageUrl    String  @map("image_url")
+  cardSeries  String? @map("card_series")
+  isActive    Int     @default(1) @map("is_active")
+  orderIndex  Int     @default(0) @map("order_index")
+  createdAt   String  @map("created_at")
+  updatedAt   String? @map("updated_at")
+
+  course      Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  redemptions RewardRedemption[]
+
+  @@map("reward_items")
+}
+
+model RewardRedemption {
+  id          Int     @id @default(autoincrement())
+  rewardId    Int     @map("reward_id")
+  studentId   Int     @map("student_id")
+  courseId    Int     @map("course_id")
+  pointsSpent Int     @map("points_spent")
+  status      String  // "requested" | "approved_held" | "completed" | "rejected" | "cancelled"
+  scoreLogId  Int?    @map("score_log_id")
+  requestNote String? @map("request_note")
+  teacherNote String? @map("teacher_note")
+  createdAt   String  @map("created_at")
+  approvedAt  String? @map("approved_at")
+  fulfilledAt String? @map("fulfilled_at")
+
+  reward  RewardItem @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  student Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("reward_redemptions")
+}
+
+// ==========================================================================
+// 紙本測驗成績管理 (Paper Quizzes)
+// ==========================================================================
+
+model PaperQuiz {
+  id               Int      @id @default(autoincrement())
+  courseId         Int      @map("course_id")
+  title            String
+  subject          String?  @default("")
+  quizDate         String   @map("quiz_date")
+  maxScore         Float    @default(100) @map("max_score")
+  passingScore     Float    @default(60) @map("passing_score")
+  subUnitId        Int?     @map("sub_unit_id")
+  allowSelfEntry   Int      @default(1) @map("allow_self_entry")
+  allowLeaderEntry Int      @default(1) @map("allow_leader_entry")
+  createdAt        String?  @map("created_at")
+
+  course  Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subUnit SubUnit?          @relation(fields: [subUnitId], references: [id], onDelete: SetNull)
+  records PaperQuizRecord[]
+
+  @@map("paper_quizzes")
+}
+
+model PaperQuizRecord {
+  id            Int     @id @default(autoincrement())
+  quizId        Int     @map("quiz_id")
+  studentId     Int     @map("student_id")
+  score         Float?
+  isAbsent      Int     @default(0) @map("is_absent")
+  leaveType     String? @default("") @map("leave_type")
+  allowMakeup   Int     @default(0) @map("allow_makeup")
+  isMakeup      Int     @default(0) @map("is_makeup")
+  makeupScore   Float?  @map("makeup_score")
+  photoUrl      String? @map("photo_url")
+  submittedBy   String  @default("teacher") @map("submitted_by") // 'teacher' | 'student' | 'leader'
+  submittedById Int?    @map("submitted_by_id")
+  isVerified    Int     @default(0) @map("is_verified")
+  note          String?
+  updatedAt     String? @map("updated_at")
+
+  quiz    PaperQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, studentId])
+  @@map("paper_quiz_records")
+}
+
+// ==========================================================================
+// 小組長討論與組務紀錄 (Group Discussion Logs)
+// ==========================================================================
+
+model GroupDiscussionLog {
+  id        Int     @id @default(autoincrement())
+  courseId  Int     @map("course_id")
+  groupId   Int     @map("group_id")
+  planId    Int?    @map("plan_id")
+  leaderId  Int?    @map("leader_id")
+  title     String
+  content   String
+  date      String
+  createdAt String? @map("created_at")
+
+  course Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  group  Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  plan   GroupPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  leader Student?   @relation(fields: [leaderId], references: [id], onDelete: SetNull)
+
+  @@map("group_discussion_logs")
+}
+
+// ==========================================================================
+// 課堂即時公布欄 (Bulletin Board)：教學互動工具箱內的公布欄，一個課程可建立多份
+// 佈告並切換顯示，內容原本只存瀏覽器 localStorage（換機/清快取即遺失），改為
+// 寫入資料庫，比照其他課程附屬資料的模式（course_id 外鍵 + cascade 刪除）。
+// ==========================================================================
+
+model BulletinPost {
+  id         Int    @id @default(autoincrement())
+  courseId   Int    @map("course_id")
+  title      String
+  content    String @default("")
+  orderIndex Int    @default(0) @map("order_index")
+  createdAt  String @map("created_at")
+  updatedAt  String @map("updated_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("bulletin_posts")
+}
+
+// ==========================================================================
+// 臨時檔案蒐集 (File Collections)
+// ==========================================================================
+
+model FileCollection {
+  id                Int      @id @default(autoincrement())
+  courseId          Int      @map("course_id")
+  title             String
+  description       String?
+  allowedExtensions String?  @map("allowed_extensions")
+  allowUpload       Int      @default(1) @map("allow_upload")
+  orderIndex        Int      @default(0) @map("order_index")
+  createdAt         String   @map("created_at")
+  updatedAt         String?  @map("updated_at")
+
+  course Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  items  FileCollectionItem[]
+
+  @@map("file_collections")
+}
+
+model FileCollectionItem {
+  id               Int      @id @default(autoincrement())
+  collectionId     Int      @map("collection_id")
+  studentId        Int      @map("student_id")
+  courseId         Int      @map("course_id")
+  originalFilename String   @map("original_filename")
+  displayName      String   @map("display_name")
+  fileUrl          String   @map("file_url")
+  fileSize         Int      @map("file_size")
+  mimeType         String?  @map("mime_type")
+  uploadedAt       String   @map("uploaded_at")
+  updatedAt        String?  @map("updated_at")
+
+  collection FileCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  student    Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course     Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("file_collection_items")
+}
+
+
+// ==========================================================================
+// 作業掃描登記 (Homework Scan)：教師本機專用（見 middleware/localOnly.ts），移植自 Examscan
+// 的「收作業」模組。作業項目、每日「這天要收哪些作業」計畫、每位學生的繳交紀錄。
+// ==========================================================================
+
+model HomeworkItem {
+  id        Int    @id @default(autoincrement())
+  courseId  Int    @map("course_id")
+  name      String
+  archived  Int    @default(0)
+  createdAt String @map("created_at")
+
+  course  Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  plans   HomeworkPlan[]
+  records HomeworkRecord[]
+
+  @@unique([courseId, name])
+  @@map("hw_items")
+}
+
+model HomeworkPlan {
+  id       Int    @id @default(autoincrement())
+  courseId Int    @map("course_id")
+  planDate String @map("plan_date")
+  itemId   Int    @map("item_id")
+
+  course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  item   HomeworkItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, planDate, itemId])
+  @@map("hw_plans")
+}
+
+model HomeworkRecord {
+  id         Int    @id @default(autoincrement())
+  courseId   Int    @map("course_id")
+  itemId     Int    @map("item_id")
+  studentId  Int    @map("student_id")
+  recordDate String @map("record_date")
+  status     String
+  recordedAt String @map("recorded_at")
+  method     String @default("掃描")
+
+  course  Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  item    HomeworkItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  student Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, studentId, recordDate])
+  @@map("hw_records")
+}
+
+model QuizSet {
+  id          Int      @id @default(autoincrement())
+  courseId    Int      @map("course_id")
+  title       String
+  description String?
+  category    String?  @default("課堂測驗")
+  createdAt   String   @map("created_at")
+  updatedAt   String   @map("updated_at")
+
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+
+  @@map("quiz_sets")
+}
+
+model QuizQuestion {
+  id           Int     @id @default(autoincrement())
+  quizSetId    Int     @map("quiz_set_id")
+  orderIndex   Int     @default(0) @map("order_index")
+  prompt       String
+  questionType String  @default("single") @map("question_type")
+  options      String  // JSON array of options: [{"id": "A", "text": "...", "isCorrect": true}, ...]
+  timeLimitSec Int     @default(20) @map("time_limit_sec")
+  points       Int     @default(1000)
+  imageUrl     String? @map("image_url")
+  explanation  String?
+
+  quizSet QuizSet @relation(fields: [quizSetId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model WordCloudSession {
+  id              Int     @id @default(autoincrement())
+  courseId        Int     @map("course_id")
+  title           String
+  status          String  @default("active")
+  allowDuplicate  Int     @default(0) @map("allow_duplicate")
+  maxWordsPerUser Int     @default(3) @map("max_words_per_user")
+  wordsData       String  @default("[]") @map("words_data")
+  createdAt       String  @map("created_at")
+  updatedAt       String  @map("updated_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("wordcloud_sessions")
+}
+
+
+// 早自修／午休「在位掌握」：離開教室的原因（全域設定，所有班級共用）與每日登記。
+// 每筆紀錄代表「一次外出」，保留離開與回來時間，供查詢與統計。
+model WhereaboutsReason {
+  id          Int     @id @default(autoincrement())
+  title       String
+  icon        String  @default("📍")
+  teacherName String? @map("teacher_name")
+  isOther     Int     @default(0) @map("is_other")
+  isActive    Int     @default(1) @map("is_active")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  records WhereaboutsRecord[]
+
+  @@map("whereabouts_reasons")
+}
+
+model WhereaboutsRecord {
+  id         Int     @id @default(autoincrement())
+  courseId   Int     @map("course_id")
+  studentId  Int     @map("student_id")
+  date       String
+  slot       String
+  reasonId   Int?    @map("reason_id")
+  note       String?
+  outAt      String  @map("out_at")
+  // null＝目前仍在外面；回到教室時填入時間（紀錄保留，不刪除）。同一時段可有多筆（外出、回來、再外出）。
+  returnedAt String? @map("returned_at")
+
+  course  Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reason  WhereaboutsReason? @relation(fields: [reasonId], references: [id], onDelete: SetNull)
+
+  @@index([courseId, date, slot])
+  @@map("whereabouts_records")
+}
+
+// 在位掌握「學生自行登記頁」的免登入連結金鑰（每班一組；刪除這筆＝停用）。
+model WhereaboutsKiosk {
+  courseId  Int    @id @map("course_id")
+  token     String
+  createdAt String @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("whereabouts_kiosks")
+}

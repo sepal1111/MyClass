@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>📺 大螢幕投影即時分數看板 - 國小課堂即時記錄系統</title>
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
+  <link rel="shortcut icon" href="/static/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link id="app-favicon" rel="icon" type="image/png" href="/api/system/logo">
+  <link rel="stylesheet" href="/static/css/style.css?v=2.5">
+  <style>
+    html, body {
+      background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #020617 100%) !important;
+      color: #f8fafc;
+      height: 100vh;
+      max-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    .proj-window-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 22px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .proj-window-title {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+    }
+    .proj-select-course {
+      background: #1e293b;
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      outline: none;
+    }
+    .proj-main-content {
+      flex: 1;
+      height: calc(100vh - 65px);
+      padding: 8px 14px 10px 14px;
+      display: flex;
+      flex-direction: column;
+      max-width: 100%;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    /* 即時互動牆看板：貼文數量不固定，用自動換行網格而非排行榜那種固定 6x5 格。 */
+    .proj-livewall-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      align-content: start;
+    }
+    .livewall-proj-card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 120px;
+      animation: livewallCardIn 0.3s ease;
+    }
+    .livewall-proj-card img {
+      width: 100%;
+      border-radius: var(--radius-md);
+      object-fit: cover;
+      max-height: 260px;
+    }
+    .livewall-proj-text-content {
+      flex: 1;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .livewall-proj-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-align: right;
+    }
+    @keyframes livewallCardIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Big Screen Standalone Window Header -->
+  <header class="proj-window-header">
+    <div class="projection-title-area">
+      <span style="font-size: 2rem;">📺</span>
+      <div class="proj-window-title" id="proj-course-title" data-i18n="proj_title">課堂即時分數看板</div>
+      <select id="proj-course-select" class="proj-select-course">
+        <option value="">載入班級中...</option>
+      </select>
+      <div class="projection-period-tag" id="proj-period-label">📅 當天成績</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <!-- Period Selector -->
+      <div class="proj-period-buttons">
+        <button class="proj-period-btn active" data-period="today" data-i18n="dash_period_today">當天</button>
+        <button class="proj-period-btn" data-period="week" data-i18n="dash_period_week">當週</button>
+        <button class="proj-period-btn" data-period="month" data-i18n="dash_period_month">當月</button>
+        <button class="proj-period-btn" data-period="range" data-i18n="dash_period_range">指定區間</button>
+        <button class="proj-period-btn" data-period="semester" data-i18n="dash_period_semester">學期總計</button>
+      </div>
+
+      <!-- Mode Switcher: 個人排行 vs 小組排行 vs 座號總覽 -->
+      <div class="proj-mode-toggle">
+        <button id="btn-proj-mode-individual" class="proj-mode-btn active" data-i18n="dash_mode_individual">🧑 個人排行</button>
+        <button id="btn-proj-mode-group" class="proj-mode-btn" data-i18n="dash_mode_group">🚩 小組排行</button>
+        <button id="btn-proj-mode-all" class="proj-mode-btn" data-i18n="dash_mode_all">📋 座號總覽</button>
+      </div>
+
+      <button id="btn-proj-toggle-lang" class="btn btn-lang-toggle" style="font-size: 0.88rem; padding: 6px 12px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">🌐 繁中 / EN</button>
+      <button id="btn-proj-toggle-name-mode" class="btn btn-name-mode-toggle" style="font-size: 0.88rem; padding: 6px 12px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">👤 姓名: 中文</button>
+
+      <div style="font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; gap: 5px;">
+        <span class="live-pulse-dot"></span> <span data-i18n="proj_live_sync">即時同步</span>
+      </div>
+
+      <button id="btn-fullscreen-toggle" class="btn" style="font-size: 0.92rem; padding: 7px 14px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">⛶ 全螢幕</button>
+    </div>
+  </header>
+
+  <!-- Projection Custom Range Input Bar -->
+  <div id="proj-range-inputs" class="proj-range-bar">
+    <label class="proj-range-label" data-i18n="proj_range_label">📅 投影自訂日期：</label>
+    <div class="proj-range-dates-wrap">
+      <input type="date" id="proj-start-date" class="proj-date-input">
+      <span class="proj-range-sep">至</span>
+      <input type="date" id="proj-end-date" class="proj-date-input">
+    </div>
+    <div class="proj-range-presets" role="group" aria-label="快捷日期區間">
+      <button type="button" class="proj-range-preset-pill" data-days="7" data-i18n="proj_preset_7d">近 7 天</button>
+      <button type="button" class="proj-range-preset-pill" data-days="30" data-i18n="proj_preset_30d">近 30 天</button>
+      <button type="button" class="proj-range-preset-pill" data-preset="month" data-i18n="proj_preset_this_month">本月</button>
+    </div>
+    <button type="button" id="btn-apply-proj-range" class="btn btn-apply-range" data-i18n="proj_range_apply_btn">套用區間</button>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="proj-main-content">
+    <!-- 1. 原有榮譽榜 Podium & List Container (頒獎台 + 名次清單) -->
+    <div id="proj-podium-view-container" style="flex: 1; display: flex; flex-direction: column;">
+      <!-- Podium (Top 3) -->
+      <div id="proj-podium-stage" class="podium-container"></div>
+
+      <!-- Runner-ups (Rank 4+) -->
+      <div class="proj-runners-up-section">
+        <div class="proj-runners-up-title">
+          <span data-i18n="proj_runners_up_title">🏅 榮譽榜單其他名次</span>
+        </div>
+        <div id="proj-runners-up-list" class="proj-runners-grid"></div>
+      </div>
+    </div>
+
+    <!-- 2. 全班學生座號得分一覽 Container (依座號 1 ~ N 排序，全屏 6x5 共 30 位免捲動) -->
+    <div id="proj-all-students-container" style="display: none; flex: 1; height: 100%; overflow: hidden;">
+      <div id="proj-all-students-grid" class="proj-all-students-grid"></div>
+    </div>
+
+    <!-- 3. 即時互動牆看板：老師開場次時自動顯示、場次結束/清空後自動恢復上面兩種排行榜畫面 -->
+    <div id="proj-livewall-view-container" style="display: none; flex: 1; flex-direction: column; overflow: hidden; padding: 10px 22px;">
+      <div id="proj-livewall-title" style="font-size: 1.6rem; font-weight: 900; text-align: center; margin-bottom: 14px; color: #ffffff;">🎨 即時互動牆</div>
+      <div id="proj-livewall-grid" class="proj-livewall-grid"></div>
+    </div>
+
+    <!-- 4. 文字雲大螢幕看板 -->
+    <div id="proj-wordcloud-view-container" style="display: none; flex: 1; flex-direction: column; overflow: hidden; padding: 10px 22px;">
+      <div id="proj-wordcloud-title" style="font-size: 1.8rem; font-weight: 900; text-align: center; margin-bottom: 12px; color: #93c5fd;">☁️ 課堂即時文字雲</div>
+      <div id="proj-wordcloud-stage" style="flex: 1; position: relative; overflow: hidden; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); border-radius: var(--radius-xl); border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 50px rgba(0,0,0,0.6);"></div>
+    </div>
+
+    <!-- 5. 答題競賽 (Kahoot) 大螢幕看板 -->
+    <div id="proj-kahoot-view-container" style="display: none; flex: 1; flex-direction: column; overflow: hidden; padding: 10px 22px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <span id="proj-kahoot-q-badge" class="badge" style="background: #3b82f6; font-size: 1.1rem; font-weight: 900; padding: 6px 18px; border-radius: 9999px;">第 1 題</span>
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 1.6rem; font-weight: 900; color: #fde047;">
+          <span>⏱️</span>
+          <span id="proj-kahoot-timer">20</span>
+          <span>秒</span>
+        </div>
+        <span id="proj-kahoot-answered-badge" style="font-size: 1.1rem; font-weight: 800; background: rgba(0,0,0,0.4); padding: 6px 18px; border-radius: 9999px; color: #93c5fd;">已答題：0 人</span>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.15); border-radius: var(--radius-xl); padding: 22px; text-align: center; margin-bottom: 16px;">
+        <div id="proj-kahoot-prompt" style="font-size: 2rem; font-weight: 900; color: #fff; line-height: 1.4;">題目載入中...</div>
+      </div>
+
+      <div id="proj-kahoot-options-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; margin-bottom: 14px;">
+        <div class="kahoot-opt-card" id="proj-kahoot-opt-0" style="background: #2563eb; color: #fff; padding: 22px; border-radius: 16px; display: flex; align-items: center; gap: 16px; font-size: 1.6rem; font-weight: 800;">
+          <span style="background: rgba(0,0,0,0.25); width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem;">▲ A</span>
+          <span id="proj-kahoot-text-0" style="flex: 1;">選項 A</span>
+          <div id="proj-kahoot-stat-0" style="display: none; font-size: 1.4rem; font-weight: 900; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 8px;">0 票</div>
+        </div>
+        <div class="kahoot-opt-card" id="proj-kahoot-opt-1" style="background: #dc2626; color: #fff; padding: 22px; border-radius: 16px; display: flex; align-items: center; gap: 16px; font-size: 1.6rem; font-weight: 800;">
+          <span style="background: rgba(0,0,0,0.25); width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem;">◆ B</span>
+          <span id="proj-kahoot-text-1" style="flex: 1;">選項 B</span>
+          <div id="proj-kahoot-stat-1" style="display: none; font-size: 1.4rem; font-weight: 900; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 8px;">0 票</div>
+        </div>
+        <div class="kahoot-opt-card" id="proj-kahoot-opt-2" style="background: #16a34a; color: #fff; padding: 22px; border-radius: 16px; display: flex; align-items: center; gap: 16px; font-size: 1.6rem; font-weight: 800;">
+          <span style="background: rgba(0,0,0,0.25); width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem;">● C</span>
+          <span id="proj-kahoot-text-2" style="flex: 1;">選項 C</span>
+          <div id="proj-kahoot-stat-2" style="display: none; font-size: 1.4rem; font-weight: 900; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 8px;">0 票</div>
+        </div>
+        <div class="kahoot-opt-card" id="proj-kahoot-opt-3" style="background: #9333ea; color: #fff; padding: 22px; border-radius: 16px; display: flex; align-items: center; gap: 16px; font-size: 1.6rem; font-weight: 800;">
+          <span style="background: rgba(0,0,0,0.25); width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem;">■ D</span>
+          <span id="proj-kahoot-text-3" style="flex: 1;">選項 D</span>
+          <div id="proj-kahoot-stat-3" style="display: none; font-size: 1.4rem; font-weight: 900; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 8px;">0 票</div>
+        </div>
+      </div>
+
+      <div id="proj-kahoot-explanation-box" style="display: none; background: rgba(30, 58, 138, 0.5); border: 2px solid rgba(96, 165, 250, 0.5); border-radius: 10px; padding: 14px 20px; font-size: 1.2rem; color: #e0f2fe;">
+        <b>💡 題目解析：</b><span id="proj-kahoot-explanation-text"></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toolkit Remote-Control Receiver: draw reveal / bulletin, triggered from a phone -->
+  <div id="proj-toolkit-overlay" class="proj-toolkit-overlay"></div>
+  <div id="proj-timer-widget" class="proj-timer-widget" style="display: none;">
+    <div class="proj-timer-label">⏱️ 課堂計時</div>
+    <div id="proj-timer-display" class="proj-timer-display">00:00</div>
+  </div>
+
+  <!-- Generic Beautified Confirm / Alert Modal (取代原生 confirm() / alert() 對話框) -->
+  <div id="modal-generic-confirm" class="modal-overlay" style="z-index: 100020;">
+    <div class="modal-content glass-card" style="max-width: 440px; text-align: center; padding: 32px 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <div id="generic-confirm-icon-wrap" style="width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
+        <span id="generic-confirm-icon">🔄</span>
+      </div>
+      <h3 id="generic-confirm-title" style="margin-bottom: 10px; font-weight: 800; font-size: 1.3rem; color: var(--text-main);"></h3>
+      <p id="generic-confirm-desc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; display: none;"></p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button type="button" id="btn-generic-confirm-cancel" class="btn btn-secondary" style="flex: 1; padding: 11px 0; font-weight: 700; font-size: 1rem;">取消</button>
+        <button type="button" id="btn-generic-confirm-ok" class="btn" style="flex: 1; padding: 11px 0; font-weight: 800; font-size: 1rem;">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/static/js/api.js?v=3.0"></script>
+  <script src="/static/js/i18n.js?v=3.0"></script>
+  <script src="/static/js/datepicker.js?v=3.0"></script>
+  <script src="/static/js/custom-select.js?v=1.0"></script>
+  <script src="/static/js/audio-engine.js?v=3.0"></script>
+  <script src="/static/js/realtime.js?v=3.0"></script>
+  <script src="/static/js/projection.js?v=3.0"></script>
+</body>
+</html>

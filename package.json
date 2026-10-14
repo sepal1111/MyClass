@@ -1,0 +1,48 @@
+{
+  "name": "myclass-server",
+  "version": "2.0.0-node.1",
+  "description": "MyClass - Node.js/Express/Prisma 後端 (取代原 Python/FastAPI 版本)",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "tsx watch src/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "build:exe:win": "node scripts/build-exe.mjs win",
+    "build:installer:win": "node scripts/build-installer.mjs",
+    "build:exe:mac": "node scripts/build-exe.mjs mac",
+    "build:mac": "node scripts/build-exe.mjs mac",
+    "build:mac:arm64": "node scripts/build-exe.mjs mac-arm64",
+    "build:mac:x64": "node scripts/build-exe.mjs mac-x64"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4",
+    "selfsigned": "^5.5.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "@types/qrcode": "^1.5.5",
+    "@yao-pkg/pkg": "^6.22.0",
+    "prisma": "^5.22.0",
+    "rcedit": "^4.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

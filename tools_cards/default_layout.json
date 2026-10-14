@@ -1,0 +1,23 @@
+{
+  "qr_code": {
+    "enabled": true,
+    "x": 39,
+    "y": 633,
+    "width": 136,
+    "height": 136,
+    "source_column": "card_code",
+    "error_correction": "M"
+  },
+  "text_elements": {
+    "card_no": {
+      "enabled": true,
+      "column": "card_no",
+      "x": 547,
+      "y": 755,
+      "font_size": 22,
+      "font_color": "#000000",
+      "prefix": "No.",
+      "replace_underscore_with_hyphen": true
+    }
+  }
+}

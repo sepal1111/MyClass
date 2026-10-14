@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公出登記 - MyClass</title>
+<style>
+  :root {
+    --primary: #0284c7;
+    --primary-bg: #f0f9ff;
+    --border: #bae6fd;
+    --text: #1e293b;
+    --muted: #64748b;
+    --card: #ffffff;
+    --bg: #f1f5f9;
+    --out: #c2410c;
+    --out-bg: rgba(249, 115, 22, 0.14);
+    --in: #2f8a62;
+    --in-bg: rgba(79, 174, 130, 0.16);
+    --hero1: #0284c7;
+    --hero2: #0369a1;
+  }
+  /* 午休：暖色系背景，與早自修（藍色系）一眼區分 */
+  body.slot-noon {
+    --primary: #ea580c;
+    --primary-bg: #fff7ed;
+    --border: #fed7aa;
+    --bg: #fff3e0;
+    --hero1: #f59e0b;
+    --hero2: #ea580c;
+    /* 底色已是暖橘，「不在教室」改用紅色才分得出來 */
+    --out: #b91c1c;
+    --out-bg: rgba(220, 38, 38, 0.12);
+    --out-border: rgba(220, 38, 38, 0.55);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #38bdf8; --primary-bg: #0c2a3d; --border: #1e4a66;
+      --text: #e2e8f0; --muted: #94a3b8; --card: #1e293b; --bg: #0f172a;
+      --out: #fdba74; --out-bg: rgba(249, 115, 22, 0.2);
+      --in: #6ee7b7; --in-bg: rgba(79, 174, 130, 0.2);
+    }
+    body.slot-noon {
+      --primary: #fb923c; --primary-bg: #3a2210; --border: #7c4a1e; --bg: #2a170a;
+      --hero1: #b45309; --hero2: #9a3412;
+      --out: #fca5a5; --out-bg: rgba(220, 38, 38, 0.22); --out-border: rgba(248, 113, 113, 0.6);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; transition: background 0.3s ease; background: var(--bg); color: var(--text); font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", system-ui, sans-serif; font-size: 17px; line-height: 1.5; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 14px; }
+  header.hero { background: linear-gradient(135deg, var(--hero1), var(--hero2)); color: #fff; border-radius: 16px; padding: 16px 18px; margin-bottom: 12px; }
+  header.hero h1 { margin: 0; font-size: 1.4rem; }
+  header.hero p { margin: 4px 0 0; opacity: 0.95; font-size: 0.92rem; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .slot-btn { flex: 1 1 140px; min-height: 48px; border: 2px solid var(--border); background: var(--card); color: var(--text); border-radius: 12px; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
+  .slot-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .panel { background: var(--card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .panel h2 { margin: 0 0 8px; font-size: 1.02rem; color: var(--out); }
+  .out-row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; padding: 6px 0; border-top: 1px dashed var(--border); }
+  .out-row:first-of-type { border-top: none; }
+  .tag { font-size: 0.8rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: rgba(59,130,246,0.14); color: #2563eb; white-space: nowrap; }
+  @media (prefers-color-scheme: dark) { .tag { color: #93c5fd; } }
+  .none { color: var(--in); font-weight: 700; }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 0 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
+  .stu { min-height: 86px; border: 2px solid var(--border); background: var(--card); color: var(--text); border-radius: 14px; padding: 8px 6px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .stu:active { transform: scale(0.97); }
+  .stu .n { font-size: 0.8rem; color: var(--muted); font-weight: 800; }
+  .stu .nm { font-size: 1.12rem; font-weight: 900; word-break: break-all; text-align: center; }
+  .stu .st { margin-top: 3px; font-size: 0.76rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+  .stu .st.in { color: var(--in); background: var(--in-bg); }
+  .stu.sel { outline: 3px solid var(--primary); outline-offset: 1px; background: var(--primary-bg); }
+  .viewbar { display: flex; gap: 6px; margin-bottom: 10px; }
+  .view-btn { min-height: 40px; padding: 0 14px; border: 2px solid var(--border); background: var(--card); color: var(--text); border-radius: 10px; font-size: 0.95rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .view-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .seatwrap { display: flex; gap: 8px; flex-direction: column; }
+  .seatwrap.bottom { flex-direction: column-reverse; }
+  .seatwrap.left { flex-direction: row; }
+  .seatwrap.right { flex-direction: row-reverse; }
+  .board { background: linear-gradient(135deg, #2f5d46, #1f3d2b); color: #fff; font-weight: 900; letter-spacing: 0.3em; text-align: center; padding: 6px 10px; border-radius: 10px; flex: 0 0 auto; }
+  .seatwrap.left .board, .seatwrap.right .board { writing-mode: vertical-rl; padding: 10px 6px; }
+  .seatscroll { overflow-x: auto; flex: 1; min-width: 0; }
+  .seatgrid { display: grid; gap: 8px; }
+  .seatgrid .stu { min-height: 76px; padding: 6px 3px; }
+  .seatgrid .stu .nm { font-size: 0.98rem; }
+  .seatempty { border: 2px dashed var(--border); border-radius: 14px; min-height: 76px; opacity: 0.6; }
+  .hintbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .selbar { position: sticky; bottom: 10px; margin-top: 12px; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; background: var(--card); border: 2px solid var(--primary); border-radius: 14px; padding: 10px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .stu.out { border-color: var(--out-border, rgba(249,115,22,0.6)); background: var(--out-bg); }
+  .stu.out .st { color: var(--out); background: var(--out-bg); }
+  .msg { text-align: center; padding: 40px 16px; color: var(--muted); }
+  .msg.err { color: #dc2626; font-weight: 800; }
+  .overlay { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,0.6); display: none; align-items: flex-end; justify-content: center; padding: 0; }
+  .overlay.show { display: flex; }
+  .sheet { background: var(--card); width: min(560px, 100%); max-height: 90vh; overflow-y: auto; border-radius: 20px 20px 0 0; padding: 18px 16px 20px; }
+  @media (min-width: 640px) { .overlay { align-items: center; padding: 14px; } .sheet { border-radius: 20px; } }
+  .sheet h3 { margin: 0 0 2px; font-size: 1.25rem; }
+  .sheet .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 12px; }
+  .btn { min-height: 48px; border: none; border-radius: 12px; font-size: 1.02rem; font-weight: 800; cursor: pointer; font-family: inherit; padding: 8px 14px; }
+  .btn.primary { background: var(--primary); color: #fff; }
+  .btn.green { background: linear-gradient(135deg, #4fae82, #2f8a62); color: #fff; width: 100%; margin-bottom: 12px; }
+  .btn.ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+  .reasons { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+  .reasons .btn { background: var(--primary-bg); border: 1.5px solid var(--border); color: var(--text); text-align: left; line-height: 1.3; }
+  .reasons .btn small { display: block; color: var(--muted); font-weight: 600; font-size: 0.76rem; }
+  input.txt { width: 100%; font-size: 1.05rem; padding: 11px 12px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; margin: 6px 0 8px; }
+  .toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: rgba(15,23,42,0.95); color: #fff; padding: 11px 20px; border-radius: 12px; font-weight: 800; z-index: 99; display: none; max-width: 92vw; }
+  .toast.show { display: block; }
+  .toast.err { background: #b91c1c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>🚶 公出登記</h1>
+    <p id="subTitle">載入中…</p>
+  </header>
+  <div id="app"><div class="msg">載入中…</div></div>
+</div>
+
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/whereabouts-kiosk.js"></script>
+</body>
+</html>

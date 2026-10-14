@@ -1,0 +1,5168 @@
+/* ==========================================================================
+   國小課堂即時記錄系統 - UI Design System (Ported from KYPS Scoreboard)
+   Design Aesthetics: Elegant, Soft-Toned Light Mode Only —
+   Glassmorphism, Pill Navigation, Rich Typography, Elevated Cards & Gradients
+   ========================================================================== */
+
+:root {
+  /* Core Color Palette (softened, muted elegant light tones) */
+  --primary-hue: 226;
+  --primary: #5b7cd6;
+  --primary-light: #7b98e0;
+  --primary-dark: #4a67ba;
+  --primary-gradient: linear-gradient(135deg, #5b7cd6 0%, #8073c4 100%);
+  --brand-gradient: linear-gradient(135deg, #5b7cd6 0%, #9575c4 50%, #cf83a8 100%);
+  --brand-text-gradient: linear-gradient(90deg, #5b7cd6, #9575c4, #cf83a8);
+
+  --accent-positive: #4fae82;
+  --accent-positive-bg: #eef8f2;
+  --accent-positive-border: #c2e4d1;
+
+  --accent-negative: #d9807e;
+  --accent-negative-bg: #fbf1f1;
+  --accent-negative-border: #f0cccb;
+
+  --accent-warning: #d3a24c;
+  --accent-warning-bg: #fbf6ea;
+  --accent-warning-border: #eeddb2;
+
+  --accent-info: #5f9fcf;
+  --accent-purple: #9a86c4;
+
+  /* Elegant Light Theme (Soft, Muted Palette) */
+  --bg-main: #faf9f6;
+  --bg-gradient: linear-gradient(135deg, #f2f2f8 0%, #faf9f6 45%, #f6f1f4 100%);
+  --card-bg: #ffffff;
+  --card-border: #e9e6e0;
+  --card-border-hover: #b9c6e6;
+  --text-main: #3d4250;
+  --text-muted: #767c8a;
+  --text-subtle: #a2a7b3;
+  --text-inverse: #ffffff;
+
+  --header-bg: rgba(255, 255, 255, 0.88);
+  --header-border: #e9e6e0;
+
+  --nav-bg: rgba(255, 255, 255, 0.85);
+  --nav-border: #e9e6e0;
+  --nav-tab-color: #5c6270;
+  --nav-tab-hover-bg: #f2f1ec;
+
+  --input-bg: #ffffff;
+  --input-border: #d8d4cb;
+  --input-text: #3d4250;
+
+  --shadow-xs: 0 1px 2px 0 rgba(60, 50, 40, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(60, 50, 40, 0.06), 0 1px 2px -1px rgba(60, 50, 40, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(60, 50, 40, 0.06), 0 2px 4px -2px rgba(60, 50, 40, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(60, 50, 40, 0.07), 0 4px 6px -4px rgba(60, 50, 40, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(60, 50, 40, 0.07), 0 8px 10px -6px rgba(60, 50, 40, 0.03);
+  --shadow-2xl: 0 25px 50px -12px rgba(60, 50, 40, 0.16);
+  --shadow-primary: 0 4px 14px 0 rgba(91, 124, 214, 0.22);
+
+  --glass-backdrop: blur(12px);
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==========================================================================
+   Global Reset & Base Typography
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Rapid taps (quick scoring, repeated rule clicks) must never trigger the
+     browser's double-tap-to-zoom gesture; pinch-zoom still works fine. */
+  touch-action: manipulation;
+}
+
+body {
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  letter-spacing: -0.01em;
+}
+
+/* Gradient lives on its own fixed layer behind everything, instead of
+   `background-attachment: fixed` directly on body — Chrome has a long-standing
+   rendering bug where a fixed body background combined with backdrop-filter
+   (used throughout this app's header/popovers/glass-cards) leaves blank
+   unpainted regions that get worse as the viewport grows (visible on a
+   maximized/large window, fine on a smaller one). A dedicated fixed
+   pseudo-element composites as its own layer and sidesteps the bug entirely
+   while looking identical (gradient stays put regardless of scroll). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-gradient);
+}
+
+/* Custom Scrollbar matching Scoreboard */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* ==========================================================================
+   App Header (Header Bar)
+   ========================================================================== */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--header-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border-bottom: 1px solid var(--header-border);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.header-brand .logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
+}
+
+.header-brand:hover .logo-img {
+  transform: scale(1.08);
+}
+
+.header-brand h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: var(--brand-text-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.02em;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-select {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-fast);
+}
+
+.course-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 124, 214, 0.15);
+}
+
+.btn-icon {
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  color: var(--text-main);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.05rem;
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+/* ==========================================================================
+   Navigation Tabs (Pill Segmented Design from Scoreboard)
+   ========================================================================== */
+
+.nav-tabs-wrapper {
+  background: var(--nav-bg);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border-bottom: 1px solid var(--nav-border);
+  padding: 8px 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 59px;
+  z-index: 90;
+}
+
+.nav-tabs-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.context-nav-wrapper {
+  padding: 8px 16px 10px 16px;
+}
+
+.context-nav-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Tier 1: Primary Scenario Pills */
+.context-scenario-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  background: rgba(91, 124, 214, 0.08);
+  border: 1px solid rgba(91, 124, 214, 0.16);
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.scenario-pill {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 20px;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+}
+
+.scenario-pill:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.scenario-pill.active {
+  color: #ffffff;
+  background: var(--primary-gradient);
+  box-shadow: 0 4px 14px rgba(91, 124, 214, 0.35);
+}
+
+/* Tier 2: Subtabs Bar */
+.context-subtabs-bar {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+}
+
+.context-subtab-group {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  animation: subtabFadeIn 0.22s ease-out;
+}
+
+.context-subtab-group.active {
+  display: flex;
+}
+
+@keyframes subtabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Scenario Quick Pills */
+.mobile-scenario-pills {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.mobile-scenario-btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-scenario-btn.active {
+  background: var(--primary-gradient);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(91, 124, 214, 0.3);
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nav-tab {
+  background: transparent;
+  border: none;
+  color: var(--nav-tab-color);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-smooth);
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  background: var(--nav-tab-hover-bg);
+}
+
+.nav-tab.active {
+  color: #ffffff;
+  background: var(--primary-gradient);
+  box-shadow: var(--shadow-primary);
+}
+
+.nav-tab.active:hover {
+  color: #ffffff;
+  background: var(--primary-gradient);
+}
+
+/* Mobile Nav Selector */
+.mobile-nav-wrapper {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2px 4px;
+}
+
+.mobile-nav-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.mobile-nav-select {
+  flex: 1;
+  background: var(--input-bg);
+  border: 1.5px solid var(--primary-light);
+  color: var(--text-main);
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  outline: none;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .desktop-nav-tabs {
+    display: none !important;
+  }
+  .mobile-nav-wrapper {
+    display: flex !important;
+  }
+}
+
+/* ==========================================================================
+   App Main Container & Tab Panes
+   ========================================================================== */
+
+.app-main {
+  flex: 1;
+  padding: 20px 16px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.tab-pane {
+  display: none;
+  animation: tabFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Glass Cards & Containers (Scoreboard Modern Card Aesthetics)
+   ========================================================================== */
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.glass-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.glass-card-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+/* Quick Group Pill Filter Bar */
+#quick-group-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+#quick-group-bar::-webkit-scrollbar {
+  display: none;
+}
+
+#quick-group-bar button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+  pointer-events: auto;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+#quick-group-bar button:disabled:hover {
+  background: var(--input-bg);
+  border-color: var(--card-border);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.quick-group-pill {
+  background: var(--input-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text-main);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+  box-shadow: var(--shadow-xs);
+}
+
+.quick-group-pill:hover {
+  border-color: var(--primary-light);
+  background: #eff6ff;
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.quick-group-pill.active {
+  background: var(--primary-gradient);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: var(--shadow-primary);
+}
+
+/* ==========================================================================
+   Student Grids & Cards (Elevated Interactive Cards)
+   ========================================================================== */
+
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .student-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (min-width: 640px) {
+  .student-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .student-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+}
+
+.student-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+}
+
+.student-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-lg);
+}
+
+.student-card:active {
+  transform: scale(0.97);
+}
+
+.student-card.selected {
+  border-color: var(--primary);
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(91, 124, 214, 0.25), var(--shadow-md);
+}
+
+/* Absent & Leave Student Styling */
+.student-card.absent {
+  opacity: 0.52;
+  filter: grayscale(0.75);
+  border-color: rgba(217, 128, 126, 0.35);
+  background: var(--accent-negative-bg);
+}
+
+.student-card.absent::after {
+  content: attr(data-att-label);
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--accent-negative);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-xs);
+}
+
+.student-card.att-official_leave::after {
+  background: #5f9fcf;
+}
+.student-card.att-sick_leave::after {
+  background: #9a86c4;
+}
+.student-card.att-personal_leave::after {
+  background: #ec4899;
+}
+.student-card.att-bereavement_leave::after {
+  background: #475569;
+}
+.student-card.att-late::after {
+  background: #d3a24c;
+}
+
+.student-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #64748b, #475569);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  border: 2px solid #ffffff;
+}
+
+.student-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.student-avatar.gender-F {
+  background: linear-gradient(135deg, #f472b6, #cf83a8);
+  color: #ffffff;
+}
+
+.student-avatar.gender-M {
+  background: linear-gradient(135deg, #60a5fa, #5b7cd6);
+  color: #ffffff;
+}
+
+.student-number {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: rgba(148, 163, 184, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.student-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-score-badge {
+  margin-top: 8px;
+  background: linear-gradient(135deg, #d3a24c, #d97706);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(211, 162, 76, 0.3);
+  letter-spacing: -0.02em;
+}
+
+/* Quick Scoring Staged Mode Styles (Clean Card & Large Overlay) */
+.student-card.quick-mode-card {
+  position: relative;
+  background: var(--card-bg, #ffffff);
+  border: 1.5px solid var(--card-border, #e2e8f0);
+  border-radius: 20px;
+  padding: 14px 10px 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  cursor: default !important;
+  user-select: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.student-card.quick-mode-card:hover {
+  transform: none !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07) !important;
+}
+
+.student-card.quick-mode-card .student-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.student-card.quick-mode-card .student-number {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.student-card.quick-mode-card .student-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+/* Action buttons: big rounded square red minus and green plus */
+.quick-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.btn-quick-staged {
+  flex: 1;
+  height: 50px;
+  max-width: 64px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  outline: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: transform 0.08s ease, filter 0.15s ease, box-shadow 0.1s ease;
+}
+
+.btn-quick-staged:hover {
+  filter: brightness(1.06);
+}
+
+.btn-quick-staged:active {
+  transform: scale(0.92);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-quick-staged.minus {
+  background: #e53935;
+}
+
+.btn-quick-staged.minus:hover {
+  background: #dc2626;
+}
+
+.btn-quick-staged.plus {
+  background: #10b981;
+}
+
+.btn-quick-staged.plus:hover {
+  background: #059669;
+}
+
+/* Staged pending score large overlay */
+.quick-score-pending-badge {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 10;
+  letter-spacing: -0.04em;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Outfit", sans-serif;
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.96), 0 0 8px #ffffff, 0 2px 10px rgba(0, 0, 0, 0.2);
+  display: none;
+}
+
+.quick-score-pending-badge.has-pending {
+  display: block;
+}
+
+.quick-score-pending-badge.positive {
+  color: #10b981;
+}
+
+.quick-score-pending-badge.negative {
+  color: #e53935;
+}
+
+.quick-score-pending-badge.pop-animate {
+  animation: pendingScorePop 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pendingScorePop {
+  0% { transform: translateX(-50%) scale(0.8); }
+  50% { transform: translateX(-50%) scale(1.16); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Seating View Specific Overrides for Quick Scoring */
+.scoring-seat-cell.quick-mode-cell {
+  cursor: default !important;
+}
+
+.scoring-seat-cell .quick-score-pending-badge {
+  top: 6px;
+  font-size: 2.6rem;
+}
+
+.scoring-seat-cell .btn-quick-staged {
+  height: 38px;
+  max-width: 48px;
+  border-radius: 10px;
+}
+
+.scoring-seat-cell .btn-quick-staged svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Quick Scoring Mode Toggle Button Active State */
+#btn-toggle-quick-scoring.active {
+  background: linear-gradient(135deg, #4fae82, #059669) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 10px rgba(79, 174, 130, 0.4) !important;
+}
+
+/* Floating animation for instant score feedback */
+@keyframes scorePopUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -18px) scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -32px) scale(0.85);
+  }
+}
+
+.score-float-feedback {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-weight: 900;
+  font-size: 1.4rem;
+  pointer-events: none;
+  z-index: 100;
+  animation: scorePopUp 0.75s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.score-float-feedback.positive {
+  color: #4fae82;
+}
+
+.score-float-feedback.negative {
+  color: #d9807e;
+}
+
+
+/* ==========================================================================
+   Evaluation Rules & Action Bar (Vibrant Score Buttons)
+   ========================================================================== */
+
+.rules-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.rule-btn {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text-main);
+  padding: 9px 15px;
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rule-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.rule-btn:active {
+  transform: scale(0.96);
+}
+
+.rule-btn.positive {
+  background: var(--accent-positive-bg);
+  border-color: var(--accent-positive-border);
+  color: #065f46;
+}
+
+.rule-btn.positive:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.rule-btn.negative {
+  background: var(--accent-negative-bg);
+  border-color: var(--accent-negative-border);
+  color: #991b1b;
+}
+
+.rule-btn.negative:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.score-badge-change {
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+}
+
+.rule-btn.positive .score-badge-change {
+  background: var(--accent-positive);
+  color: #ffffff;
+}
+
+.rule-btn.negative .score-badge-change {
+  background: var(--accent-negative);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Cursor Follow Score Popover (Floating Follower Scoring Bar)
+   ========================================================================== */
+
+.cursor-score-popover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 950;
+  width: 370px;
+  max-width: calc(100vw - 24px);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  padding: 14px;
+  box-shadow: var(--shadow-2xl);
+  transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.cursor-score-popover.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* ==========================================================================
+   Floating Flying Score Number Feedback Animation
+   ========================================================================== */
+
+.floating-score-number {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.5rem;
+  font-weight: 900;
+  z-index: 9999;
+  animation: floatScoreUp 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+@keyframes floatScoreUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(0.6);
+  }
+  50% {
+    transform: translate(-50%, -35px) scale(1.25);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70px) scale(1.4);
+  }
+}
+
+/* ==========================================================================
+   Grouping Grid & Group Columns
+   ========================================================================== */
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.group-column {
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-normal);
+}
+
+.group-column.drag-over {
+  border-color: var(--primary);
+  background: #eff6ff;
+  box-shadow: var(--shadow-md);
+  transform: scale(1.01);
+}
+
+.group-header {
+  font-weight: 800;
+  font-size: 1.08rem;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+/* ==========================================================================
+   Seating Chart (座位表) Styles
+   ========================================================================== */
+
+.podium-indicator {
+  background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%);
+  border: 1.5px dashed #93c5fd;
+  color: #1e40af;
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 6px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-xs);
+}
+
+.seating-grid-wrapper {
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.seating-grid {
+  display: grid;
+  gap: 12px;
+  margin: 0 auto;
+}
+
+.seat-cell {
+  background: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  min-height: 105px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.seat-cell.occupied {
+  border-style: solid;
+  border-color: var(--card-border);
+  background: var(--card-bg);
+  cursor: grab;
+  box-shadow: var(--shadow-xs);
+}
+
+.seat-cell.occupied:hover {
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.seat-cell.empty {
+  color: var(--text-subtle);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.seat-cell.drag-over {
+  border-color: var(--accent-positive);
+  background: var(--accent-positive-bg);
+  transform: scale(1.03);
+}
+
+.seat-coord-badge {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 0.68rem;
+  color: var(--text-subtle);
+  font-weight: 800;
+  font-family: ui-monospace, monospace;
+}
+
+/* ==========================================================================
+   Scoring Seating View & Segmented Control
+   ========================================================================== */
+
+.segmented-control {
+  display: inline-flex;
+  background: rgba(233, 230, 224, 0.55);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 3px;
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(8px);
+}
+
+.segmented-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 5px 13px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.segmented-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.segmented-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(91, 124, 214, 0.35);
+}
+
+/* Interactive Scoring Seat Cell */
+.seat-cell.scoring-seat-cell.occupied {
+  cursor: pointer;
+  min-height: 124px;
+  padding: 8px 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.18s ease, background 0.18s ease;
+}
+
+.seat-cell.scoring-seat-cell.occupied:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.seat-cell.scoring-seat-cell.occupied:active {
+  transform: scale(0.97);
+}
+
+.seat-cell.scoring-seat-cell.selected {
+  border-color: var(--primary) !important;
+  background: #eff6ff !important;
+  box-shadow: 0 0 0 3px rgba(91, 124, 214, 0.28), var(--shadow-md) !important;
+}
+
+.seat-cell.scoring-seat-cell.absent {
+  opacity: 0.52;
+  filter: grayscale(0.75);
+  border-color: rgba(217, 128, 126, 0.35) !important;
+  background: var(--accent-negative-bg) !important;
+}
+
+.seat-cell.scoring-seat-cell.absent::after {
+  content: attr(data-att-label);
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: var(--accent-negative);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-xs);
+  pointer-events: none;
+}
+
+.seat-cell.scoring-seat-cell.att-official_leave::after { background: #5f9fcf; }
+.seat-cell.scoring-seat-cell.att-sick_leave::after { background: #9a86c4; }
+.seat-cell.scoring-seat-cell.att-personal_leave::after { background: #ec4899; }
+.seat-cell.scoring-seat-cell.att-bereavement_leave::after { background: #475569; }
+.seat-cell.scoring-seat-cell.att-late::after { background: #d3a24c; }
+
+.scoring-seat-cell .quick-score-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.scoring-seat-cell .student-score-badge {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+  background: rgba(123, 152, 224, 0.15);
+  border-radius: var(--radius-full);
+  padding: 2px 7px;
+  white-space: nowrap;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty Seat in Scoring View */
+.seat-cell.scoring-seat-empty {
+  opacity: 0.65;
+  background: rgba(248, 250, 252, 0.6);
+  border: 1.5px dashed var(--card-border);
+  min-height: 124px;
+}
+
+.seat-cell.scoring-seat-empty:hover {
+  border-color: var(--card-border);
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Leaderboard & Statistics
+   ========================================================================== */
+
+.dash-leaderboard-section {
+  animation: tabFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-subpane {
+  display: block;
+  animation: tabFadeIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-subpane.active {
+  display: block;
+}
+
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .leaderboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.leader-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast);
+}
+
+.leader-item:hover {
+  transform: translateX(3px);
+  border-color: var(--card-border-hover);
+}
+
+.leader-rank {
+  font-size: 1.25rem;
+  font-weight: 900;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.2);
+  font-family: ui-monospace, monospace;
+}
+
+.leader-rank.rank-1 {
+  background: linear-gradient(135deg, #d3a24c, #d97706);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(211, 162, 76, 0.4);
+}
+
+.leader-rank.rank-2 {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.4);
+}
+
+.leader-rank.rank-3 {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.4);
+}
+
+/* ==========================================================================
+   Buttons & Inputs
+   ========================================================================== */
+
+.btn {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  box-shadow: var(--shadow-primary);
+  transition: all var(--transition-normal);
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px 0 rgba(91, 124, 214, 0.38);
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-secondary {
+  background: var(--input-bg);
+  border: 1.5px solid var(--card-border);
+  color: var(--text-main);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #d9807e, #dc2626);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(217, 128, 126, 0.25);
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #4fae82, #059669);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(79, 174, 130, 0.25);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.input-control {
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  color: var(--input-text);
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  width: 100%;
+  box-shadow: var(--shadow-xs);
+  transition: var(--transition-fast);
+}
+
+.input-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 124, 214, 0.15);
+}
+
+/* ==========================================================================
+   自訂下拉選單（static/js/custom-select.js 動態產生，取代原生 <select> 的
+   選項清單彈出框——原生清單是作業系統繪製的，圓角/陰影/hover 顏色都無法自訂，
+   只在桌面滑鼠環境套用，見該檔案開頭說明）。
+   ========================================================================== */
+.custom-select-native-hidden { display: none !important; }
+
+.custom-select-trigger {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.custom-select-trigger.is-disabled { cursor: not-allowed; opacity: 0.6; }
+.custom-select-trigger-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.custom-select-trigger-caret { flex-shrink: 0; font-size: 0.7em; opacity: 0.6; transition: transform 0.15s; }
+.custom-select-trigger[aria-expanded="true"] .custom-select-trigger-caret { transform: rotate(180deg); }
+
+.custom-select-panel {
+  position: fixed;
+  z-index: 100050;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  display: none;
+}
+.custom-select-panel.open { display: block; opacity: 1; transform: translateY(0); }
+
+.custom-select-option {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  color: var(--text-main);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.custom-select-option:hover,
+.custom-select-option.active { background: var(--nav-bg); }
+.custom-select-option.selected { background: rgba(91, 124, 214, 0.14); color: var(--primary); font-weight: 700; }
+.custom-select-option.disabled { color: var(--text-subtle); cursor: not-allowed; }
+
+.error-box {
+  background: var(--accent-negative-bg);
+  border: 1px solid var(--accent-negative-border);
+  color: var(--accent-negative);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+  display: none;
+}
+
+/* ==========================================================================
+   Toast Undo Component (Scoreboard Floating Toast)
+   ========================================================================== */
+
+.toast-undo-container {
+  position: fixed;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast-undo {
+  pointer-events: auto;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 12px 22px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: slideDownToast 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 320px;
+}
+
+@keyframes slideDownToast {
+  from { opacity: 0; transform: translateY(-25px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.toast-undo .btn-undo {
+  background: linear-gradient(135deg, #d3a24c, #d97706);
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(211, 162, 76, 0.3);
+  transition: transform var(--transition-fast);
+}
+
+.toast-undo .btn-undo:hover {
+  transform: scale(1.06);
+}
+
+/* ==========================================================================
+   Modals & Dialogs (Rounded-3xl Clean Floating Modals)
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-2xl);
+  padding: 26px;
+  width: 92%;
+  max-width: 520px;
+  box-shadow: var(--shadow-2xl);
+  transform: scale(0.95);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.open .modal-content {
+  transform: scale(1);
+}
+
+/* ==========================================================================
+   圖片放大檢視 Lightbox（static/js/image-lightbox.js，即時互動牆手繪/拍照貼文點擊
+   後開啟，取代原本開新分頁的做法）。用 .lightbox-overlay 覆蓋 .modal-content 慣用的
+   小張置中卡片樣式，改成近全螢幕的深色檢視器。
+   ========================================================================== */
+.lightbox-overlay .lightbox-content {
+  transform: none; /* 蓋掉 .modal-content 的 scale 開合動畫，這裡改用淡入即可 */
+}
+
+.lightbox-content {
+  width: min(94vw, 1100px);
+  height: min(90vh, 900px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: var(--shadow-2xl, 0 25px 60px rgba(0, 0, 0, 0.5));
+  overflow: hidden;
+}
+
+.lightbox-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lightbox-zoom-label {
+  min-width: 48px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.lightbox-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.lightbox-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.lightbox-btn[title="還原大小"] {
+  width: auto;
+  padding: 0 12px;
+  font-size: 0.85rem;
+}
+
+.lightbox-close-btn {
+  margin-left: 8px;
+  background: rgba(217, 128, 126, 0.15);
+  border-color: rgba(217, 128, 126, 0.4);
+}
+
+.lightbox-close-btn:hover {
+  background: rgba(217, 128, 126, 0.3);
+}
+
+.lightbox-image-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  background:
+    linear-gradient(45deg, rgba(255,255,255,0.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.04) 75%) 0 0 / 24px 24px,
+    linear-gradient(45deg, rgba(255,255,255,0.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.04) 75%) 12px 12px / 24px 24px;
+}
+
+.lightbox-image-wrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.08s linear;
+  touch-action: none;
+  user-select: none;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   Big Screen Projection Mode (Scoreboard Dark Projector Aesthetics)
+   ========================================================================== */
+
+.projection-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: radial-gradient(circle at top center, #1e1b4b 0%, #0f172a 70%, #020617 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.projection-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.projection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 28px;
+}
+
+.projection-title-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.projection-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #60a5fa, #c084fc, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.projection-period-tag {
+  background: rgba(123, 152, 224, 0.25);
+  border: 1.5px solid #60a5fa;
+  color: #93c5fd;
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+/* Projection Mode Switcher */
+.proj-mode-toggle {
+  display: inline-flex;
+  background: rgba(30, 41, 59, 0.85);
+  padding: 4px;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.proj-mode-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.proj-mode-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.proj-mode-btn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #5b7cd6, #9575c4);
+  box-shadow: 0 4px 15px rgba(91, 124, 214, 0.5);
+}
+
+/* ==========================================================================
+   Big Screen Projection Podium (頒獎台) Stage Styles
+   ========================================================================== */
+
+.podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  max-width: 900px;
+  width: 100%;
+  margin: 10px auto 35px auto;
+  padding: 10px 10px 0 10px;
+}
+
+@media (min-width: 768px) {
+  .podium-container {
+    gap: 28px;
+    margin: 16px auto 45px auto;
+  }
+}
+
+.podium-step {
+  flex: 1;
+  max-width: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.podium-step:hover {
+  transform: translateY(-6px);
+}
+
+/* Winner info above the pedestal block */
+.podium-winner-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.podium-avatar-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.podium-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
+
+.podium-step-1 .podium-avatar {
+  width: 96px;
+  height: 96px;
+  border-color: #fbbf24;
+  box-shadow: 0 0 32px rgba(211, 162, 76, 0.75);
+  animation: championGlow 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes championGlow {
+  0% { box-shadow: 0 0 20px rgba(211, 162, 76, 0.5); }
+  100% { box-shadow: 0 0 42px rgba(211, 162, 76, 0.95); }
+}
+
+.podium-step-2 .podium-avatar {
+  border-color: #cbd5e1;
+  box-shadow: 0 0 22px rgba(203, 213, 225, 0.5);
+}
+
+.podium-step-3 .podium-avatar {
+  border-color: #d97706;
+  box-shadow: 0 0 22px rgba(217, 119, 6, 0.5);
+}
+
+.podium-crown {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.85rem;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  animation: crownBounce 2s infinite ease-in-out;
+}
+
+@keyframes crownBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+.podium-name {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-step-1 .podium-name {
+  font-size: 1.45rem;
+  color: #fef08a;
+}
+
+.podium-subtitle {
+  font-size: 0.86rem;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.podium-score {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #fbbf24;
+  margin-top: 4px;
+  font-family: ui-monospace, monospace;
+}
+
+.podium-step-1 .podium-score {
+  font-size: 1.65rem;
+  color: #fde047;
+}
+
+/* The Pedestal Blocks (頒獎台實體基座) */
+.podium-block {
+  width: 100%;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 900;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.podium-step-1 .podium-block {
+  height: 180px;
+  background: linear-gradient(180deg, #d3a24c 0%, #b45309 70%, #78350f 100%);
+  border: 2px solid #fbbf24;
+  border-bottom: none;
+}
+
+.podium-step-2 .podium-block {
+  height: 130px;
+  background: linear-gradient(180deg, #94a3b8 0%, #475569 70%, #334155 100%);
+  border: 2px solid #cbd5e1;
+  border-bottom: none;
+}
+
+.podium-step-3 .podium-block {
+  height: 95px;
+  background: linear-gradient(180deg, #d97706 0%, #92400e 70%, #451a03 100%);
+  border: 2px solid #d3a24c;
+  border-bottom: none;
+}
+
+.podium-rank-label {
+  font-size: 2.8rem;
+  font-weight: 900;
+  font-family: ui-monospace, monospace;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.5);
+  line-height: 1;
+}
+
+.podium-rank-text {
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+/* Runner-up List (第 4 名及之後清單) */
+.proj-runners-up-section {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+  padding-bottom: 30px;
+}
+
+.proj-runners-up-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.proj-runners-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .proj-runners-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.proj-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.proj-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.proj-rank {
+  font-size: 1.4rem;
+  font-weight: 900;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  font-family: ui-monospace, monospace;
+}
+
+.proj-score {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #fbbf24;
+  font-family: ui-monospace, monospace;
+}
+
+/* ==========================================================================
+   Live Pulse & Projection Period Buttons
+   ========================================================================== */
+
+.live-pulse-dot {
+  width: 9px;
+  height: 9px;
+  background-color: #4fae82;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(79, 174, 130, 0.7);
+  animation: livePulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes livePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(79, 174, 130, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(79, 174, 130, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(79, 174, 130, 0);
+  }
+}
+
+/* ==========================================================================
+   Projection Toolkit Remote-Control Receiver (抽籤揭曉 / 公告 / 計時器)
+   Rendered when a phone triggers a toolkit action over the course's
+   WebSocket channel — see projection.js handleToolkitAction().
+   ========================================================================== */
+
+.proj-toolkit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.proj-toolkit-overlay.open {
+  display: flex;
+}
+
+.proj-draw-reveal {
+  text-align: center;
+}
+
+.proj-draw-spin {
+  font-size: 6rem;
+  animation: projDrawSpin 0.6s infinite linear;
+}
+
+@keyframes projDrawSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.proj-draw-caption {
+  margin-top: 20px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 2px;
+}
+
+.proj-draw-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #d3a24c;
+  margin-bottom: 28px;
+}
+
+.proj-draw-winners-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  max-width: 90vw;
+}
+
+.proj-draw-winner-card {
+  animation: projDrawPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes projDrawPop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.proj-draw-avatar-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 6px solid #d3a24c;
+  box-shadow: 0 0 60px rgba(211, 162, 76, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.proj-draw-avatar-circle.group {
+  border-radius: 32px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.proj-draw-name {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.proj-bulletin-text {
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  max-width: 90%;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.proj-timer-widget {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  z-index: 700;
+  background: rgba(15, 23, 42, 0.94);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-lg);
+  padding: 14px 28px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.proj-timer-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.proj-timer-display {
+  font-family: ui-monospace, monospace;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.proj-timer-widget.urgent .proj-timer-display {
+  color: #d9807e;
+  animation: projTimerUrgent 0.5s infinite alternate;
+}
+
+@keyframes projTimerUrgent {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+.proj-period-buttons {
+  display: inline-flex;
+  background: rgba(30, 41, 59, 0.85);
+  padding: 4px;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  gap: 3px;
+}
+
+.proj-period-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.proj-period-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.proj-period-btn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #7b98e0, #5b7cd6);
+  box-shadow: 0 2px 10px rgba(123, 152, 224, 0.4);
+}
+
+/* 實時分數看板與排行榜時段切換按鈕 */
+.dashboard-period-btn {
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.dashboard-period-btn.active {
+  background: linear-gradient(135deg, #7b98e0, #5b7cd6) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 8px rgba(123, 152, 224, 0.35);
+}
+
+/* 即時評分介面時段切換按鈕 */
+.scoring-period-btn {
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  padding: 4px 10px;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.scoring-period-btn.active {
+  background: linear-gradient(135deg, #7b98e0, #5b7cd6) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 2px 8px rgba(123, 152, 224, 0.35);
+}
+
+/* 即時評分指定日期區間工具列 - 符合網站配色與字體比例 */
+.scoring-range-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 16px 0;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, rgba(91, 124, 214, 0.04) 0%, rgba(123, 152, 224, 0.08) 100%);
+  border: 1px solid rgba(123, 152, 224, 0.28);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  animation: projRangeBarIn 0.25s ease;
+}
+
+.scoring-range-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+}
+
+.scoring-range-dates-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--radius-md);
+  padding: 3px 10px;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+.scoring-range-dates-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 124, 214, 0.15);
+}
+
+.scoring-date-input {
+  width: 130px !important;
+  height: 32px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-main) !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  outline: none !important;
+  cursor: pointer;
+  padding: 0 !important;
+}
+
+.scoring-date-sep {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.scoring-range-presets {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.scoring-preset-pill {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: var(--radius-full) !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  color: var(--text-muted) !important;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-fast);
+}
+
+.scoring-preset-pill:hover {
+  background: rgba(91, 124, 214, 0.1) !important;
+  border-color: var(--primary-light) !important;
+  color: var(--primary) !important;
+  transform: translateY(-1px);
+}
+
+.btn-apply-scoring {
+  background: linear-gradient(135deg, #5b7cd6 0%, #7b98e0 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  padding: 6px 16px !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(91, 124, 214, 0.28) !important;
+  transition: all var(--transition-fast);
+}
+
+.btn-apply-scoring:hover {
+  background: linear-gradient(135deg, #4a67ba 0%, #5b7cd6 100%) !important;
+  box-shadow: 0 4px 10px rgba(91, 124, 214, 0.38) !important;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Students Score Grid (全班座號得分一覽表 - 一般儀表板 & 大螢幕投影)
+   ========================================================================== */
+
+/* 1. Dashboard View Grid (一般儀表板模式 - 支援 6 欄排列) */
+.students-score-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  contain: layout;
+}
+
+@media (min-width: 1200px) {
+  .students-score-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+.student-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 6px;
+  height: 140px;
+  background: var(--card-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  box-sizing: border-box;
+  contain: layout paint;
+  transform: translateZ(0);
+  will-change: background-color, border-color, box-shadow;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-normal);
+}
+
+.student-score-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.student-score-card.absent {
+  opacity: 0.65;
+  background: rgba(0, 0, 0, 0.02);
+  filter: grayscale(0.2);
+}
+
+.student-score-num-badge {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  line-height: 1;
+  z-index: 5;
+}
+
+.student-score-center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: stretch;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* 1. 照片區塊 (50% 高度，照片比例 1:1) */
+.student-score-avatar-sec {
+  height: 50%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 2px 0;
+}
+
+.student-score-avatar {
+  height: 92%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1; /* 照片比例 1:1 */
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid var(--card-border);
+  background: var(--input-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.student-score-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  aspect-ratio: 1 / 1;
+}
+
+/* 2. 姓名區塊 (20% 高度) */
+.student-score-name-sec {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+.student-score-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 98%;
+  line-height: 1.2;
+}
+
+/* 3. 分數區塊 (30% 高度) */
+.student-score-val-sec {
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.student-score-badge {
+  font-family: ui-monospace, monospace;
+  font-size: 1.35rem;
+  font-weight: 900;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  transform-origin: center center;
+  line-height: 1.1;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.student-score-badge.positive {
+  color: #059669;
+  background: rgba(79, 174, 130, 0.14);
+  border: 1px solid rgba(79, 174, 130, 0.28);
+}
+
+.student-score-badge.neutral {
+  color: var(--text-main);
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.student-score-badge.negative {
+  color: #dc2626;
+  background: rgba(217, 128, 126, 0.14);
+  border: 1px solid rgba(217, 128, 126, 0.28);
+}
+
+/* 2. Big Screen View Grid (大螢幕投影全螢幕模式 - 橫向6名直向5位 共30位學生單頁全屏免捲動) */
+.proj-all-students-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  gap: 6px 8px;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  contain: layout;
+}
+
+.proj-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: clamp(3px, 0.4vh, 6px);
+  background: rgba(30, 41, 59, 0.78);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  contain: layout paint;
+  transform: translateZ(0);
+  will-change: background-color, border-color, box-shadow;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.proj-score-card:hover {
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.proj-score-card.absent {
+  opacity: 0.55;
+  filter: grayscale(0.3);
+}
+
+.proj-score-num-badge {
+  position: absolute;
+  top: clamp(2px, 0.3vh, 4px);
+  left: clamp(4px, 0.4vw, 6px);
+  font-family: ui-monospace, monospace;
+  font-size: clamp(0.75rem, 0.9vw, 1rem);
+  font-weight: 900;
+  color: #93c5fd;
+  line-height: 1;
+  z-index: 5;
+}
+
+.proj-score-center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: stretch;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* 1. 照片區塊 (50% 高度，照片比例 1:1) */
+.proj-score-avatar-sec {
+  height: 50%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 2px 0;
+}
+
+.proj-score-avatar {
+  height: 92%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1; /* 照片比例 1:1 */
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.proj-score-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  aspect-ratio: 1 / 1;
+}
+
+/* 2. 姓名區塊 (20% 高度) */
+.proj-score-name-sec {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0 4px;
+}
+
+.proj-score-name {
+  font-weight: 900;
+  font-size: clamp(0.85rem, 1.15vw, 1.25rem);
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+  max-width: 98%;
+}
+
+/* 3. 分數區塊 (30% 高度) */
+.proj-score-val-sec {
+  height: 30%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.proj-score-badge {
+  font-family: ui-monospace, monospace;
+  font-size: clamp(1.05rem, 1.6vw, 1.85rem);
+  font-weight: 900;
+  padding: 1px 10px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  transform-origin: center center;
+  line-height: 1.1;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.proj-score-badge.positive {
+  color: #34d399;
+  background: rgba(79, 174, 130, 0.22);
+  border: 1.5px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 0 12px rgba(79, 174, 130, 0.25);
+}
+
+.proj-score-badge.neutral {
+  color: #ffffff;
+  background: rgba(148, 163, 184, 0.18);
+  border: 1.5px solid rgba(148, 163, 184, 0.3);
+}
+
+.proj-score-badge.negative {
+  color: #f87171;
+  background: rgba(217, 128, 126, 0.22);
+  border: 1.5px solid rgba(248, 113, 113, 0.45);
+  box-shadow: 0 0 12px rgba(217, 128, 126, 0.25);
+}
+
+/* ==========================================================================
+   Score Change Dynamic Animations (分數變動即時特效 - 零重排防推擠防抖動)
+   ========================================================================== */
+
+.score-animate-up {
+  animation: scoreUpFlash 0.85s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+}
+
+.score-animate-down {
+  animation: scoreDownFlash 0.85s cubic-bezier(0.2, 0.9, 0.3, 1) forwards !important;
+}
+
+.card-flash-up {
+  animation: flashHighlightUp 1s ease-out forwards !important;
+}
+
+.card-flash-down {
+  animation: flashHighlightDown 1s ease-out forwards !important;
+}
+
+/* 加分特效：發光＋數字放大彈跳。振幅刻意收在安全範圍內——許多套用此動畫的數字
+   badge 位於 overflow:hidden 的卡片內，或緊鄰快速加減分按鈕（僅 4px 間距），
+   縮放過大會被卡片邊界裁切或蓋住相鄰按鈕，故峰值控制在約 1.2 / 0.82 倍。 */
+@keyframes scoreUpFlash {
+  0% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  25% {
+    filter: brightness(1.4) drop-shadow(0 0 9px rgba(79, 174, 130, 0.9));
+    transform: scale(1.2);
+    color: #4fae82;
+  }
+  55% {
+    filter: brightness(1.2) drop-shadow(0 0 5px rgba(79, 174, 130, 0.55));
+    transform: scale(0.95);
+  }
+  80% {
+    transform: scale(1.05);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+/* 扣分特效：紅色發光＋數字先縮小後回彈，與加分方向明顯區隔 */
+@keyframes scoreDownFlash {
+  0% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  25% {
+    filter: brightness(1.4) drop-shadow(0 0 9px rgba(217, 128, 126, 0.9));
+    transform: scale(0.82);
+    color: #d9807e;
+  }
+  55% {
+    filter: brightness(1.2) drop-shadow(0 0 5px rgba(217, 128, 126, 0.55));
+    transform: scale(1.08);
+  }
+  80% {
+    transform: scale(0.96);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+/* 卡片邊緣柔和微光，使用 inset box-shadow 確保不佔用任何外部像素 */
+@keyframes flashHighlightUp {
+  0% {
+    border-color: #4fae82;
+    box-shadow: inset 0 0 14px rgba(79, 174, 130, 0.4), 0 0 12px rgba(79, 174, 130, 0.35);
+  }
+  100% {
+    border-color: var(--card-border);
+    box-shadow: var(--shadow-xs);
+  }
+}
+
+@keyframes flashHighlightDown {
+  0% {
+    border-color: #d9807e;
+    box-shadow: inset 0 0 14px rgba(217, 128, 126, 0.4), 0 0 12px rgba(217, 128, 126, 0.35);
+  }
+  100% {
+    border-color: var(--card-border);
+    box-shadow: var(--shadow-xs);
+  }
+}
+
+@keyframes cardEnterFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Student Score Log History List Styles */
+.score-log-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.score-log-item:hover {
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-xs);
+}
+
+.score-log-item.positive {
+  border-left: 4px solid var(--accent-positive);
+}
+
+.score-log-item.negative {
+  border-left: 4px solid var(--accent-negative);
+}
+
+.score-log-badge-positive {
+  background: var(--accent-positive);
+  color: #fff;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+}
+
+.score-log-badge-negative {
+  background: var(--accent-negative);
+  color: #fff;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   Custom Bilingual DatePicker Component (全系統中英雙語自訂日期選擇器樣式)
+   ========================================================================== */
+
+.custom-datepicker-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+}
+
+.custom-datepicker-input {
+  padding-right: 32px !important;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.custom-datepicker-icon {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 0.95rem;
+  opacity: 0.75;
+  transition: opacity 0.2s, transform 0.2s;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.custom-datepicker-icon:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.15);
+}
+
+.custom-datepicker-popup {
+  position: absolute;
+  z-index: 10005;
+  background: var(--card-bg, #1e293b);
+  border: 1.5px solid var(--card-border, rgba(255, 255, 255, 0.15));
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 14px;
+  width: 290px;
+  box-sizing: border-box;
+  color: var(--text-main, #ffffff);
+  font-family: inherit;
+  animation: cdpFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+@keyframes cdpFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.cdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+}
+
+.cdp-title {
+  font-weight: 800;
+  font-size: 1.02rem;
+  color: var(--text-main, #ffffff);
+  letter-spacing: 0.5px;
+}
+
+.cdp-nav-btn {
+  background: var(--input-bg, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--card-border, rgba(255, 255, 255, 0.15));
+  color: var(--text-main, #ffffff);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.cdp-nav-btn:hover {
+  background: var(--primary, #7b98e0);
+  color: #ffffff;
+  border-color: var(--primary-light, #60a5fa);
+  transform: scale(1.05);
+}
+
+.cdp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  text-align: center;
+  margin-bottom: 6px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.cdp-weekday-cell.cdp-weekend {
+  color: #f43f5e;
+}
+
+.cdp-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.cdp-day-cell {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md, 7px);
+  cursor: pointer;
+  color: var(--text-main, #ffffff);
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.cdp-day-cell:hover {
+  background: rgba(123, 152, 224, 0.25);
+  border-color: rgba(96, 165, 250, 0.5);
+  transform: scale(1.08);
+}
+
+.cdp-day-cell.cdp-other-month {
+  color: rgba(148, 163, 184, 0.35);
+}
+
+.cdp-day-cell.cdp-today {
+  border-color: #7b98e0;
+  font-weight: 800;
+  color: #60a5fa;
+}
+
+.cdp-day-cell.cdp-selected {
+  background: linear-gradient(135deg, #7b98e0, #4a67ba) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  box-shadow: 0 2px 10px rgba(123, 152, 224, 0.5);
+}
+
+.cdp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border, rgba(255, 255, 255, 0.1));
+}
+
+.cdp-action-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm, 6px);
+  transition: all 0.15s ease;
+}
+
+.cdp-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main, #ffffff);
+}
+
+.cdp-today-btn {
+  color: var(--primary-light, #60a5fa);
+}
+
+.cdp-today-btn:hover {
+  background: rgba(123, 152, 224, 0.18);
+  color: #93c5fd;
+}
+
+/* ==========================================================================
+   Teaching Toolkit (教學輔助工具箱樣式)
+   ========================================================================== */
+
+.toolkit-subnav-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolkit-subpane {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* 1. Bulletin Board (公布欄) Styles */
+.bulletin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+}
+
+.bulletin-tool-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bulletin-tool-label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.bulletin-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 999px;
+  visibility: hidden;
+}
+
+.bulletin-save-status.is-visible {
+  visibility: visible;
+}
+
+.bulletin-save-status.status-dirty {
+  color: var(--accent-warning);
+  background: var(--accent-warning-bg);
+  border: 1px solid var(--accent-warning-border);
+}
+
+.bulletin-save-status.status-saving {
+  color: var(--text-muted);
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+}
+
+.bulletin-save-status.status-saved {
+  color: var(--accent-positive);
+  background: var(--accent-positive-bg);
+  border: 1px solid var(--accent-positive-border);
+}
+
+.bulletin-save-status.status-error {
+  color: var(--accent-negative);
+  background: var(--accent-negative-bg);
+  border: 1px solid var(--accent-negative-border);
+}
+
+.btn-bulletin-color {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  padding: 0;
+}
+
+.btn-bulletin-color:hover,
+.btn-bulletin-color.active {
+  transform: scale(1.25);
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.bulletin-board-card {
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
+  min-height: 280px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.25);
+  border: 4px solid #78350f;
+  transition: all 0.3s ease;
+}
+
+.bulletin-board-card.theme-chalk-green {
+  background: radial-gradient(circle at center, #14532d 0%, #064e3b 70%, #022c22 100%);
+  color: #f0fdf4;
+  border-color: #92400e;
+}
+
+.bulletin-board-card.theme-slate-dark {
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #020617 100%);
+  color: #f8fafc;
+  border-color: #475569;
+}
+
+.bulletin-board-card.theme-clean-white {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.bulletin-editor {
+  outline: none;
+  min-height: 240px;
+  line-height: 1.7;
+  font-size: 1.35rem;
+  position: relative;
+}
+
+.bulletin-editor:empty:before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  display: block;
+}
+
+.bulletin-board-card.theme-clean-white .bulletin-editor:empty:before {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.bulletin-fullscreen-container {
+  transition: background 0.3s ease, color 0.3s ease;
+  word-break: break-word;
+}
+
+.bulletin-fullscreen-container.content-updated {
+  animation: bulletinFsPulse 0.5s ease-out;
+}
+
+@keyframes bulletinFsPulse {
+  0% { transform: scale(0.99); opacity: 0.85; }
+  50% { transform: scale(1.005); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.bulletin-fullscreen-container.theme-chalk-green {
+  background: radial-gradient(circle at center, #14532d 0%, #064e3b 70%, #022c22 100%);
+  color: #f0fdf4;
+  border: 6px solid #b45309;
+}
+
+.bulletin-fullscreen-container.theme-slate-dark {
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%, #020617 100%);
+  color: #f8fafc;
+  border: 6px solid #475569;
+}
+
+.bulletin-fullscreen-container.theme-clean-white {
+  background: #ffffff;
+  color: #0f172a;
+  border: 6px solid #94a3b8;
+}
+
+/* 2. Lucky Draw (隨機抽籤 - 單一焦點大卡片高速切換) Styles */
+.draw-config-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+}
+
+.draw-control-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.draw-pool-badge {
+  background: rgba(123, 152, 224, 0.2);
+  border: 1px solid rgba(123, 152, 224, 0.4);
+  color: #93c5fd;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.lucky-draw-spotlight-card {
+  width: 330px;
+  max-width: 90vw;
+  min-height: 310px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+  border: 3px solid rgba(123, 152, 224, 0.45);
+  border-radius: 24px;
+  padding: 36px 24px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(16px);
+  position: relative;
+}
+
+.lucky-draw-spotlight-card.rolling {
+  animation: spotlightShake 0.08s infinite alternate;
+  border-color: #d3a24c !important;
+  box-shadow: 0 0 45px rgba(211, 162, 76, 0.75), inset 0 0 25px rgba(211, 162, 76, 0.3) !important;
+}
+
+@keyframes spotlightShake {
+  from { transform: scale(1.04) translateY(-3px) rotate(-1deg); }
+  to { transform: scale(1.04) translateY(3px) rotate(1deg); }
+}
+
+.lucky-draw-spotlight-card.winner {
+  animation: winnerBurst 0.6s infinite alternate;
+  border-color: #4fae82 !important;
+  box-shadow: 0 0 55px rgba(79, 174, 130, 0.9), inset 0 0 25px rgba(79, 174, 130, 0.4) !important;
+}
+
+@keyframes winnerBurst {
+  from { transform: scale(1.05) translateY(-4px); }
+  to { transform: scale(1.1) translateY(-8px); }
+}
+
+.lucky-spotlight-avatar-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  padding: 4px;
+  background: linear-gradient(135deg, #7b98e0, #9a86c4);
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(123, 152, 224, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.lucky-spotlight-avatar-wrap.group {
+  background: linear-gradient(135deg, #4fae82, #059669);
+  box-shadow: 0 8px 24px rgba(79, 174, 130, 0.4);
+}
+
+.lucky-spotlight-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.lucky-spotlight-seat {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #60a5fa;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lucky-spotlight-name {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin-bottom: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Multi-Winner Stage Showcase Cards */
+.lucky-draw-multi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 1050px;
+  padding: 10px 4px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.lucky-multi-card {
+  width: 155px;
+  min-height: 190px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+  border: 2.5px solid #4fae82;
+  border-radius: 20px;
+  padding: 22px 12px 14px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(79, 174, 130, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(14px);
+  position: relative;
+  animation: winnerCardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes winnerCardPop {
+  0% { transform: scale(0.6) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.lucky-multi-badge {
+  position: absolute;
+  top: -10px;
+  background: linear-gradient(135deg, #4fae82, #059669);
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 2px 10px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(79, 174, 130, 0.4);
+}
+
+.lucky-multi-avatar-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #7b98e0, #9a86c4);
+  margin-bottom: 8px;
+  box-shadow: 0 4px 14px rgba(123, 152, 224, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lucky-multi-avatar-wrap.group {
+  background: linear-gradient(135deg, #4fae82, #059669);
+  box-shadow: 0 4px 14px rgba(79, 174, 130, 0.4);
+}
+
+.lucky-multi-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0f172a;
+}
+
+.lucky-multi-seat {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #60a5fa;
+  margin-bottom: 2px;
+}
+
+.lucky-multi-name {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #ffffff;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lucky-draw-start-btn {
+  background: linear-gradient(135deg, #d3a24c 0%, #d97706 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 900;
+  padding: 14px 44px;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 24px rgba(211, 162, 76, 0.45);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lucky-draw-start-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 12px 30px rgba(211, 162, 76, 0.6);
+}
+
+.lucky-winner-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  text-align: left;
+}
+
+.lucky-winner-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-light);
+  flex-shrink: 0;
+}
+
+.lucky-winner-info {
+  flex: 1;
+}
+
+.lucky-winner-seat {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--primary-light);
+}
+
+.lucky-winner-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* 3. Timer & Stopwatch (計時器與碼錶) Styles */
+.timer-mode-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.timer-preset-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.timer-custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+.timer-display-wrap {
+  text-align: center;
+  margin: 20px 0 28px;
+}
+
+.timer-digits {
+  font-size: 5rem;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, "Roboto Mono", Consolas, monospace;
+  letter-spacing: 2px;
+  color: var(--primary-dark, #4a67ba);
+  text-shadow: 0 2px 8px rgba(74, 103, 186, 0.12);
+  transition: color 0.3s;
+}
+
+#stopwatch-digits {
+  color: var(--accent-positive, #4fae82);
+  text-shadow: 0 2px 8px rgba(79, 174, 130, 0.15);
+}
+
+.timer-digits.urgent {
+  color: #d97706;
+  text-shadow: 0 0 16px rgba(217, 119, 6, 0.35);
+  animation: urgentBlink 0.5s infinite alternate;
+}
+
+.timer-digits.finished {
+  color: #dc2626;
+  text-shadow: 0 0 20px rgba(220, 38, 38, 0.4);
+}
+
+.timer-digits.alarm-pulse {
+  animation: alarmFlash 0.35s infinite alternate;
+}
+
+@keyframes urgentBlink {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+@keyframes alarmFlash {
+  from { transform: scale(1); filter: drop-shadow(0 0 10px #d9807e); }
+  to { transform: scale(1.12); filter: drop-shadow(0 0 35px #dc2626); }
+}
+
+.timer-progress-track {
+  width: 100%;
+  max-width: 460px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-full);
+  margin: 10px auto 0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.timer-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7b98e0, #60a5fa);
+  border-radius: var(--radius-full);
+  transition: width 0.3s linear;
+}
+
+.timer-actions-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.btn-timer-main {
+  background: linear-gradient(135deg, #4fae82 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  font-size: 1.15rem;
+  font-weight: 800;
+  padding: 12px 32px;
+  border-radius: var(--radius-xl);
+}
+
+.stopwatch-laps-list {
+  max-width: 380px;
+  margin: 0 auto;
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stopwatch-lap-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   Classroom Floating Dock & Quick Tool Popovers
+   ========================================================================== */
+
+.classroom-floating-dock {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-full);
+  padding: 6px 10px 6px 6px;
+  box-shadow: 0 10px 30px rgba(60, 50, 40, 0.16), 0 2px 8px rgba(91, 124, 214, 0.2);
+  backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.classroom-floating-dock.collapsed {
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-md);
+}
+
+.classroom-floating-dock.collapsed .dock-inner {
+  display: none;
+}
+
+.classroom-floating-dock.collapsed .dock-collapse-icon {
+  transform: rotate(180deg);
+}
+
+.dock-btn-collapse {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(91, 124, 214, 0.12);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dock-btn-collapse:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.dock-collapse-icon {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.dock-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dock-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--card-border);
+}
+
+.dock-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-main);
+  transition: all 0.18s ease;
+}
+
+.dock-btn:hover {
+  background: rgba(91, 124, 214, 0.1);
+  color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.dock-btn:active {
+  transform: scale(0.95);
+}
+
+.dock-btn-icon {
+  font-size: 1.05rem;
+}
+
+/* Timer Capsule Inside Dock */
+.dock-timer-capsule {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(91, 124, 214, 0.1);
+  border: 1px solid rgba(91, 124, 214, 0.25);
+  border-radius: var(--radius-full);
+  padding: 2px 4px 2px 8px;
+  gap: 4px;
+}
+
+.dock-timer-btn {
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-full);
+}
+
+.dock-timer-digits {
+  font-family: ui-monospace, monospace;
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: var(--primary-dark);
+}
+
+.dock-timer-more-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 3px 5px;
+  border-radius: var(--radius-full);
+  transition: all 0.15s ease;
+}
+
+.dock-timer-more-btn:hover {
+  background: rgba(91, 124, 214, 0.2);
+  color: var(--primary-dark);
+}
+
+/* Floating Dock Popover (Lucky Draw & Timer Panels) */
+.floating-dock-popover {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  z-index: 9999;
+  background: var(--card-bg);
+  border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 40px rgba(60, 50, 40, 0.22);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popover-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.popover-body {
+  padding: 14px;
+}
+
+.btn-close-popover {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-close-popover:hover {
+  color: var(--accent-negative);
+  background: rgba(217, 128, 126, 0.12);
+}
+
+/* Floating Draw Card & Shuffle Styling */
+.floating-draw-card {
+  background: linear-gradient(135deg, rgba(91, 124, 214, 0.08), rgba(128, 115, 196, 0.1));
+  border: 1.5px dashed var(--primary-light);
+  border-radius: var(--radius-lg);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s ease;
+  min-height: 160px;
+}
+
+.floating-draw-card.rolling {
+  border-style: solid;
+  border-color: #d3a24c;
+  background: rgba(211, 162, 76, 0.08);
+  box-shadow: 0 0 15px rgba(211, 162, 76, 0.3);
+}
+
+.floating-draw-card.winner {
+  border-style: solid;
+  border-color: var(--accent-positive);
+  background: linear-gradient(135deg, rgba(79, 174, 130, 0.12), rgba(91, 124, 214, 0.12));
+  box-shadow: 0 0 20px rgba(79, 174, 130, 0.35);
+  animation: winnerGlow 0.6s ease;
+}
+
+@keyframes winnerGlow {
+  0% { transform: scale(0.96); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.floating-draw-avatar-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 2px solid #ffffff;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 6px;
+  background: #cbd5e1;
+}
+
+.floating-draw-avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.floating-draw-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.floating-draw-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--text-main);
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Floating Draw Winner Actions (Instant Scoring) */
+.floating-draw-winner-actions {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(79, 174, 130, 0.08);
+  border: 1px solid rgba(79, 174, 130, 0.25);
+  border-radius: var(--radius-md);
+  animation: tabFadeIn 0.2s ease;
+}
+
+.winner-score-prompt {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--accent-positive);
+  margin-bottom: 6px;
+}
+
+.winner-score-btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-winner-score {
+  border: none;
+  background: linear-gradient(135deg, #4fae82, #059669);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79, 174, 130, 0.3);
+  transition: all 0.15s ease;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.btn-winner-score:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(79, 174, 130, 0.5);
+}
+
+.btn-winner-score:active {
+  transform: scale(0.95);
+}
+
+.btn-winner-score.plus2 {
+  background: linear-gradient(135deg, #5b7cd6, #4a67ba);
+  box-shadow: 0 2px 6px rgba(91, 124, 214, 0.3);
+}
+
+.btn-winner-score.plus2:hover {
+  box-shadow: 0 4px 10px rgba(91, 124, 214, 0.5);
+}
+
+.btn-winner-score.plus3 {
+  background: linear-gradient(135deg, #d3a24c, #b8860b);
+  box-shadow: 0 2px 6px rgba(211, 162, 76, 0.3);
+}
+
+.btn-winner-score.plus3:hover {
+  box-shadow: 0 4px 10px rgba(211, 162, 76, 0.5);
+}
+
+/* Floating Timer Presets */
+.floating-timer-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.btn-dock-timer-preset {
+  border: 1px solid var(--card-border);
+  background: rgba(91, 124, 214, 0.08);
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 4px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.btn-dock-timer-preset:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* Mobile responsive dock */
+@media (max-width: 640px) {
+  .classroom-floating-dock {
+    bottom: 12px;
+    right: 12px;
+    padding: 4px 8px 4px 4px;
+  }
+  .floating-dock-popover {
+    bottom: 64px;
+    right: 8px;
+    width: calc(100vw - 16px);
+  }
+}
+
+/* 4. Attention Bells (提示鈴聲) Styles */
+.sfx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.sfx-card {
+  background: var(--input-bg);
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  padding: 24px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sfx-card:hover {
+  background: rgba(123, 152, 224, 0.15);
+  border-color: var(--primary-light);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(123, 152, 224, 0.3);
+}
+
+.sfx-card.sfx-playing {
+  animation: sfxPulse 0.4s ease;
+  border-color: #d3a24c;
+  background: rgba(211, 162, 76, 0.2);
+}
+
+@keyframes sfxPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); box-shadow: 0 0 25px rgba(211, 162, 76, 0.6); }
+  100% { transform: scale(1); }
+}
+
+.sfx-icon {
+  font-size: 2.5rem;
+  margin-bottom: 2px;
+}
+
+.sfx-name {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sfx-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Fullscreen Timer Styles */
+.fs-timer-digits.urgent {
+  color: #f87171 !important;
+  text-shadow: 0 0 50px rgba(217, 128, 126, 0.6) !important;
+  animation: fsUrgentPulse 0.5s infinite alternate ease-in-out;
+}
+
+.fs-timer-digits.finished {
+  color: #d9807e !important;
+  text-shadow: 0 0 70px rgba(217, 128, 126, 0.9) !important;
+}
+
+@keyframes fsUrgentPulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.04); }
+}
+
+.timer-custom-row-fs {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fs-timer-input:focus {
+  outline: none;
+  border-color: #60a5fa !important;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.35) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+.fs-timer-input::-webkit-inner-spin-button,
+.fs-timer-input::-webkit-outer-spin-button {
+  opacity: 0.6;
+}
+
+/* ==========================================================================
+   Point Cards Management & Student Album Styles (實體點數卡樣式)
+   ========================================================================== */
+
+.ptcard-item-card:hover {
+  border-color: var(--primary-light) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.ptcard-item-card.selected {
+  border-color: var(--primary) !important;
+  background: rgba(91, 124, 214, 0.05) !important;
+}
+
+.my-card-tile:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light) !important;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 點數卡正方形相機視窗與 QR Code 專屬對焦框 */
+.scanner-square-viewport {
+  width: 100%;
+  aspect-ratio: 1 / 1 !important;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 14px;
+}
+
+#ptcard-qr-reader {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  position: relative !important;
+  border: none !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#ptcard-qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+  border-radius: var(--radius-lg);
+}
+
+#ptcard-qr-reader canvas {
+  display: none !important;
+}
+
+/* 強化正方形掃描定位框 */
+.scanner-target-square {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72%;
+  aspect-ratio: 1 / 1;
+  pointer-events: none;
+  border: 2.5px solid rgba(91, 124, 214, 0.95);
+  border-radius: 18px;
+  box-shadow: 0 0 0 2000px rgba(15, 23, 42, 0.45), 0 0 16px rgba(91, 124, 214, 0.45);
+  z-index: 6;
+  box-sizing: border-box;
+}
+
+/* 四角高亮標記 */
+.scanner-target-square::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  border-top-color: #38bdf8;
+  border-bottom-color: #38bdf8;
+  pointer-events: none;
+}
+
+/* 動態雷射掃描線 */
+.scanner-laser-line {
+  position: absolute;
+  top: 6%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, #38bdf8, transparent);
+  box-shadow: 0 0 10px #38bdf8, 0 0 4px #fff;
+  border-radius: 2px;
+  animation: laserSweep 2.2s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes laserSweep {
+  0% { top: 6%; opacity: 0.3; }
+  50% { top: 92%; opacity: 1; }
+  100% { top: 6%; opacity: 0.3; }
+}
+
+/* ==========================================================================
+   紙本測驗成績管理 (Paper Quiz) & 小組長樣式
+   ========================================================================== */
+
+.paper-quiz-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.paper-quiz-stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.paper-quiz-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.paper-quiz-stat-val {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.1;
+}
+
+.paper-quiz-stat-val.positive {
+  color: var(--accent-positive);
+}
+
+.paper-quiz-stat-val.warning {
+  color: var(--accent-warning);
+}
+
+.paper-quiz-stat-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.paper-quiz-table th {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--card-border);
+}
+
+.paper-quiz-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+.paper-quiz-table tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.paper-quiz-table tr.is-absent {
+  opacity: 0.55;
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.score-quick-input {
+  width: 76px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: right;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.score-quick-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  outline: none;
+}
+
+.score-quick-input.failed {
+  color: var(--accent-negative);
+}
+
+.score-quick-input.passed {
+  color: var(--accent-positive);
+}
+
+.quiz-photo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.quiz-photo-badge.verified {
+  background: var(--accent-positive-bg, rgba(79, 174, 130, 0.15));
+  color: var(--accent-positive);
+  border-color: var(--accent-positive-border, rgba(79, 174, 130, 0.3));
+}
+
+.quiz-photo-badge.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+  animation: pulseNotice 2s infinite ease-in-out;
+}
+
+@keyframes pulseNotice {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.quiz-source-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.quiz-source-tag.teacher {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+}
+
+.quiz-source-tag.student {
+  background: rgba(14, 165, 233, 0.15);
+  color: #0ea5e9;
+}
+
+.quiz-source-tag.leader {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+/* 小組長冠冕按鈕與徽章 */
+.btn-group-leader-toggle {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: transform 0.15s ease, opacity 0.15s ease, filter 0.15s ease;
+  line-height: 1;
+}
+
+.btn-group-leader-toggle:hover {
+  transform: scale(1.25);
+}
+
+.btn-group-leader-toggle.is-leader {
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.8));
+  opacity: 1;
+}
+
+.btn-group-leader-toggle.not-leader {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.btn-group-leader-toggle.not-leader:hover {
+  opacity: 0.75;
+  filter: grayscale(0);
+}
+
+.leader-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 179, 8, 0.3));
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+}
+
+/* ==========================================================================
+   紙本測驗學生成績總覽 (Paper Quiz Overview Modal & Table)
+   ========================================================================== */
+
+.quiz-overview-modal-content {
+  width: min(95vw, 1200px) !important;
+  max-width: 1200px !important;
+  height: min(88vh, 850px) !important;
+  max-height: 88vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 24px !important;
+  background: var(--card-bg) !important;
+  border: 1px solid var(--card-border) !important;
+  border-radius: var(--radius-2xl) !important;
+  box-shadow: var(--shadow-2xl) !important;
+  color: var(--text-main) !important;
+  overflow: hidden !important;
+}
+
+.quiz-overview-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.quiz-overview-stat-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(91, 124, 214, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(91, 124, 214, 0.25);
+  white-space: nowrap;
+}
+
+.quiz-overview-table-wrap {
+  flex: 1;
+  min-height: 220px;
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--card-border);
+  background: var(--card-bg);
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+.quiz-overview-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+/* Sticky Header */
+.quiz-overview-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #f8fafc;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Sticky Left Columns (座號 & 姓名) */
+.quiz-overview-table .sticky-col-no {
+  position: sticky;
+  left: 0;
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  z-index: 20;
+  background: #ffffff;
+  border-right: 1px solid var(--card-border);
+  text-align: center;
+}
+
+.quiz-overview-table .sticky-col-name {
+  position: sticky;
+  left: 60px;
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+  z-index: 20;
+  background: #ffffff;
+  border-right: 2px solid var(--primary-light, #93c5fd);
+  text-align: left;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+/* Header Left Frozen Intersection */
+.quiz-overview-table thead .sticky-col-no,
+.quiz-overview-table thead .sticky-col-name {
+  z-index: 40 !important;
+  background: #edf2f7 !important;
+}
+
+/* Body Rows & Cells */
+.quiz-overview-table tbody tr {
+  transition: background-color 0.12s ease;
+}
+
+.quiz-overview-table tbody tr:nth-child(even) td {
+  background: rgba(248, 250, 252, 0.6);
+}
+
+.quiz-overview-table tbody tr:nth-child(even) .sticky-col-no,
+.quiz-overview-table tbody tr:nth-child(even) .sticky-col-name {
+  background: #f8fafc !important;
+}
+
+.quiz-overview-table tbody tr:hover td {
+  background: rgba(91, 124, 214, 0.08) !important;
+}
+
+.quiz-overview-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--card-border);
+  border-right: 1px solid var(--card-border);
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   自訂日期區間選擇列（大螢幕投影 + 儀表板看板）
+   ========================================================================== */
+#proj-range-inputs,
+.proj-range-bar {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 22px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border-radius: 9999px;
+  margin: 12px auto 10px auto;
+  width: fit-content;
+  max-width: 95vw;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(129, 140, 248, 0.38);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: projRangeBarIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 50;
+  white-space: nowrap !important;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+@keyframes projRangeBarIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.proj-range-label,
+#proj-range-inputs label {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  margin: 0;
+}
+
+.proj-range-dates-wrap,
+.dash-range-dates-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+#proj-range-inputs .custom-datepicker-wrapper,
+#dashboard-range-inputs .custom-datepicker-wrapper {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+#proj-range-inputs input[type="date"],
+#proj-range-inputs .custom-datepicker-input,
+.proj-date-input {
+  width: 140px !important;
+  min-width: 130px !important;
+  height: 36px !important;
+  background: rgba(30, 41, 59, 0.85) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 9px !important;
+  padding: 5px 34px 5px 12px !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  letter-spacing: 0.5px !important;
+  text-align: center !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+}
+
+#proj-range-inputs input[type="date"]:hover,
+#proj-range-inputs .custom-datepicker-input:hover,
+.proj-date-input:hover {
+  border-color: rgba(165, 180, 252, 0.6) !important;
+  background: rgba(30, 41, 59, 1) !important;
+}
+
+#proj-range-inputs input[type="date"]:focus,
+#proj-range-inputs .custom-datepicker-input:focus,
+.proj-date-input:focus {
+  border-color: #818cf8 !important;
+  background: rgba(30, 41, 59, 1) !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35) !important;
+}
+
+.proj-range-sep {
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 0.86rem;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.proj-range-presets {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.proj-range-preset-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.proj-range-preset-pill:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(165, 180, 252, 0.6);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+}
+
+.proj-range-preset-pill:active {
+  transform: translateY(0);
+}
+
+#btn-apply-proj-range,
+.btn-apply-range {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  color: #ffffff !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  padding: 7px 20px !important;
+  border-radius: 9999px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.45) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+}
+
+#btn-apply-proj-range::before,
+.btn-apply-range::before {
+  content: '⚡';
+  font-size: 0.92rem;
+}
+
+#btn-apply-proj-range:hover,
+.btn-apply-range:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.65) !important;
+  filter: brightness(1.1) !important;
+}
+
+#btn-apply-proj-range:active,
+.btn-apply-range:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/* Dashboard Tab Range Inputs */
+#dashboard-range-inputs,
+.dash-range-bar {
+  display: none;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.09) 100%);
+  padding: 10px 18px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid rgba(99, 102, 241, 0.25);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+  animation: projRangeBarIn 0.25s ease;
+}
+
+#dashboard-range-inputs .dash-range-label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+#dashboard-range-inputs .dash-range-dates-wrap {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+#dashboard-range-inputs .proj-date-input,
+#dashboard-range-inputs .custom-datepicker-input {
+  background: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border-color: var(--input-border) !important;
+}
+
+#dashboard-range-inputs .proj-range-preset-pill {
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+}
+
+#dashboard-range-inputs .proj-range-preset-pill:hover {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--primary);
+}
+
+/* Empty State Card for Projection Waiting */
+.proj-range-waiting-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  gap: 12px;
+  grid-column: 1 / -1;
+  text-align: center;
+  animation: projRangeBarIn 0.3s ease;
+  user-select: none;
+}
+
+.proj-range-waiting-icon {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 6px 18px rgba(99, 102, 241, 0.35));
+  animation: floatPulse 3s ease-in-out infinite;
+}
+
+.proj-range-waiting-title {
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+}
+
+.proj-range-waiting-desc {
+  font-size: 0.92rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+@keyframes floatPulse {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.04);
+  }
+}
+
+@media (max-width: 900px) {
+  #proj-range-inputs,
+  .proj-range-bar {
+    border-radius: 16px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    gap: 8px;
+    white-space: normal !important;
+  }
+}
+
+/* ==========================================================================
+   Word Cloud (文字雲) Styles
+   ========================================================================== */
+.wordcloud-item {
+  animation: wordCloudPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  cursor: default;
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+.wordcloud-item:hover {
+  transform: scale(1.18);
+  filter: drop-shadow(0 0 12px currentColor);
+  z-index: 10;
+}
+
+@keyframes wordCloudPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(-8deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ==========================================================================
+   Kahoot Game Quiz (答題競賽) Styles
+   ========================================================================== */
+.kahoot-opt-card {
+  user-select: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease;
+}
+
+.kahoot-opt-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.kahoot-opt-card:active {
+  transform: scale(0.98);
+}
+
+.kahoot-manage-set-item:hover {
+  background: var(--nav-tab-hover-bg, #f1f5f9) !important;
+}
+
+.kahoot-manage-set-item.active:hover {
+  background: rgba(59, 130, 246, 0.18) !important;
+}
+
+@media (max-width: 768px) {
+  #wordcloud-main-layout {
+    grid-template-columns: 1fr !important;
+  }
+  #kahoot-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* 早自修／午休 在位掌握 */
+.student-card.wb-card { cursor: pointer; }
+.student-card.wb-out {
+  border-color: rgba(249, 115, 22, 0.55);
+  background: rgba(249, 115, 22, 0.08);
+}
+.wb-status {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.wb-status.in { color: #2f8a62; background: rgba(79, 174, 130, 0.14); }
+.wb-status.out { color: #c2410c; background: rgba(249, 115, 22, 0.16); }
+.wb-teacher { margin-top: 3px; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+
+/* 在位掌握：午休時段改為暖色系，與早自修一眼區分 */
+#whereabouts-root.wb-noon .glass-card {
+  background: linear-gradient(180deg, rgba(255, 237, 213, 0.75), rgba(255, 247, 237, 0.6));
+  border-color: rgba(251, 146, 60, 0.5);
+}
+#whereabouts-root.wb-noon #wb-slot-group .btn:not(.btn-secondary) {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  border-color: #ea580c;
+  color: #fff;
+}
+
+/* 在位掌握：座位表檢視 */
+.wb-seat-wrap { display: flex; gap: 10px; flex-direction: column; }
+.wb-seat-wrap.bottom { flex-direction: column-reverse; }
+.wb-seat-wrap.left { flex-direction: row; }
+.wb-seat-wrap.right { flex-direction: row-reverse; }
+.wb-board {
+  background: linear-gradient(135deg, #2f5d46, #1f3d2b);
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  flex: 0 0 auto;
+}
+.wb-seat-wrap.left .wb-board, .wb-seat-wrap.right .wb-board {
+  writing-mode: vertical-rl;
+  padding: 12px 8px;
+}
+.wb-seat-grid { display: grid; gap: 10px; flex: 1; min-width: 0; }
+.wb-seat-grid .student-card { margin: 0; height: 100%; }
+.wb-seat-empty { border: 2px dashed rgba(100, 116, 139, 0.3); border-radius: 12px; min-height: 90px; }
+.wb-unseated-title { margin: 14px 0 6px; font-size: 0.88rem; font-weight: 800; color: var(--text-muted); }
+
+/* 教學互動工具：公布欄／抽籤／計時／互動牆／文字雲／答題競賽 共用同一個面板與子分頁列 */
+
+/* ===== 特殊表現紀錄：快速紀錄（學生點選、常用片語、拍照／錄影） ===== */
+.note-quick-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+.note-form-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
+.note-student-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+  max-height: 232px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.note-student-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1.5px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  min-width: 0;
+}
+.note-student-chip:hover { border-color: var(--primary); }
+.note-student-chip.selected {
+  border-color: var(--primary);
+  background: rgba(91, 124, 214, 0.14);
+  box-shadow: 0 0 0 2px rgba(91, 124, 214, 0.25);
+}
+.note-student-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+.note-student-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.note-student-num { font-size: 0.74rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
+.note-student-name { font-size: 0.86rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.note-phrase-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.note-phrase-chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--card-border);
+  background: var(--card-bg);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-main);
+}
+.note-phrase-chip.pos { border-color: rgba(34, 160, 107, 0.45); color: #1f8f5f; background: rgba(34, 160, 107, 0.08); }
+.note-phrase-chip.neg { border-color: rgba(217, 119, 6, 0.45); color: #b45309; background: rgba(217, 119, 6, 0.08); }
+.note-phrase-chip:hover { filter: brightness(0.96); }
+
+.note-form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.note-media-btn { font-size: 0.88rem; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.note-form-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.note-date-row { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.88rem; color: var(--text-muted); font-weight: 600; }
+.note-link-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* 評分頁學生卡片右上角的 📝 快速紀錄按鈕 */
+.scoring-seat-cell { position: relative; }
+.card-note-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.16);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  z-index: 2;
+}
+.card-note-btn:hover { opacity: 1; background: rgba(167, 139, 250, 0.32); }
