@@ -20,18 +20,31 @@ function getCertPaths() {
   return { dir, certPath: path.join(dir, "server.crt"), keyPath: path.join(dir, "server.key") };
 }
 
+// Apple（iOS 13+／macOS 10.15+）對 TLS 伺服器憑證的要求：必須含 serverAuth 的 Extended Key
+// Usage，且有效期不得超過 825 天。不符合時 iPhone/iPad 的 Safari 會直接拒絕連線，連「仍要
+// 造訪」都不給。Android 與桌面瀏覽器較寬鬆，所以只有 iPhone 連不上時最容易漏掉。
+const APPLE_MAX_VALIDITY_DAYS = 825;
+const CERT_VALIDITY_DAYS = 800;
+const OID_SERVER_AUTH = "1.3.6.1.5.5.7.3.1";
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function currentSanTargets(): string[] {
   return [...new Set([...getAllLocalIps(), "127.0.0.1", "localhost"])];
 }
 
-/** True if the existing cert is still usable: not expired (30-day buffer) and
- *  its SAN list already covers every IP we currently see. */
+/** True if the existing cert is still usable: not expired (30-day buffer), meets
+ *  Apple's requirements (serverAuth EKU, validity <= 825 days — older certs from
+ *  before this check were 10 years without an EKU and get regenerated), and its
+ *  SAN list already covers every IP we currently see. */
 function isCertStillValid(certPem: string, targets: string[]): boolean {
   try {
     const x509 = new crypto.X509Certificate(certPem);
+    const issuedAt = new Date(x509.validFrom).getTime();
     const expiresAt = new Date(x509.validTo).getTime();
-    const bufferMs = 30 * 24 * 60 * 60 * 1000;
-    if (Number.isNaN(expiresAt) || expiresAt - Date.now() < bufferMs) return false;
+    const bufferMs = 30 * DAY_MS;
+    if (Number.isNaN(issuedAt) || Number.isNaN(expiresAt) || expiresAt - Date.now() < bufferMs) return false;
+    if (expiresAt - issuedAt > APPLE_MAX_VALIDITY_DAYS * DAY_MS) return false;
+    if (!(x509.keyUsage ?? []).includes(OID_SERVER_AUTH)) return false;
 
     const san = x509.subjectAltName ?? "";
     for (const target of targets) {
@@ -48,8 +61,8 @@ function isCertStillValid(certPem: string, targets: string[]): boolean {
 /** Returns `{ key, cert }` PEM buffers ready for https.createServer(), reusing
  *  the persisted self-signed cert in bin/certs/ when it's still valid for the
  *  IP(s) this machine currently has, otherwise generating and persisting a
- *  fresh one (long-lived — 10 years — since this is a local trust-on-first-use
- *  cert, not one that's ever meant to be publicly re-issued/rotated). */
+ *  fresh one (~800 days — the longest Apple allows is 825 — since this is a local
+ *  trust-on-first-use cert, not one that's ever meant to be publicly re-issued). */
 export async function getOrCreateHttpsOptions(): Promise<{ key: Buffer; cert: Buffer }> {
   const { dir, certPath, keyPath } = getCertPaths();
   const targets = currentSanTargets();
@@ -67,10 +80,11 @@ export async function getOrCreateHttpsOptions(): Promise<{ key: Buffer; cert: Bu
   const pems = await generateSelfSigned([{ name: "commonName", value: "MyClass" }], {
     keySize: 2048,
     algorithm: "sha256",
-    notAfterDate: new Date(Date.now() + 3650 * 24 * 60 * 60 * 1000),
+    notAfterDate: new Date(Date.now() + CERT_VALIDITY_DAYS * DAY_MS),
     extensions: [
       { name: "basicConstraints", cA: false },
       { name: "keyUsage", digitalSignature: true, keyEncipherment: true },
+      { name: "extKeyUsage", serverAuth: true },
       { name: "subjectAltName", altNames },
     ],
   });
