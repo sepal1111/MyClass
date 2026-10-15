@@ -191,6 +191,19 @@
   </nav>
 
   <!-- Main Content -->
+  <!-- 資料外洩風險警語（每天可按「今天不再顯示」關閉，見 static/js/data-warning.js） -->
+  <div id="data-risk-notice" hidden style="display: none; margin: 10px auto 0; max-width: 1400px; width: calc(100% - 32px); padding: 10px 14px; border-radius: 12px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.5); color: var(--text-main); font-size: 0.88rem; line-height: 1.6;">
+    <div style="display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;">
+      <div style="flex: 1 1 420px; min-width: 0;" data-i18n-html="datarisk_banner_html">
+        <b>⚠️ 資料安全提醒</b>：班級與學生資料存放在程式旁的 <code>bin</code> 資料夾，<b>沒有加密</b>。若程式連同 <code>bin</code> 遺失或被複製，拿到的人可以在自己的電腦開啟，並用「忘記密碼」重設後讀取全部資料——登入密碼無法保護檔案本身。請妥善保管電腦與隨身碟，<b>不要把含 <code>bin</code> 的資料夾交給他人或上傳到雲端</b>。
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" id="btn-data-risk-detail" class="btn btn-secondary" style="font-size: 0.82rem; padding: 5px 12px;" data-i18n="datarisk_btn_detail">了解詳情</button>
+        <button type="button" id="btn-data-risk-dismiss" class="btn btn-secondary" style="font-size: 0.82rem; padding: 5px 12px;" data-i18n="datarisk_btn_dismiss">今天不再顯示</button>
+      </div>
+    </div>
+  </div>
+
   <main class="app-main">
 
     <!-- 1. 即時評分 Pane -->
@@ -1652,6 +1665,26 @@
     <!-- 14. 密碼與連線 Pane (歸屬設定) -->
     <section id="pane-security" class="tab-pane">
       <div id="admin-subpane-security" class="admin-subpane">
+        <!-- 資料安全提醒（資料外洩風險） -->
+        <div class="glass-card" id="data-risk-card" style="border-color: rgba(245, 158, 11, 0.55); background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.06));">
+          <div class="glass-card-header">
+            <div class="glass-card-title" data-i18n="datarisk_card_title">⚠️ 資料安全提醒：請勿讓資料外流</div>
+          </div>
+          <div style="font-size: 0.92rem; line-height: 1.75; color: var(--text-main);" data-i18n-html="datarisk_card_html">
+            <div><b>資料放在哪裡？</b>班級、學生、成績、照片、上傳檔與備份，都存放在程式旁的 <code>bin</code> 資料夾，<b>沒有加密</b>（資料庫是一般的 SQLite 檔案，用工具就能直接打開）。</div>
+            <div style="margin-top: 8px;"><b>風險是什麼？</b>只要程式連同 <code>bin</code> 資料夾遺失、被複製或被借用，拿到的人就能在自己的電腦開啟它；「忘記密碼」可以在<b>執行程式的那台電腦</b>直接重設，所以<b>登入密碼擋不住這種情況</b>，全班學生資料都會被讀取。</div>
+            <div style="margin-top: 8px;"><b>請這樣做：</b></div>
+            <ul style="margin: 4px 0 0 1.2em; padding: 0;">
+              <li>隨身碟、筆電請妥善保管；電腦離開座位時鎖定螢幕；公用電腦用完請刪除 <code>bin</code> 或不要在上面使用。</li>
+              <li><b>分享程式給別人時，只給執行檔與 <code>system</code> 資料夾，不要附上 <code>bin</code></b>；也不要把整個資料夾寄信、傳到雲端硬碟或通訊軟體。</li>
+              <li><code>bin\backups</code> 的資料庫備份同樣含有全部資料，別人需要時不要一併給出去。</li>
+              <li>隨身碟遺失或電腦被盜，請視同學生個資外洩，依學校規定通報。</li>
+              <li>需要較高保護時，請用 Windows BitLocker 或加密隨身碟保護整顆磁碟（只有程式內加密無法防止「連程式一起帶走」）。</li>
+              <li>不要用 ngrok、cloudflared 等工具把這台電腦開放到網際網路。</li>
+            </ul>
+          </div>
+        </div>
+
         <!-- Software Update Card（新版本偵測，見 static/js/updater.js） -->
         <div class="glass-card" id="update-settings-card">
           <div class="glass-card-header" style="flex-wrap: wrap; gap: 10px;">
@@ -2226,6 +2259,8 @@
         <div style="border-top: 1px solid var(--card-border); padding-top: 16px; margin-bottom: 14px;">
           <button id="btn-show-student-qr" class="btn btn-secondary" style="width: 100%;">📱 學生連線 QR Code</button>
         </div>
+
+        <div style="margin-bottom: 14px; padding: 8px 12px; border-radius: 10px; background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--text-main); font-size: 0.78rem; line-height: 1.55; text-align: left;" data-i18n="datarisk_login_notice">⚠️ 資料安全：班級與學生資料存放在這台電腦（或隨身碟）的 bin 資料夾，沒有加密。請勿將含 bin 的資料夾外流或交給他人。</div>
 
         <div style="display: flex; justify-content: flex-end; align-items: center; font-size: 0.85rem;">
           <button id="btn-open-forgot-password-modal" style="background: none; border: none; color: var(--primary-light); cursor: pointer; text-decoration: underline;" data-i18n="auth_forgot_btn">❓ 忘記密碼？</button>
@@ -3856,5 +3891,6 @@
   <script src="/static/js/whereabouts.js?v=1.0"></script>
   <script src="/static/js/timetable.js?v=1.0"></script>
   <script src="/static/js/updater.js?v=1.0"></script>
+  <script src="/static/js/data-warning.js?v=1.0"></script>
 </body>
 </html>

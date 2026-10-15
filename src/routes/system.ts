@@ -22,6 +22,7 @@ import { autoCatch } from "../asyncRoute";
 import { dismissVersion, getUpdateStatus, runUpdateCheck, setUpdateCheckEnabled } from "../updateCheck";
 import { getLocalIp } from "../utils/network";
 import { isLocalRequest } from "../middleware/localOnly";
+import { loginBlockedSeconds, recordLoginFailure, recordLoginSuccess } from "../middleware/loginThrottle";
 
 export const systemRouter = autoCatch(Router());
 const upload = multer({ storage: multer.memoryStorage() });
@@ -86,16 +87,26 @@ systemRouter.get("/check_auth", async (req, res) => {
 });
 
 systemRouter.post("/verify_password", async (req, res) => {
+  const blocked = loginBlockedSeconds(req);
+  if (blocked > 0) {
+    res.setHeader("Retry-After", String(blocked));
+    res.status(429).json({
+      detail: `登入嘗試次數過多，請 ${Math.ceil(blocked / 60)} 分鐘後再試，或改在教師自己的電腦登入。`,
+    });
+    return;
+  }
   const password = String(req.body?.password ?? "");
   const prefix = await getPasswordPrefix();
   const todayMmdd = getTodayMMDDTaipei();
   const expected = `${prefix}${todayMmdd}`;
 
   if (password.trim() !== expected) {
+    recordLoginFailure(req);
     res.status(401).json({ detail: `密碼錯誤！密碼公式為：[字頭] + [當天月日${todayMmdd}]` });
     return;
   }
 
+  recordLoginSuccess(req);
   const token = await createSession();
   res.cookie("auth_session", token, {
     maxAge: 86400 * 1000,

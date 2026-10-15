@@ -38,6 +38,11 @@
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 
+  function fmtSize(bytes) {
+    if (!bytes) return '';
+    return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(0)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
   function editionLabel(ed) {
     if (ed === 'installed') return T('安裝版', 'installed edition');
     if (ed === 'portable') return T('可攜版', 'portable edition');
@@ -91,7 +96,7 @@
   function stepsHtml() {
     if (status.edition === 'installed') {
       return [
-        T('按下方「前往下載頁」，下載最新的<b>安裝程式</b>（檔名含 Setup）。', 'Click “Open download page” below and download the latest <b>installer</b> (file name contains Setup).'),
+        T('按下方的「下載更新檔」（或「前往下載頁」），取得最新的<b>安裝程式</b>（檔名含 Setup）。', 'Click “Download update” (or “Open download page”) below to get the latest <b>installer</b> (file name contains Setup).'),
         T('直接執行安裝程式，一路按「下一步」。你的班級與學生資料<b>會自動保留</b>，不需要另外備份或匯入。', 'Run the installer and keep clicking Next. Your classes and student data are <b>kept automatically</b>.'),
         T('安裝完成後重新開啟 MyClass 即可。', 'Open MyClass again when the installation finishes.'),
       ]
@@ -99,10 +104,10 @@
         .join('');
     }
     return [
-      T('按下方「前往下載頁」，下載最新版的壓縮檔並<b>解壓縮</b>（放在跟舊版不同的位置）。', 'Click “Open download page” below, download the latest zip and <b>extract</b> it somewhere different from the old version.'),
+      T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>，會得到一個新的資料夾（裡面有 MyClass 執行檔和 <code>system</code> 資料夾，<b>兩個要放在一起</b>）。', 'Click “Download update” below and <b>extract</b> the zip. You get a new folder containing the MyClass program and a <code>system</code> folder (<b>keep them together</b>).'),
       T('先<b>關閉 MyClass</b>（關掉黑色的執行視窗）。', '<b>Close MyClass</b> first (close the black console window).'),
-      T('把<b>舊資料夾裡的 <code>bin</code> 資料夾</b>整個複製到新資料夾裡（裡面是你所有的班級、學生與上傳檔案）。', 'Copy the <b><code>bin</code> folder from the old folder</b> into the new folder (it holds all your classes, students and uploads).'),
-      T('開啟新資料夾裡的 MyClass 執行檔。舊資料夾請先保留一陣子當備份。', 'Start MyClass from the new folder. Keep the old folder for a while as a backup.'),
+      T('打開<b>舊版的資料夾</b>，把裡面的 <code>bin</code> 資料夾<b>整個複製</b>到新資料夾裡（和執行檔放在同一層）。<code>bin</code> 裡面是你所有的班級、學生與上傳檔案。', 'Open the <b>old folder</b> and <b>copy its whole <code>bin</code> folder</b> into the new folder (next to the program). <code>bin</code> holds all your classes, students and uploads.'),
+      T('開啟新資料夾裡的 MyClass 執行檔。第一次啟動時系統會先自動備份資料庫；確認班級資料都在之後，再刪除舊資料夾。', 'Start MyClass from the new folder. On the first start the database is backed up automatically; delete the old folder once you have confirmed your classes are there.'),
     ]
       .map((t, i) => `<div style="margin:6px 0;">${i + 1}. ${t}</div>`)
       .join('');
@@ -133,7 +138,10 @@
         <div style="margin-top:6px;font-size:.92rem;line-height:1.7;">${stepsHtml()}</div>
         ${notes}
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;">
-          <a id="update-open-download" class="btn" href="${esc(latest.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">${esc(T('前往下載頁', 'Open download page'))}</a>
+          ${status.download
+            ? `<a id="update-open-download" class="btn" href="${esc(status.download.url)}" rel="noopener noreferrer" style="text-decoration:none;">⬇️ ${esc(T('下載更新檔', 'Download update'))}（${esc(fmtSize(status.download.size))}）</a>
+               <a class="btn btn-secondary" href="${esc(latest.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">${esc(T('查看所有下載', 'All downloads'))}</a>`
+            : `<a id="update-open-download" class="btn" href="${esc(latest.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">${esc(T('前往下載頁', 'Open download page'))}</a>`}
           <button type="button" id="update-detail-skip" class="btn btn-secondary">${esc(T('略過此版本', 'Skip this version'))}</button>
           <button type="button" id="update-detail-later" class="btn btn-secondary">${esc(T('稍後再說', 'Later'))}</button>
         </div>

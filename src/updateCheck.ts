@@ -22,6 +22,12 @@ const NOTES_MAX_CHARS = 1500;
 
 export type Edition = "portable" | "installed" | "dev";
 
+export interface ReleaseAsset {
+  name: string;
+  url: string; // browser_download_url（一定是 https://github.com/ 開頭）
+  size: number; // bytes
+}
+
 export interface LatestRelease {
   version: string; // 去掉 v/V 的數字版本，例如 "4.1.0"
   tag: string; // 原始標籤，例如 "v4.1.0"
@@ -29,6 +35,7 @@ export interface LatestRelease {
   url: string; // 給老師點的下載頁
   notes: string;
   published_at: string | null;
+  assets?: ReleaseAsset[]; // 該 Release 附的檔案（舊版快取沒有這欄）
 }
 
 export interface UpdateStatus {
@@ -37,6 +44,8 @@ export interface UpdateStatus {
   current_version: string | null;
   edition: Edition;
   latest: LatestRelease | null;
+  /** 依本機版本類型挑出的下載檔（可攜版 zip／安裝程式）；找不到時為 null，介面改導向下載頁。 */
+  download: ReleaseAsset | null;
   has_update: boolean;
   checked_at: string | null; // ISO
   last_ok: boolean | null;
@@ -60,6 +69,25 @@ export function compareVersions(a: number[], b: number[]): number {
     if (d !== 0) return d > 0 ? 1 : -1;
   }
   return 0;
+}
+
+/**
+ * 從 Release 附件挑出這台電腦該下載的那一個。命名慣例（見 scripts/package-release.mjs）：
+ *   安裝版：MyClassSetupV<版本>.exe
+ *   可攜版 Windows：MyClassV<版本>-win-portable.zip
+ *   可攜版 macOS：MyClassV<版本>-Mac*.zip
+ */
+export function pickDownload(
+  assets: ReleaseAsset[] | undefined,
+  edition: Edition,
+  platform: NodeJS.Platform = process.platform
+): ReleaseAsset | null {
+  const list = assets ?? [];
+  const find = (re: RegExp) => list.find((a) => re.test(a.name)) ?? null;
+  if (edition === "installed") return find(/setup.*\.exe$/i);
+  if (edition !== "portable") return null;
+  if (platform === "darwin") return find(/mac.*\.zip$/i);
+  return find(/portable.*\.zip$/i) ?? list.find((a) => /\.zip$/i.test(a.name) && !/mac/i.test(a.name)) ?? null;
 }
 
 // ---------------------------------------------------------------- 目前版本與版本類型
@@ -141,6 +169,7 @@ export async function getUpdateStatus(): Promise<UpdateStatus> {
     current_version: current,
     edition: detectEdition(),
     latest,
+    download: latest ? pickDownload(latest.assets, detectEdition()) : null,
     has_update: hasUpdate,
     checked_at: attempt ? new Date(attempt).toISOString() : null,
     last_ok: okRaw === null ? null : okRaw === "1",
@@ -177,6 +206,9 @@ async function fetchLatestRelease(): Promise<LatestRelease | null> {
         url: typeof r.html_url === "string" && r.html_url.startsWith("https://github.com/") ? r.html_url : RELEASES_PAGE,
         notes: String(r.body ?? "").slice(0, NOTES_MAX_CHARS),
         published_at: typeof r.published_at === "string" ? r.published_at : null,
+        assets: (Array.isArray(r.assets) ? (r.assets as Record<string, unknown>[]) : [])
+          .filter((a) => typeof a.browser_download_url === "string" && a.browser_download_url.startsWith("https://github.com/"))
+          .map((a) => ({ name: String(a.name ?? ""), url: String(a.browser_download_url), size: Number(a.size) || 0 })),
       };
     }
   }

@@ -44,7 +44,8 @@ npm start       # node dist/index.js
 
 - 教師登入密碼為「**字頭 + 當天月日**」，例如字頭是 `MyPrefix`、今天是 10 月 14 日，密碼就是 `MyPrefix1014`。
 - 全新安裝的預設字頭為 `Admin`，**第一次登入後系統會強制要求修改字頭**，改完才能使用其他功能。新字頭至少 4 碼且不可為 `Admin`。
-- 「忘記密碼」的重置只能在教師本機操作，區網內其他裝置無法使用。
+- 「忘記密碼」的重置**只能在執行程式的那台電腦**操作，不需要舊字頭；區網其他裝置、以及經由 ngrok／cloudflared 等反向代理或通道轉進來的請求（帶有 `X-Forwarded-For` 等標頭）都會被拒絕。
+- 非教師本機的登入嘗試，10 分鐘內失敗 8 次會暫停該來源 10 分鐘（教師本機不受限制）。
 - 學生以個別帳號登入，預設密碼為座號四碼（例如 5 號為 `0005`），教師可在學生資料中自訂。
 - 預設監聽所有網卡，讓區網內的學生裝置能連入。若只在教師本機使用，可設定環境變數 `MYCLASS_HOST=127.0.0.1`，伺服器就只接受本機連線。
 - 跨來源請求（CORS）僅允許同源；所有資料（資料庫、照片、上傳檔、憑證）都在程式旁的 `bin/`，不會上傳到外部。
@@ -57,18 +58,36 @@ npm start       # node dist/index.js
 - **只傳送什麼**：對 `api.github.com` 的一個匿名 GET（沒有班級、學生、教師或機器識別資料）。每 12 小時最多一次，失敗時靜默略過。
 - **怎麼關閉**：「設定 ➔ 密碼與連線 ➔ 軟體更新」取消勾選；或設定環境變數 `MYCLASS_NO_UPDATE_CHECK=1` 強制停用。
 - **目前版本**來自打包時寫入的 `system/version.json`（由 git 標籤產生）；開發模式沒有版本，功能不啟動。
-- **發佈新版本**（維護者）：打上 `vX.Y.Z` 標籤 ➔ `build-win.bat` / `build-win-installer.bat` 打包 ➔ 在 GitHub 建立同名的 **Release**，附上可攜版資料夾的壓縮檔與安裝程式。偵測依據是 Release（沒有 Release 時退而求其次看標籤）；草稿與預先發行版不會通知使用者。
+- **使用者怎麼取得更新**：更新視窗會依版本類型直接提供下載連結（可攜版是 zip、安裝版是 Setup 安裝程式），並說明步驟。可攜版的封裝結果是「執行檔 + `system/` 資料夾」，使用者的資料在旁邊的 `bin/`；更新就是換上新的「執行檔 + `system/`」，再把舊的 `bin/` 複製過去。
+- **發佈新版本**（維護者）：
+  1. `build-win.bat`（可攜版 zip）與 `build-win-installer.bat`（安裝程式，同時產生可攜版 zip）打包；完成後 `release/` 只有 `MyClassV<版本>-win-portable.zip`（**不含 `bin/`**，內附 `HOW-TO-UPDATE.txt`）與 `MyClassSetupV<版本>.exe`。
+  2. `npm run package:release` ➔ 列出該版本要發佈的檔案、大小與雜湊，並印出建立 Release 的步驟與 `gh release create` 指令。
+  3. 打上 `v<版本>` 標籤並推送，在 GitHub 建立同名 **Release**，附上 zip 與 `MyClassSetupV<版本>.exe`。
+  - 附件檔名須維持上述命名（含 `portable.zip`、`Setup`），更新視窗才能挑出對應的檔案；挑不到時會改為導向 Release 頁面。
+  - 偵測依據是 Release（沒有 Release 時退而求其次看標籤）；草稿與預先發行版不會通知使用者。
 - 若儲存庫改名或搬家，用環境變數 `MYCLASS_UPDATE_REPO=帳號/儲存庫` 指定，或修改 `src/updateCheck.ts` 的預設值。
+
+## 資料安全與外洩風險
+
+班級、學生、成績、照片、上傳檔與備份都存放在程式旁的 `bin/`，**沒有加密**（資料庫是一般的 SQLite 檔案）。「忘記密碼」可以在執行程式的那台電腦直接重設，因此**只要程式連同 `bin/` 一起遺失、被複製或被借用，登入密碼擋不住資料被讀取**。程式內加密也無濟於事，因為程式本身會跟著一起被帶走。
+
+- **只有程式外流（沒有 `bin/`）不會洩漏任何資料**；發佈用的壓縮檔（`npm run package:release`）一律排除 `bin/`。
+- 分享程式給他人時只給執行檔與 `system/`；不要把含 `bin/` 的資料夾寄信、上傳雲端或交給他人；`bin/backups/` 的備份同樣含有全部資料。
+- 隨身碟與筆電請妥善保管；需要更高保護請用 BitLocker 或加密隨身碟保護整顆磁碟。
+- 不要用 ngrok、cloudflared 等工具把這台電腦開放到網際網路。
+- 隨身碟遺失或電腦被盜，請視同學生個資外洩，依學校規定通報。
+- 系統在登入畫面、教師首頁與「設定 ➔ 密碼與連線」都會顯示這項提醒。
 
 ## 打包
 
 | | Windows 可攜版 | Windows 安裝版 | macOS 可攜版 |
 |---|---|---|---|
 | 建置 | `build-win.bat`（`npm run build:exe:win`） | `build-win-installer.bat`（`npm run build:installer:win`） | `build-mac.command` 或 `build-mac.sh`（`npm run build:mac`） |
-| 輸出 | `release\MyClassV版本\` | `release\MyClassSetupV版本.exe` | `release/MyClassV版本-Mac/` |
+| 輸出（只留壓縮檔） | `release\MyClassV版本-win-portable.zip` | `release\MyClassSetupV版本.exe`（同時產生可攜版 zip） | `release/MyClassV版本-Mac*.zip` |
 | 啟動 | 雙擊執行檔，開啟主控台並自動開啟瀏覽器 | 開始功能表／桌面捷徑，背景執行並在通知區顯示圖示 | 雙擊資料夾內的 `.command` |
 | 資料位置 | 資料夾內 `bin\` | 預設 `C:\MyClass\bin\` | 資料夾內 `bin/` |
 
+- **封裝完成後 `release/` 只會留下壓縮檔與安裝程式**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
 - 安裝版使用 Inno Setup 6（<https://jrsoftware.org/isdl.php>，或用環境變數 `ISCC_PATH` 指定 `ISCC.exe`），需要管理員身分以加入防火牆規則，區網內的學生裝置才連得進來。
 - 通知區托盤程式（`tools/tray/MyClassTray.cs`）以 Windows 內建的 `csc.exe` 編譯，不需另外安裝 SDK。它負責隱藏啟動伺服器、意外結束時自動重啟，並提供開啟系統、複製學生連線網址、開機自動啟動等選項。
 - 升級時只覆蓋程式檔，不動 `bin/`。每次程式版本改變後的第一次啟動，會先把資料庫備份到 `bin/backups/`（保留最近 10 份）。

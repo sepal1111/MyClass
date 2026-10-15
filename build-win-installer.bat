@@ -19,7 +19,7 @@ call npm run build:installer:win
 if errorlevel 1 goto :error
 
 echo.
-echo [OK] 完成：release\MyClassSetupV版本.exe 為安裝版，release\MyClassV版本\ 為可攜版。
+echo [OK] 完成：release\MyClassSetupV版本.exe 為安裝版，release\MyClassV版本-win-portable.zip 為可攜版（壓縮檔）。
 pause
 chcp %ORIG_CP% >nul
 exit /b 0

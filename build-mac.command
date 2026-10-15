@@ -35,7 +35,7 @@ npm run build:exe:mac
 echo
 echo "============================================================"
 echo " [OK] macOS 封裝完成！"
-echo " 輸出目錄：release/ 內的 MyClass*-Mac 資料夾"
+echo " 輸出：release/ 內的 MyClass*-Mac*.zip（解壓縮後使用）"
 echo " 啟動方式：至該資料夾雙擊「啟動課堂系統.command」即可直接執行。"
 echo "============================================================"
 echo

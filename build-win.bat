@@ -19,7 +19,7 @@ call npm run build:exe:win
 if errorlevel 1 goto :error
 
 echo.
-echo [OK] 封裝完成：請到 release\ 資料夾取得執行檔。
+echo [OK] 封裝完成：release\MyClassV版本-win-portable.zip（只留壓縮檔，解壓縮後即可使用）。
 pause
 chcp %ORIG_CP% >nul
 exit /b 0

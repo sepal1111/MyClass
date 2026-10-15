@@ -17,7 +17,28 @@ function ownAddresses(): Set<string> {
   return set;
 }
 
+// 反向代理或通道（ngrok、cloudflared、nginx…）轉進來的請求，TCP 來源會是代理自己（常常就是
+// 127.0.0.1），光看來源位址會誤判成「本機」。這些工具都會附上下列標頭之一；正常的本機瀏覽器
+// 不會帶，所以只要出現就一律視為「不是本機」，讓僅限本機的功能（忘記密碼重設、作業掃描、
+// 安全關閉）不會因為老師把電腦開放到外網而對外開放。
+const PROXY_HEADERS = [
+  "x-forwarded-for",
+  "x-forwarded-host",
+  "x-forwarded-proto",
+  "forwarded",
+  "x-real-ip",
+  "via",
+  "cf-connecting-ip",
+  "true-client-ip",
+  "x-client-ip",
+];
+
+function viaProxy(req: Request): boolean {
+  return PROXY_HEADERS.some((h) => req.headers?.[h] !== undefined);
+}
+
 export function isLocalRequest(req: Request): boolean {
+  if (viaProxy(req)) return false;
   const remote = normalize(req.socket.remoteAddress);
   return remote !== "" && ownAddresses().has(remote);
 }

@@ -5,6 +5,7 @@
 // see src/paths.ts:getPackagedPrismaEngineLibraryPath for why). `bin/` is
 // deliberately NOT created here; the app creates it next to the exe on first
 // run (src/paths.ts:getBinDir).
+import { zipAndRemove } from "./lib/portable-zip.mjs";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -246,6 +247,16 @@ if (target.isMac) {
   );
 }
 
-console.log(`\n[build-exe] Done! Single package created at: ${outDir}`);
-console.log(`[build-exe] Executable: ${exeName}`);
+// 預設只留下壓縮檔：資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。
+// 加 --keep-folder（或環境變數 MYCLASS_KEEP_FOLDER=1）可保留資料夾，例如本機直接執行測試；
+// build-installer.mjs 也會用它，因為安裝程式需要這個資料夾的內容，打包完才由它負責壓縮。
+const keepFolder = process.argv.includes("--keep-folder") || process.env.MYCLASS_KEEP_FOLDER === "1";
+if (keepFolder) {
+  console.log(`\n[build-exe] Done! Package folder kept at: ${outDir}`);
+  console.log(`[build-exe] Executable: ${exeName}`);
+} else {
+  const { zipPath, mb } = zipAndRemove(path.join(rootDir, "release"), folderName);
+  console.log(`\n[build-exe] Done! 已壓縮為 ${path.relative(rootDir, zipPath)}（${mb.toFixed(1)} MB），原資料夾已刪除。`);
+  console.log("[build-exe] 解壓縮後即可使用；zip 不含 bin（使用者資料）。要保留資料夾請加 --keep-folder。");
+}
 

@@ -15,7 +15,8 @@
     "build:exe:mac": "node scripts/build-exe.mjs mac",
     "build:mac": "node scripts/build-exe.mjs mac",
     "build:mac:arm64": "node scripts/build-exe.mjs mac-arm64",
-    "build:mac:x64": "node scripts/build-exe.mjs mac-x64"
+    "build:mac:x64": "node scripts/build-exe.mjs mac-x64",
+    "package:release": "node scripts/package-release.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
