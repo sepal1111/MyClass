@@ -67,6 +67,8 @@ function connectCourseRealtime(courseId, onUpdate, onToolkitAction, tokenOverrid
       if (window.StudentApp?.onKahootFinished) {
         window.StudentApp.onKahootFinished(data.payload);
       }
+    } else if (data.event === 'teacher_notification:new') {
+      if (window.TeacherNotify?.onNew) window.TeacherNotify.onNew(data.payload);
     } else if (data.event === 'notification:new') {
       if (window.StudentApp?.onNotification) {
         window.StudentApp.onNotification(data.payload);

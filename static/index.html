@@ -1260,8 +1260,8 @@
           <div class="glass-card-header" style="flex-wrap: wrap; gap: 10px;">
             <div class="glass-card-title" data-i18n="admin_batch_import_title">📥 學生名單批次匯入</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <a href="/api/courses/template/students_excel" download class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" data-i18n="admin_dl_excel_template">📥 下載 Excel 範本 (.xlsx)</a>
-              <a href="/api/courses/template/students_csv" download class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" data-i18n="admin_dl_csv_template">📥 下載 CSV 範本 (.csv)</a>
+              <a href="/api/courses/template/students_excel" data-auth-download="學生名冊匯入範例.xlsx" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" data-i18n="admin_dl_excel_template">📥 下載 Excel 範本 (.xlsx)</a>
+              <a href="/api/courses/template/students_csv" data-auth-download="學生名冊匯入範例.csv" class="btn btn-secondary" style="text-decoration: none; font-size: 0.85rem; padding: 6px 14px; display: inline-flex; align-items: center; gap: 6px;" data-i18n="admin_dl_csv_template">📥 下載 CSV 範本 (.csv)</a>
             </div>
           </div>
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
@@ -1560,8 +1560,8 @@
               <div class="dropdown-wrapper" style="display: inline-block;">
                 <button type="button" class="btn btn-secondary" id="btn-ptcard-templates-menu" style="font-size: 0.85rem; padding: 6px 14px;" onclick="const el=document.getElementById('ptcard-dl-menu'); el.style.display = el.style.display === 'block' ? 'none' : 'block';" data-i18n="ptcard_btn_download_templates">📥 下載範本 ▾</button>
                 <div id="ptcard-dl-menu" style="display: none; position: absolute; right: 0; background: var(--card-bg); border: 1.5px solid var(--card-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); z-index: 100; min-width: 180px; padding: 6px;">
-                  <a href="/api/point-cards/template/excel" download style="display: block; padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); text-decoration: none; border-radius: 6px;" onmouseover="this.style.background='var(--nav-bg)'" onmouseout="this.style.background='none'" data-i18n="ptcard_template_excel">📊 Excel 範本 (.xlsx)</a>
-                  <a href="/api/point-cards/template/csv" download style="display: block; padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); text-decoration: none; border-radius: 6px;" onmouseover="this.style.background='var(--nav-bg)'" onmouseout="this.style.background='none'" data-i18n="ptcard_template_csv">📄 CSV 範本 (.csv)</a>
+                  <a href="/api/point-cards/template/excel" data-auth-download="實體點數卡匯入範例.xlsx" style="display: block; padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); text-decoration: none; border-radius: 6px;" onmouseover="this.style.background='var(--nav-bg)'" onmouseout="this.style.background='none'" data-i18n="ptcard_template_excel">📊 Excel 範本 (.xlsx)</a>
+                  <a href="/api/point-cards/template/csv" data-auth-download="實體點數卡匯入範例.csv" style="display: block; padding: 8px 12px; font-size: 0.85rem; color: var(--text-main); text-decoration: none; border-radius: 6px;" onmouseover="this.style.background='var(--nav-bg)'" onmouseout="this.style.background='none'" data-i18n="ptcard_template_csv">📄 CSV 範本 (.csv)</a>
                 </div>
               </div>
             </div>
@@ -1707,7 +1707,7 @@
             </button>
           </div>
           <div style="font-size: 0.92rem; line-height: 1.6; color: var(--text-main); margin-bottom: 4px;">
-            教師可使用隨身手機或平板掃描此 QR Code，即可直接開啟純淨即時評分介面（免再次輸入密碼），於教室中走動評分，分數即時同步至本系統與投影大螢幕！
+            教師可使用隨身手機或平板掃描此 QR Code，開啟教師手機版；輸入今日的教師密碼並選擇班級後，即可在教室中走動點名、快速加減分、寫紀錄，分數即時同步至本系統與投影大螢幕！
           </div>
         </div>
 
@@ -1810,7 +1810,7 @@
         </div>
         <div>
           <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin_student_password">登入密碼：</label>
-          <input type="password" id="edit-student-password" class="input-control" placeholder="留空則沿用預設值（座號四碼）／不修改現有密碼" autocomplete="new-password">
+          <input type="password" id="edit-student-password" class="input-control" placeholder="留空＝新增時使用預設（學號，無學號則座號四碼）／編輯時不修改現有密碼" autocomplete="new-password">
         </div>
         <div>
           <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;" data-i18n="admin_student_name">中文姓名：</label>
@@ -1973,8 +1973,8 @@
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
           <label style="font-weight: 700;" data-i18n="import_file_label">選取檔案 (.csv, .xlsx, .xls)：</label>
           <div style="display: flex; gap: 6px;">
-            <a href="/api/courses/template/students_excel" download class="btn btn-secondary" style="text-decoration: none; font-size: 0.82rem; padding: 4px 12px; display: inline-flex; align-items: center; gap: 4px;" data-i18n="import_dl_excel">📥 下載 Excel 範本</a>
-            <a href="/api/courses/template/students_csv" download class="btn btn-secondary" style="text-decoration: none; font-size: 0.82rem; padding: 4px 12px; display: inline-flex; align-items: center; gap: 4px;" data-i18n="import_dl_csv">📥 下載 CSV 範本</a>
+            <a href="/api/courses/template/students_excel" data-auth-download="學生名冊匯入範例.xlsx" class="btn btn-secondary" style="text-decoration: none; font-size: 0.82rem; padding: 4px 12px; display: inline-flex; align-items: center; gap: 4px;" data-i18n="import_dl_excel">📥 下載 Excel 範本</a>
+            <a href="/api/courses/template/students_csv" data-auth-download="學生名冊匯入範例.csv" class="btn btn-secondary" style="text-decoration: none; font-size: 0.82rem; padding: 4px 12px; display: inline-flex; align-items: center; gap: 4px;" data-i18n="import_dl_csv">📥 下載 CSV 範本</a>
           </div>
         </div>
         <div class="custom-file-wrap" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -2238,6 +2238,7 @@
         <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; color: var(--text-main);" data-i18n="auth_student_title">🎓 學生登入</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;" data-i18n="auth_student_subtitle">請輸入老師提供的登入帳號與密碼</p>
         <div id="student-login-error" class="error-box" style="text-align: left;"></div>
+        <div id="student-login-hint" style="display: none; margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; font-size: 0.9rem; line-height: 1.6; text-align: left;"></div>
         <form id="student-login-form">
           <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
             <input type="text" id="student-login-account" class="input-control" autocomplete="username" placeholder="請輸入登入帳號" style="text-align: center; font-size: 1.05rem;" data-i18n-placeholder="auth_student_account_placeholder" required autocapitalize="none" autocorrect="off" spellcheck="false">
@@ -3892,5 +3893,6 @@
   <script src="/static/js/timetable.js?v=1.0"></script>
   <script src="/static/js/updater.js?v=1.0"></script>
   <script src="/static/js/data-warning.js?v=1.0"></script>
+  <script src="/static/js/teacher-notify.js?v=1.0"></script>
 </body>
 </html>

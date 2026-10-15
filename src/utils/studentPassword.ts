@@ -1,10 +1,11 @@
-// Default student password formula: zero-padded 4-digit student number (e.g. 座號 1 -> "0001").
-// Deterministic and always available (unlike student_code/生日, which aren't always collected),
-// so every student has a working login the moment a teacher imports the roster — no extra step.
+// 預設密碼 = 學號（student_code）。沒有填學號的學生，退而使用四位數座號（座號 1 -> "0001"），
+// 這樣每位學生在老師匯入名冊的當下就有可用的登入密碼，不需要額外步驟。
+// 學生第一次登入時必須自己改成新密碼（見 routes/studentAuth.ts）。
 import bcrypt from "bcryptjs";
 
-export function defaultStudentPassword(studentNumber: number): string {
-  return String(studentNumber).padStart(4, "0");
+export function defaultStudentPassword(studentNumber: number, studentCode?: string | null): string {
+  const code = (studentCode ?? "").trim();
+  return code || String(studentNumber).padStart(4, "0");
 }
 
 // Default login account: {course_id}-{4-digit padded student number}. Deterministic and

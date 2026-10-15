@@ -347,6 +347,26 @@ export async function initSchema(): Promise<void> {
     "CREATE INDEX IF NOT EXISTS idx_student_notifications_student ON student_notifications(student_id, is_read, created_at);"
   );
 
+  // 教師端通知（🔔）：學生繳交／申請重新繳交／發問。見 utils/notifications.ts。
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS teacher_notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NULL,
+      unit_id INTEGER NULL,
+      sub_unit_id INTEGER NULL,
+      repeat_count INTEGER NOT NULL DEFAULT 1,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE
+    );
+  `);
+  await prisma.$executeRawUnsafe(
+    "CREATE INDEX IF NOT EXISTS idx_teacher_notifications_read ON teacher_notifications(is_read, created_at);"
+  );
+
   // 即時互動牆（Live Wall）：教師開一個限時場次，學生每人限交一則文字/手繪/拍照貼文。
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS live_sessions (
@@ -868,6 +888,11 @@ export async function initSchema(): Promise<void> {
   await tryAlter("ALTER TABLE students ADD COLUMN seat_col INTEGER NULL;");
   await tryAlter("ALTER TABLE students ADD COLUMN password_hash TEXT NULL;");
   await tryAlter("ALTER TABLE students ADD COLUMN login_account TEXT NULL;");
+  // 第一次登入須自行改密碼。DEFAULT 1 同時讓升級前的既有學生也被要求改一次。
+  await tryAlter("ALTER TABLE students ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 1;");
+  await tryAlter("ALTER TABLE students ADD COLUMN pw_hint_prefix TEXT NULL;");
+  await tryAlter("ALTER TABLE students ADD COLUMN pw_hint_main TEXT NULL;");
+  await tryAlter("ALTER TABLE students ADD COLUMN pw_hint_suffix TEXT NULL;");
   await prisma.$executeRawUnsafe(
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_students_login_account ON students(login_account);"
   );

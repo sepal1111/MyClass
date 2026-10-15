@@ -1,7 +1,7 @@
 // 學生端「🔔 通知」：寫入通知、推播給學生自己的連線。
 // 通知是「附帶功能」——寫入失敗只記警告，絕不能讓批改、核准等主要操作跟著失敗。
 import { prisma } from "../db";
-import { pushStudentNotification } from "../realtime";
+import { pushStudentNotification, pushTeacherNotification } from "../realtime";
 import { getNowStrTaipei } from "../timezone";
 
 /** 點擊通知後學生端要切換到的分頁（對應 student.js 的 switchTab key）。 */
@@ -147,5 +147,75 @@ export async function notifyCourseFileCollection(courseId: number, title: string
     );
   } catch (err) {
     console.warn("[notifications] 檔案蒐集通知失敗：", err);
+  }
+}
+
+// ---------------------------------------------------------------- 教師端通知
+
+const TEACHER_MAX_ROWS = 200;
+
+export type TeacherNotificationType = "submission" | "resubmit_request" | "question";
+
+/**
+ * 學生有動作需要老師處理時通知教師（繳交作業、申請重新繳交、發問）。
+ * 同一份作業、同一種事件在 10 分鐘內且尚未讀取的，合併成一則並累加次數，避免全班一起交時洗版。
+ * 與學生通知一樣屬於附帶功能：失敗只記警告，不影響學生的主要操作。
+ */
+export async function notifyTeacher(args: {
+  courseId: number;
+  type: TeacherNotificationType;
+  unitId: number;
+  subUnitId: number;
+  subUnitTitle: string;
+  who: string; // 學生姓名或小組名稱
+  body?: string | null;
+}): Promise<void> {
+  try {
+    const now = getNowStrTaipei();
+    const cutoff = nowMinusMinutes(NEW_CONTENT_MERGE_MINUTES);
+    const single: Record<TeacherNotificationType, string> = {
+      submission: `${args.who} 繳交了「${args.subUnitTitle}」`,
+      resubmit_request: `${args.who} 申請重新繳交「${args.subUnitTitle}」`,
+      question: `${args.who} 在「${args.subUnitTitle}」提問`,
+    };
+    const merged = (n: number): string =>
+      ({
+        submission: `「${args.subUnitTitle}」有 ${n} 份新的繳交`,
+        resubmit_request: `「${args.subUnitTitle}」有 ${n} 位同學申請重新繳交`,
+        question: `「${args.subUnitTitle}」有 ${n} 則新的提問`,
+      })[args.type];
+
+    const recent = await prisma.teacherNotification.findFirst({
+      where: { courseId: args.courseId, type: args.type, subUnitId: args.subUnitId, isRead: 0, createdAt: { gte: cutoff } },
+      orderBy: { id: "desc" },
+    });
+    let title: string;
+    if (recent) {
+      const count = recent.repeatCount + 1;
+      title = merged(count);
+      await prisma.teacherNotification.update({
+        where: { id: recent.id },
+        data: { repeatCount: count, title, body: clip(args.body, 120), createdAt: now },
+      });
+    } else {
+      title = single[args.type];
+      await prisma.teacherNotification.create({
+        data: {
+          courseId: args.courseId,
+          type: args.type,
+          title,
+          body: clip(args.body, 120),
+          unitId: args.unitId,
+          subUnitId: args.subUnitId,
+          createdAt: now,
+        },
+      });
+      await prisma.$executeRaw`
+        DELETE FROM teacher_notifications
+        WHERE id NOT IN (SELECT id FROM teacher_notifications ORDER BY id DESC LIMIT ${TEACHER_MAX_ROWS})`;
+    }
+    pushTeacherNotification(title);
+  } catch (err) {
+    console.warn("[notifications] 教師通知寫入失敗：", err);
   }
 }

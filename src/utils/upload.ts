@@ -3,6 +3,9 @@
 // filename as raw UTF-8 bytes. Left undecoded, a Traditional Chinese filename like
 // "填單.docx" round-trips through latin1 and comes out as mojibake ("å¡«å–®.docx").
 export function fixUploadFilename(name: string): string {
+  // 若已含有 U+00FF 以上的字元，代表上游已經正確解成 UTF-8（例如日後 multer／busboy 改了預設），
+  // 不能再當成 latin1 重新解碼，否則會變成亂碼。
+  if (/[Ā-￿]/.test(name)) return name;
   return Buffer.from(name, "latin1").toString("utf8");
 }
 

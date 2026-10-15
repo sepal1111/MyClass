@@ -15,6 +15,7 @@ import { recordGradeScoreLog, undoScoreLogIds } from "../utils/submissionGrading
 import { listSubmissionComments, createSubmissionComment, type CommentThreadScope } from "../utils/submissionComments";
 import { fixUploadFilename } from "../utils/upload";
 import { broadcastToCourse } from "../realtime";
+import { notifyTeacher } from "../utils/notifications";
 
 export const studentContentRouter = autoCatch(Router());
 studentContentRouter.use(requireStudentAuth);
@@ -346,6 +347,15 @@ function checkSubmittable(subUnit: { dueDate: string | null; autoLockOverdue: nu
   return null;
 }
 
+/** 教師通知上顯示的「誰」：個人作業用「座號 姓名」，小組作業用「小組名稱（送出者）」。 */
+async function whoLabel(studentId: number, groupId: number | null): Promise<string> {
+  const student = await prisma.student.findUnique({ where: { id: studentId }, select: { name: true, studentNumber: true } });
+  const person = student ? `${student.studentNumber} 號 ${student.name}` : "學生";
+  if (groupId === null) return person;
+  const group = await prisma.group.findUnique({ where: { id: groupId }, select: { groupName: true } });
+  return `${group?.groupName ?? "小組"}（${person}）`;
+}
+
 studentContentRouter.post("/subunits/:subUnitId/submit", upload.array("files", 5), async (req, res) => {
   const { courseId, studentId } = req.studentAuth!;
   const subUnitId = Number(req.params.subUnitId);
@@ -431,6 +441,16 @@ studentContentRouter.post("/subunits/:subUnitId/submit", upload.array("files", 5
     });
   }
 
+  void (async () => {
+    notifyTeacher({
+      courseId,
+      type: "submission",
+      unitId: subUnit.unitId,
+      subUnitId,
+      subUnitTitle: subUnit.title,
+      who: await whoLabel(studentId, groupId),
+    });
+  })();
   res.json({ message: "作業已送出！" });
 });
 
@@ -453,12 +473,18 @@ studentContentRouter.post("/subunits/:subUnitId/request_resubmit", async (req, r
       create: { subUnitId, groupId, resubmitRequested: 1, resubmitRequestedAt: now },
       update: { resubmitRequested: 1, resubmitRequestedAt: now },
     });
+    void whoLabel(studentId, groupId).then((who) =>
+      notifyTeacher({ courseId, type: "resubmit_request", unitId: subUnit.unitId, subUnitId, subUnitTitle: subUnit.title, who })
+    );
   } else {
     await prisma.submission.upsert({
       where: { subUnitId_studentId: { subUnitId, studentId } },
       create: { subUnitId, studentId, resubmitRequested: 1, resubmitRequestedAt: now },
       update: { resubmitRequested: 1, resubmitRequestedAt: now },
     });
+    void whoLabel(studentId, null).then((who) =>
+      notifyTeacher({ courseId, type: "resubmit_request", unitId: subUnit.unitId, subUnitId, subUnitTitle: subUnit.title, who })
+    );
   }
 
   res.json({ message: "已送出重新繳交申請，請等待老師同意" });
@@ -642,6 +668,17 @@ studentContentRouter.post("/subunits/:subUnitId/comments", async (req, res) => {
   if (!scope) return;
 
   await createSubmissionComment(prisma, scope, "student", studentId, message, getNowStrTaipei());
+  void whoLabel(studentId, "groupId" in scope ? scope.groupId : null).then((who) =>
+    notifyTeacher({
+      courseId,
+      type: "question",
+      unitId: subUnit.unitId,
+      subUnitId: subUnit.id,
+      subUnitTitle: subUnit.title,
+      who,
+      body: message,
+    })
+  );
   res.json(await listSubmissionComments(prisma, scope));
 });
 

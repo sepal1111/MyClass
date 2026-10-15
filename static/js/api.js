@@ -23,6 +23,60 @@
    國小課堂即時記錄系統 - API Client Module
    ========================================================================== */
 
+// ---------------------------------------------------------------------------
+// 帶驗證的檔案下載
+//
+// 原生的 <a href download> 只靠 cookie 驗證，而且是由瀏覽器的下載管理員另外發出請求：
+// 自簽憑證（區網用 https://IP）或 cookie 失效時，會出現「失敗 - 網路錯誤」，檔名也變成網址最後一段
+// （例如 students_excel）。改由頁面自己用 fetch（帶教師 token）取檔，再以 blob 觸發下載，
+// 與報表匯出同一種做法。用法：在連結上加 data-auth-download="預設檔名.xlsx"，href 照常指向 API。
+// ---------------------------------------------------------------------------
+async function downloadAuthFile(url, fallbackName) {
+  const headers = {};
+  const token = localStorage.getItem('auth_token');
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { headers, credentials: 'same-origin' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || '下載失敗');
+  }
+  // 優先使用伺服器給的檔名（Content-Disposition 的 filename*=UTF-8''…），沒有才用預設檔名
+  let filename = fallbackName || 'download';
+  const cd = res.headers.get('Content-Disposition') || '';
+  const star = cd.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+  const plain = cd.match(/filename\s*=\s*"?([^";]+)"?/i);
+  try {
+    if (star) filename = decodeURIComponent(star[1].trim());
+    else if (plain) filename = plain[1].trim();
+  } catch (e) { /* 解碼失敗就用預設檔名 */ }
+
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = blobUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  // 延遲清理，讓瀏覽器的下載執行緒有時間讀到檔名與副檔名
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  }, 5000);
+}
+window.downloadAuthFile = downloadAuthFile;
+
+document.addEventListener('click', (evt) => {
+  const link = evt.target.closest && evt.target.closest('a[data-auth-download]');
+  if (!link) return;
+  evt.preventDefault();
+  downloadAuthFile(link.getAttribute('href'), link.dataset.authDownload).catch((err) => {
+    const msg = '下載失敗：' + (err && err.message ? err.message : err);
+    if (typeof window.showToast === 'function') window.showToast(msg, 'error');
+    else alert(msg);
+  });
+});
+
 const API = {
   getHeaders(extraHeaders = {}) {
     const headers = { ...extraHeaders };

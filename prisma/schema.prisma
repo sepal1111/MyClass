@@ -177,6 +177,13 @@ model Student {
   isActive      Int     @default(1) @map("is_active")
   // LMS 學生登入帳密（見第三節架構決策：完全自建，不依賴 Google）。null 代表尚未設定密碼。
   passwordHash  String? @map("password_hash")
+  // 第一次登入必須自己設定新密碼：新增學生、匯入名單、教師重設密碼時為 1，學生自行改過密碼後為 0。
+  // 既有學生升級時也一律為 1（見 db.ts 的 ALTER … DEFAULT 1）。
+  mustChangePassword Int @default(1) @map("must_change_password")
+  // 密碼提醒：忘記密碼時顯示「前綴 + 主要內容說明 + 後綴」，由學生自己填寫。
+  pwHintPrefix String? @map("pw_hint_prefix")
+  pwHintMain   String? @map("pw_hint_main")
+  pwHintSuffix String? @map("pw_hint_suffix")
   // 獨立自訂登入帳號（與座號/學號無關，教師可自行設定或系統自動產生），全系統唯一，
   // 讓學生免選課程即可直接用「帳號＋密碼」登入（見 routes/studentAuth.ts login_by_account）。
   loginAccount  String? @unique @map("login_account")
@@ -913,4 +920,23 @@ model StudentNotification {
 
   @@index([studentId, isRead, createdAt])
   @@map("student_notifications")
+}
+
+// 教師端「🔔 通知」：學生繳交作業、申請重新繳交、在作業／測驗發問時寫入（見 utils/notifications.ts）。
+// 教師是單一共用身分，所以已讀狀態不分人。同一份作業短時間內的多筆事件會合併成一則（repeatCount）。
+// 實體資料表在 db.ts 以 CREATE TABLE IF NOT EXISTS 建立（含 course 的 ON DELETE CASCADE）。
+model TeacherNotification {
+  id          Int     @id @default(autoincrement())
+  courseId    Int     @map("course_id")
+  type        String // submission | resubmit_request | question
+  title       String
+  body        String?
+  unitId      Int?    @map("unit_id")
+  subUnitId   Int?    @map("sub_unit_id")
+  repeatCount Int     @default(1) @map("repeat_count")
+  isRead      Int     @default(0) @map("is_read")
+  createdAt   String  @map("created_at")
+
+  @@index([isRead, createdAt])
+  @@map("teacher_notifications")
 }

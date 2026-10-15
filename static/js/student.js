@@ -3,6 +3,10 @@
    ========================================================================== */
 (function () {
   const TOKEN_KEY = 'student_token';
+  // 剛用密碼登入時暫存在記憶體（不寫入儲存空間），強制改密碼時就不用再問一次目前的密碼
+  let knownPassword = '';
+  // 由「修改密碼」視窗的程式指定；forced=true 是第一次登入或被老師重設後的強制修改
+  let openPasswordModal = () => {};
   const STUDENT_KEY = 'student_info';
 
   const loginView = document.getElementById('loginView');
@@ -45,6 +49,14 @@
     loginError.style.display = 'none';
   }
 
+  // 密碼多次輸入錯誤後，伺服器會附上這個帳號的「密碼提醒」
+  function showLoginHint(hint) {
+    const box = document.getElementById('loginHintBox');
+    if (!box) return;
+    document.getElementById('loginHintText').textContent = hint || '';
+    box.hidden = !hint;
+  }
+
   async function api(path, opts) {
     opts = opts || {};
     const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
@@ -52,7 +64,12 @@
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch(path, Object.assign({}, opts, { headers }));
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || '發生錯誤，請稍後再試');
+    if (!res.ok) {
+      if (res.status === 403 && data.code === 'PASSWORD_CHANGE_REQUIRED') openPasswordModal(true);
+      const err = new Error(data.detail || '發生錯誤，請稍後再試');
+      err.data = data;
+      throw err;
+    }
     return data;
   }
 
@@ -1204,6 +1221,10 @@
       const me = await api('/api/auth/student/me');
       saveSession(localStorage.getItem(TOKEN_KEY), Object.assign({ course_id: me.course.id }, me.student));
       renderTopNavAndHero(me.student, me.course);
+      if (me.student.must_change_password) {
+        openPasswordModal(true);
+        return;
+      }
       await loadMyGroup();
       await checkStudentLeadership();
       await loadContent();
@@ -1224,6 +1245,7 @@
   accountLoginForm.addEventListener('submit', async (evt) => {
     evt.preventDefault();
     clearError();
+    showLoginHint(null);
     try {
       const res = await api('/api/auth/student/login_by_account', {
         method: 'POST',
@@ -1232,16 +1254,148 @@
           password: document.getElementById('accountPasswordInput').value,
         }),
       });
+      knownPassword = document.getElementById('accountPasswordInput').value;
       saveSession(res.token, res.student);
       showContent();
     } catch (e) {
       showError(e.message);
+      showLoginHint(e.data && e.data.hint);
     }
   });
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
     exitToLogin();
   });
+
+  // --- 修改自己的密碼（含第一次登入／被老師重設後的強制修改）與「密碼提醒」---
+  // 新密碼沒有任何規則限制（只要不是空白），避免低年級學生被規則卡住。
+  // 密碼提醒：前綴／主要內容／後綴，主要內容必填、前後綴至少一個；顯示成「前綴＋主要內容＋後綴」。
+  (function setupChangePassword() {
+    const modal = document.getElementById('modalChangePassword');
+    const cur = document.getElementById('inputCurrentPassword');
+    const n1 = document.getElementById('inputNewPassword');
+    const n2 = document.getElementById('inputNewPassword2');
+    const err = document.getElementById('changePasswordError');
+    const submit = document.getElementById('btnSubmitChangePassword');
+    const cancel = document.getElementById('btnCancelChangePassword');
+    const title = document.getElementById('changePasswordTitle');
+    const desc = document.getElementById('changePasswordDesc');
+    const pwWrap = document.getElementById('passwordFieldsWrap');
+    const hintWrap = document.getElementById('hintFieldsWrap');
+    const hPrefix = document.getElementById('inputHintPrefix');
+    const hMain = document.getElementById('inputHintMain');
+    const hSuffix = document.getElementById('inputHintSuffix');
+    const preview = document.getElementById('hintPreview');
+    let forced = false;
+    let hintOnly = false;
+
+    const close = () => { modal.style.display = 'none'; };
+    const composePreview = () => {
+      const main = hMain.value.trim();
+      if (!main) return '（尚未填寫）';
+      return `${hPrefix.value.trim()}${main}${hSuffix.value.trim()}`;
+    };
+    [hPrefix, hMain, hSuffix].forEach((el) => el.addEventListener('input', () => { preview.textContent = composePreview(); }));
+
+    // 回傳 null 代表沒問題；否則回傳要顯示的錯誤文字
+    const hintError = () => {
+      const p = hPrefix.value.trim(); const m = hMain.value.trim(); const x = hSuffix.value.trim();
+      if (!p && !m && !x) return null;
+      if (!m) return '密碼提醒的「主要內容」一定要填（例如：媽媽的電話號碼）。';
+      if (!p && !x) return '前綴和後綴至少要填一個（也可以兩個都填）。';
+      return null;
+    };
+
+    async function loadHint() {
+      hPrefix.value = ''; hMain.value = ''; hSuffix.value = '';
+      try {
+        const h = await api('/api/auth/student/password_hint');
+        hPrefix.value = h.prefix || ''; hMain.value = h.main || ''; hSuffix.value = h.suffix || '';
+      } catch (e) { /* 取不到就留空 */ }
+      preview.textContent = composePreview();
+    }
+
+    openPasswordModal = (isForced, onlyHint) => {
+      forced = Boolean(isForced);
+      hintOnly = Boolean(onlyHint);
+      cur.value = ''; n1.value = ''; n2.value = ''; err.textContent = '';
+      const knowCurrent = forced && Boolean(knownPassword);
+      cur.style.display = knowCurrent ? 'none' : '';
+      pwWrap.style.display = hintOnly ? 'none' : 'flex';
+      cancel.textContent = forced ? '登出' : '取消';
+      submit.textContent = '儲存';
+      if (hintOnly) {
+        title.textContent = '設定密碼提醒';
+        desc.textContent = '忘記密碼時，登入畫面輸入錯誤好幾次後，會顯示這段提醒幫你想起來。留空並儲存就是清除提醒。';
+      } else {
+        title.textContent = forced ? '請先設定你的新密碼' : '修改我的密碼';
+        desc.textContent = forced
+          ? '這是你第一次登入（或老師幫你重設了密碼）。請設定一個只有你知道的新密碼，記好它，也不要告訴別人。'
+          : '請設定一個只有你知道的新密碼，記好它，也不要告訴別人。';
+      }
+      // 改密碼時提醒欄位預設是空的（舊提醒對新密碼沒有意義）；只設提醒時才帶入目前的內容
+      if (hintOnly) { loadHint(); } else { hPrefix.value = ''; hMain.value = ''; hSuffix.value = ''; preview.textContent = composePreview(); }
+      modal.style.display = 'flex';
+      (hintOnly ? hMain : (knowCurrent ? n1 : cur)).focus();
+    };
+
+    document.getElementById('changePasswordBtn').addEventListener('click', () => openPasswordModal(false, false));
+    document.getElementById('changeHintBtn').addEventListener('click', () => openPasswordModal(false, true));
+    cancel.addEventListener('click', () => {
+      if (forced) { close(); exitToLogin(); } else { close(); }
+    });
+    modal.addEventListener('click', (e) => { if (!forced && e.target === modal) close(); });
+
+    submit.addEventListener('click', async () => {
+      err.textContent = '';
+      const he = hintError();
+      if (he) { err.textContent = he; return; }
+
+      if (hintOnly) {
+        submit.disabled = true;
+        try {
+          const res = await api('/api/auth/student/password_hint', {
+            method: 'PUT',
+            body: JSON.stringify({ prefix: hPrefix.value, main: hMain.value, suffix: hSuffix.value }),
+          });
+          close();
+          showToast('💡 ' + (res.message || '密碼提醒已儲存！'), 'success');
+        } catch (e) {
+          err.textContent = e.message;
+        } finally {
+          submit.disabled = false;
+        }
+        return;
+      }
+
+      const current = cur.style.display === 'none' ? knownPassword : cur.value;
+      if (!current) { err.textContent = '請輸入目前的密碼。'; return; }
+      if (!n1.value) { err.textContent = '請輸入新密碼。'; return; }
+      if (n1.value !== n2.value) { err.textContent = '兩次輸入的新密碼不一樣。'; return; }
+      submit.disabled = true;
+      try {
+        const res = await api('/api/auth/student/change_password', {
+          method: 'POST',
+          body: JSON.stringify({
+            current_password: current,
+            new_password: n1.value,
+            hint_prefix: hPrefix.value,
+            hint_main: hMain.value,
+            hint_suffix: hSuffix.value,
+          }),
+        });
+        const wasForced = forced;
+        knownPassword = '';
+        close();
+        showToast('🔑 ' + (res.message || '密碼已更新！'), 'success');
+        if (wasForced) showContent(); // 改完才載入課程內容
+      } catch (e) {
+        err.textContent = e.message;
+      } finally {
+        submit.disabled = false;
+      }
+    });
+  })();
 
   // --- 即時互動牆（Live Wall）：老師開一個限時場次，每人限交一則文字/手繪/拍照貼文 ---
 

@@ -58,9 +58,13 @@ async function resolveImportedAccount(
 }
 
 /** Uses an explicit password from an import row/payload if given (e.g. the CSV/Excel
- *  template's 密碼 column), otherwise falls back to the default (座號四碼). */
-function resolveImportedPassword(explicit: string | null | undefined, studentNumber: number): string {
-  return explicit?.trim() || defaultStudentPassword(studentNumber);
+ *  template's 密碼 column), otherwise falls back to the default (學號；沒有學號則座號四碼). */
+function resolveImportedPassword(
+  explicit: string | null | undefined,
+  studentNumber: number,
+  studentCode?: string | null
+): string {
+  return explicit?.trim() || defaultStudentPassword(studentNumber, studentCode);
 }
 
 const DEFAULT_RULES = [
@@ -201,6 +205,9 @@ coursesRouter.get("/:courseId/students", async (req, res) => {
       student_number: s.studentNumber,
       student_code: s.studentCode,
       login_account: s.loginAccount,
+      // 學生是否已自己設定過密碼（false＝仍是預設／老師重設後尚未自行修改）
+      password_changed: s.mustChangePassword === 0,
+      has_password_hint: Boolean(s.pwHintMain),
       name: s.name,
       english_name: s.englishName,
       gender: s.gender,
@@ -239,7 +246,9 @@ coursesRouter.post("/:courseId/students", async (req, res) => {
       groupId: group_id,
       studentCode: student_code,
       loginAccount,
-      passwordHash: hashPassword((password as string | null)?.trim() || defaultStudentPassword(student_number)),
+      passwordHash: hashPassword(
+        (password as string | null)?.trim() || defaultStudentPassword(student_number, student_code as string | null)
+      ),
     },
   });
   res.json({ id: student.id, login_account: loginAccount, message: "Student created" });
@@ -270,7 +279,7 @@ coursesRouter.post("/:courseId/students/batch", async (req, res) => {
         gender,
         studentCode: item.student_code ?? null,
         loginAccount: await resolveImportedAccount(item.login_account, courseId, item.student_number),
-        passwordHash: hashPassword(resolveImportedPassword(item.password, item.student_number)),
+        passwordHash: hashPassword(resolveImportedPassword(item.password, item.student_number, item.student_code)),
       },
     });
     count++;
@@ -294,7 +303,7 @@ coursesRouter.post("/:courseId/students/text_import", async (req, res) => {
         englishName: s.english_name,
         gender: s.gender,
         loginAccount: await resolveImportedAccount(s.login_account, courseId, s.student_number),
-        passwordHash: hashPassword(resolveImportedPassword(s.password, s.student_number)),
+        passwordHash: hashPassword(resolveImportedPassword(s.password, s.student_number, s.student_code)),
       },
     });
     count++;
@@ -332,7 +341,7 @@ coursesRouter.post("/:courseId/students/upload", upload.single("file"), async (r
         englishName: s.english_name,
         gender: s.gender,
         loginAccount: await resolveImportedAccount(s.login_account, courseId, s.student_number),
-        passwordHash: hashPassword(resolveImportedPassword(s.password, s.student_number)),
+        passwordHash: hashPassword(resolveImportedPassword(s.password, s.student_number, s.student_code)),
       },
     });
     count++;
@@ -516,11 +525,27 @@ coursesRouter.put("/:courseId/students/:studentId/password", async (req, res) =>
   }
 
   const customPassword: string | undefined = req.body?.password;
-  const effectivePassword = customPassword?.trim() ? customPassword.trim() : defaultStudentPassword(student.studentNumber);
+  const effectivePassword = customPassword?.trim()
+    ? customPassword.trim()
+    : defaultStudentPassword(student.studentNumber, student.studentCode);
 
-  await prisma.student.update({ where: { id: studentId }, data: { passwordHash: hashPassword(effectivePassword) } });
+  await prisma.student.update({
+    where: { id: studentId },
+    // 密碼被老師重設／改過，原本學生寫的密碼提醒就不準了，一併清除
+    data: {
+      passwordHash: hashPassword(effectivePassword),
+      mustChangePassword: 1,
+      pwHintPrefix: null,
+      pwHintMain: null,
+      pwHintSuffix: null,
+    },
+  });
   res.json({
-    message: customPassword ? "密碼已更新" : "密碼已重設為預設值（座號四碼）",
+    message: customPassword
+      ? "密碼已更新，學生下次登入需自行設定新密碼"
+      : student.studentCode?.trim()
+        ? "密碼已恢復為預設值（學號），學生下次登入需自行設定新密碼"
+        : "密碼已恢復為預設值（此學生未填學號，使用座號四碼），學生下次登入需自行設定新密碼",
     password: effectivePassword,
   });
 });
@@ -534,7 +559,7 @@ const TEMPLATE_HEADERS = [
   "英文姓名",
   "性別",
   "帳號 (可選，留空由系統自動產生)",
-  "密碼 (可選，留空預設為座號四碼)",
+  "密碼 (可選，留空預設為學號；沒有學號則為座號四碼)",
 ];
 const TEMPLATE_SAMPLE: (string | number)[][] = [
   [1, "112001", "王小明", "David", "男", "", ""],

@@ -391,6 +391,7 @@ async function initAuth() {
       loadCourses().then(() => {
         if (window.Timetable) window.Timetable.onAppReady();
         if (window.UpdateNotice) window.UpdateNotice.onAppReady();
+        if (window.TeacherNotify) window.TeacherNotify.onAppReady();
       });
     } else {
       // Must authenticate
@@ -428,10 +429,15 @@ async function submitStudentLogin(evt) {
   const accountInput = document.getElementById('student-login-account');
   const pwdInput = document.getElementById('student-login-password');
   const errorBox = document.getElementById('student-login-error');
+  const hintBox = document.getElementById('student-login-hint');
   const isEn = window.I18n && window.I18n.getLanguage() === 'en';
   if (errorBox) {
     errorBox.style.display = 'none';
     errorBox.textContent = '';
+  }
+  if (hintBox) {
+    hintBox.style.display = 'none';
+    hintBox.textContent = '';
   }
 
   const account = accountInput ? accountInput.value.trim() : '';
@@ -451,7 +457,14 @@ async function submitStudentLogin(evt) {
       body: JSON.stringify({ account, password }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || (isEn ? 'Login failed!' : '登入失敗！'));
+    if (!res.ok) {
+      // 密碼多次輸入錯誤後，伺服器會附上這個帳號的「密碼提醒」
+      if (data.hint && hintBox) {
+        hintBox.textContent = (isEn ? '💡 Your password hint: ' : '💡 你的密碼提醒：') + data.hint;
+        hintBox.style.display = 'block';
+      }
+      throw new Error(data.detail || (isEn ? 'Login failed!' : '登入失敗！'));
+    }
 
     localStorage.setItem('student_token', data.token);
     localStorage.setItem('student_info', JSON.stringify(data.student));
@@ -550,6 +563,7 @@ async function submitAuthPassword() {
       await loadCourses();
       if (window.Timetable) window.Timetable.onAppReady();
       if (window.UpdateNotice) window.UpdateNotice.onAppReady();
+      if (window.TeacherNotify) window.TeacherNotify.onAppReady();
     }
   } catch (err) {
     alert(err.message || (isEn ? 'Authentication failed!' : '密碼驗證失敗！'));
@@ -1217,10 +1231,10 @@ function renderEmptyCourseNotice(container, customTitle = null) {
           ${templateTitle}
         </div>
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-          <a href="/api/courses/template/students_excel" download class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+          <a href="/api/courses/template/students_excel" data-auth-download="學生名冊匯入範例.xlsx" class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
             ${dlExcel}
           </a>
-          <a href="/api/courses/template/students_csv" download class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
+          <a href="/api/courses/template/students_csv" data-auth-download="學生名冊匯入範例.csv" class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px;">
             ${dlCsv}
           </a>
         </div>
@@ -1258,8 +1272,8 @@ function renderEmptyStudentRosterNotice(container) {
       <div style="border-top: 1px dashed var(--card-border); padding-top: 16px; margin-top: 6px;">
         <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px;">${templateTitle}</div>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <a href="/api/courses/template/students_excel" download class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">${dlExcel}</a>
-          <a href="/api/courses/template/students_csv" download class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">${dlCsv}</a>
+          <a href="/api/courses/template/students_excel" data-auth-download="學生名冊匯入範例.xlsx" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">${dlExcel}</a>
+          <a href="/api/courses/template/students_csv" data-auth-download="學生名冊匯入範例.csv" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">${dlCsv}</a>
         </div>
       </div>
     </div>
@@ -4326,6 +4340,13 @@ async function loadAdminStudentsData() {
       const numText = isEn ? `No. ${s.student_number}` : `${s.student_number}號`;
       const noCodeText = isEn ? 'No ID set' : '未設定學號';
       const accountStr = s.login_account ? (isEn ? ` · 🔑 Login: ${s.login_account}` : ` · 🔑 登入帳號: ${s.login_account}`) : '';
+      // 密碼狀態：學生是否已自己設定過密碼（尚未＝仍是預設密碼，或老師恢復預設後還沒再改）
+      const pwBadge = s.password_changed
+        ? `<span style="display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:0.72rem; font-weight:700; background:rgba(16,185,129,0.15); color:#059669;">${isEn ? '🔒 Own password set' : '🔒 已自訂密碼'}</span>`
+        : `<span style="display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:0.72rem; font-weight:700; background:rgba(245,158,11,0.18); color:#b45309;">${isEn ? '⚠️ Not changed yet (default)' : '⚠️ 尚未修改（預設密碼）'}</span>`;
+      const hintBadge = s.has_password_hint
+        ? `<span title="${isEn ? 'The student has written a password hint' : '學生已寫下密碼提醒'}" style="margin-left:4px; font-size:0.78rem;">💡</span>`
+        : '';
 
       item.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
@@ -4333,12 +4354,13 @@ async function loadAdminStudentsData() {
             ${getStudentAvatarImgHtml(s)}
           </div>
           <div>
-            <div style="font-weight: bold; font-size: 0.95rem;">${numText} ${getStudentDisplayName(s)}${engStr}</div>
+            <div style="font-weight: bold; font-size: 0.95rem;">${numText} ${getStudentDisplayName(s)}${engStr}${pwBadge}${hintBadge}</div>
             <div style="font-size: 0.78rem; color: var(--text-muted);">${codeStr ? codeStr : noCodeText}${accountStr}</div>
           </div>
         </div>
         <div style="display: flex; gap: 6px;">
           <button class="btn-logs-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('btn_view_logs')}">📜</button>
+          <button class="btn-reset-student-pw btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${isEn ? 'Restore default password' : '恢復預設密碼（學號）'}">🔑</button>
           <button class="btn-edit-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_edit')}">✏️</button>
           <button class="btn-del-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_delete')}">✕</button>
         </div>
@@ -4346,6 +4368,29 @@ async function loadAdminStudentsData() {
 
       item.querySelector('.btn-logs-student').onclick = () => openStudentScoreLogsModal(s.id);
       item.querySelector('.btn-edit-student').onclick = () => openEditStudentModal(s);
+      item.querySelector('.btn-reset-student-pw').onclick = async () => {
+        const defaultPw = (s.student_code && String(s.student_code).trim()) || String(s.student_number).padStart(4, '0');
+        const defaultKind = s.student_code && String(s.student_code).trim()
+          ? (isEn ? 'student ID' : '學號')
+          : (isEn ? 'seat number (4 digits; no student ID set)' : '座號四碼（此學生未填學號）');
+        if (await showConfirmModal({
+          icon: '🔑',
+          title: isEn ? 'Restore the default password?' : '恢復預設密碼？',
+          desc: isEn
+            ? `${s.name}'s password will be reset to the default (${defaultKind}: ${defaultPw}). The student must set a new password at next login, and the saved password hint is cleared.`
+            : `將【${s.name}】的密碼恢復為預設值（${defaultKind}：${defaultPw}）。學生下次登入時需要自己重新設定密碼，原本寫下的密碼提醒也會一併清除。`,
+          confirmText: isEn ? 'Restore' : '確定恢復',
+          cancelText: isEn ? 'Cancel' : '取消'
+        })) {
+          try {
+            const res = await API.put(`/api/courses/${AppState.currentCourseId}/students/${s.id}/password`, {});
+            showToast(`🔑 ${res.message}`, 'success');
+            loadAdminStudentsData();
+          } catch (err) {
+            showToast(err.message, 'error');
+          }
+        }
+      };
       item.querySelector('.btn-del-student').onclick = async () => {
         if (await showConfirmModal({
           icon: '🗑️',

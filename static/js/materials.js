@@ -339,6 +339,17 @@
     su.materials.forEach((m) => itemsWrap.appendChild(renderMaterialItem(su, m)));
 
     const actionsWrap = card.querySelector('.subunit-actions');
+    {
+      // 同一個大單元內的順序（後端 PUT .../subunits/reorder 早已存在，這裡補上介面）
+      const siblings = (unitsData.find((u) => u.subUnits.some((x) => x.id === su.id)) || { subUnits: [] }).subUnits;
+      const idx = siblings.findIndex((x) => x.id === su.id);
+      const up = iconBtn('⬆️ 上移', () => moveSubUnit(su, -1));
+      const down = iconBtn('⬇️ 下移', () => moveSubUnit(su, 1));
+      up.disabled = idx <= 0;
+      down.disabled = idx < 0 || idx >= siblings.length - 1;
+      actionsWrap.appendChild(up);
+      actionsWrap.appendChild(down);
+    }
     actionsWrap.appendChild(iconBtn('✏️ 編輯', () => openEditContentModal(su)));
     if (isAssignment || isQuiz) {
       actionsWrap.appendChild(iconBtn(isQuiz ? '📋 查看成績' : '📋 查看繳交', () => openGradingModal(su)));
@@ -1140,6 +1151,24 @@
     load();
   }
 
+  async function moveSubUnit(su, delta) {
+    const cid = courseId();
+    if (!cid) { window.ensureCourseSelected && window.ensureCourseSelected(); return; }
+    const unit = unitsData.find((u) => u.subUnits.some((x) => x.id === su.id));
+    if (!unit) return;
+    const ids = unit.subUnits.map((x) => x.id);
+    const idx = ids.indexOf(su.id);
+    const newIdx = idx + delta;
+    if (newIdx < 0 || newIdx >= ids.length) return;
+    [ids[idx], ids[newIdx]] = [ids[newIdx], ids[idx]];
+    try {
+      await API.put(`/api/units/${cid}/${unit.id}/subunits/reorder`, { sub_unit_ids: ids });
+      load();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
+
   async function toggleSubUnitHidden(su) {
     const cid = courseId();
     if (!cid) { window.ensureCourseSelected && window.ensureCourseSelected(); return; }
@@ -1471,8 +1500,21 @@
     bindStaticUi();
   }
 
+  // 教師通知點擊後：直接開啟指定作業／測驗的「繳交與評分」視窗（必要時先載入單元資料）
+  async function openGradingById(unitId, subUnitId) {
+    if (!findUnitIdForSubUnit(subUnitId)) await load();
+    const unit = unitsData.find((u) => u.id === unitId);
+    const su = unit && unit.subUnits.find((x) => x.id === subUnitId);
+    if (!su) {
+      showToast('找不到這份作業或測驗（可能已被刪除）', 'error');
+      return;
+    }
+    await openGradingModal(su);
+  }
+
   window.LmsMaterials = {
     load,
+    openGradingById,
     renderCurrent: () => {
       updateCourseTitle(courseId());
       render(unitsData, currentProgressMap);

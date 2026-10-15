@@ -73,6 +73,12 @@ export async function requireStudentAuth(req: Request, res: Response, next: Next
       res.status(401).json({ detail: "帳號不存在或已停用，請重新登入！" });
       return;
     }
+    // 第一次登入（或老師重設密碼後）必須先自己設定新密碼：/api/auth/student/*（me、change_password）
+    // 以外的學生 API 一律擋下，前端收到這個代碼會跳出不能關閉的改密碼視窗。
+    if (student.mustChangePassword === 1 && !req.originalUrl.startsWith("/api/auth/student/")) {
+      res.status(403).json({ detail: "請先設定你的新密碼才能使用。", code: "PASSWORD_CHANGE_REQUIRED" });
+      return;
+    }
     req.studentAuth = payload;
     next();
   } catch (err) {

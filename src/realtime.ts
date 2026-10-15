@@ -24,6 +24,9 @@ function studentRoom(studentId: number): string {
   return `student:${studentId}`;
 }
 
+/** 所有已登入的教師連線（電腦主畫面、手機、投影）。教師是共用身分，通知不分班級都送給大家。 */
+const TEACHERS_ROOM = "teachers";
+
 export interface ActiveKahootQuestion {
   courseId: number;
   quizSetId: number;
@@ -318,6 +321,7 @@ export function setupRealtime(httpServer: HttpServer | HttpsServer): Server {
     }
 
     socket.join(courseRoom(courseId));
+    socket.join(TEACHERS_ROOM);
     // 連線角色：desktop（教師電腦主畫面）／projection（大螢幕投影頁）／mobile（教師手機頁）
     const role = String(socket.handshake.query.role ?? "");
     socket.data.role = role;
@@ -503,4 +507,9 @@ export function broadcastToCourse(courseId: number, event: string): void {
 /** 通知這位學生「有新通知」（只推給他自己的連線；內容由學生端再向 API 取得）。 */
 export function pushStudentNotification(studentId: number, title: string): void {
   io?.to(studentRoom(studentId)).emit("server_event", { event: "notification:new", payload: { title } });
+}
+
+/** 通知教師端「有新通知」（內容由教師端再向 API 取得；這裡只帶標題供提示用）。 */
+export function pushTeacherNotification(title: string): void {
+  io?.to(TEACHERS_ROOM).emit("server_event", { event: "teacher_notification:new", payload: { title } });
 }
