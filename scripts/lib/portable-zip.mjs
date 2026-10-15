@@ -10,6 +10,11 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// zip 內 HOW-TO-UPDATE.txt 的內容來源：專案根目錄的「初始密碼與更新文件.txt」（直接編輯那個檔案即可，
+// 下次封裝就會帶入）。找不到或是空檔案時，才使用下面這份內建的更新說明。
+const NOTE_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "初始密碼與更新文件.txt");
 
 const HOWTO = `MyClass 更新方式
 ================
@@ -22,6 +27,17 @@ const HOWTO = `MyClass 更新方式
 
 注意：執行檔和 system 資料夾要放在一起，不能只搬其中一個。
 `;
+
+/** 讀取要放進 zip 的說明文字；回傳 { text, source }。統一成 CRLF，舊版記事本才能正確換行。 */
+function readHowTo() {
+  try {
+    const raw = fs.readFileSync(NOTE_FILE, "utf-8").replace(/^﻿/, "");
+    if (raw.trim()) return { text: raw.replace(/\r?\n/g, "\r\n"), source: path.basename(NOTE_FILE) };
+  } catch {
+    /* 沒有該檔案：用內建說明 */
+  }
+  return { text: HOWTO.replace(/\r?\n/g, "\r\n"), source: "（內建預設說明）" };
+}
 
 /** Windows 上明確指定 System32\tar.exe（bsdtar）：從 Git Bash 執行時 PATH 裡的 tar 是 GNU tar，不能輸出 zip。 */
 function tarExe() {
@@ -39,7 +55,9 @@ export function zipPortableFolder(releaseDir, folderName) {
   if (!fs.existsSync(dir)) throw new Error(`找不到資料夾：${dir}`);
 
   // 檔名用英文、內容加 UTF-8 BOM：舊版 Windows 的解壓縮與記事本才不會把中文弄成亂碼
-  fs.writeFileSync(path.join(dir, "HOW-TO-UPDATE.txt"), "\uFEFF" + HOWTO, "utf-8");
+  const howTo = readHowTo();
+  fs.writeFileSync(path.join(dir, "HOW-TO-UPDATE.txt"), "\uFEFF" + howTo.text, "utf-8");
+  console.log(`[portable-zip] HOW-TO-UPDATE.txt \u5167\u5BB9\u4F86\u6E90\uFF1A${howTo.source}`);
 
   const zipPath = path.join(releaseDir, zipNameFor(folderName));
   fs.rmSync(zipPath, { force: true });

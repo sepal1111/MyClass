@@ -87,7 +87,7 @@ npm start       # node dist/index.js
 | 啟動 | 雙擊執行檔，開啟主控台並自動開啟瀏覽器 | 開始功能表／桌面捷徑，背景執行並在通知區顯示圖示 | 雙擊資料夾內的 `.command` |
 | 資料位置 | 資料夾內 `bin\` | 預設 `C:\MyClass\bin\` | 資料夾內 `bin/` |
 
-- **封裝完成後 `release/` 只會留下壓縮檔與安裝程式**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
+- **封裝完成後 `release/` 只會留下壓縮檔與安裝程式**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`（內容取自專案根目錄的 `初始密碼與更新文件.txt`，直接編輯該檔案即可，下次封裝就會帶入）。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
 - 安裝版使用 Inno Setup 6（<https://jrsoftware.org/isdl.php>，或用環境變數 `ISCC_PATH` 指定 `ISCC.exe`），需要管理員身分以加入防火牆規則，區網內的學生裝置才連得進來。
 - 通知區托盤程式（`tools/tray/MyClassTray.cs`）以 Windows 內建的 `csc.exe` 編譯，不需另外安裝 SDK。它負責隱藏啟動伺服器、意外結束時自動重啟，並提供開啟系統、複製學生連線網址、開機自動啟動等選項。
 - 升級時只覆蓋程式檔，不動 `bin/`。每次程式版本改變後的第一次啟動，會先把資料庫備份到 `bin/backups/`（保留最近 10 份）。
