@@ -1152,7 +1152,7 @@
 
   <!-- Modal: 學生修改自己的密碼 -->
   <div id="modalChangePassword" class="student-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 100040; align-items: center; justify-content: center; padding: 16px;">
-    <div class="student-card" style="width: 100%; max-width: 380px; margin: 0; padding: 24px 20px; position: relative;">
+    <div class="student-card" style="width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; margin: 0; padding: 26px 24px; position: relative;">
       <div style="font-size: 2rem; text-align: center; margin-bottom: 4px;">🔑</div>
       <div id="changePasswordTitle" style="font-size: 1.2rem; font-weight: 900; text-align: center; margin-bottom: 6px;">修改我的密碼</div>
       <div id="changePasswordDesc" style="font-size: 0.8rem; color: var(--text-muted); text-align: center; line-height: 1.5; margin-bottom: 14px;">
@@ -1160,8 +1160,14 @@
       </div>
       <div id="passwordFieldsWrap" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
         <input type="password" id="inputCurrentPassword" class="input-control" style="width: 100%; box-sizing: border-box;" placeholder="目前的密碼" autocomplete="current-password">
-        <input type="password" id="inputNewPassword" class="input-control" style="width: 100%; box-sizing: border-box;" placeholder="新密碼" autocomplete="new-password">
-        <input type="password" id="inputNewPassword2" class="input-control" style="width: 100%; box-sizing: border-box;" placeholder="再輸入一次新密碼" autocomplete="new-password">
+        <div style="position: relative; width: 100%;">
+          <input type="password" id="inputNewPassword" class="input-control" style="width: 100%; box-sizing: border-box; padding-right: 48px;" placeholder="新密碼" autocomplete="new-password">
+          <button type="button" class="pw-eye-btn" title="顯示／隱藏新密碼" aria-label="顯示或隱藏新密碼" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: transparent; font-size: 1.15rem; line-height: 1; cursor: pointer; padding: 6px 8px;">👁️</button>
+        </div>
+        <div style="position: relative; width: 100%;">
+          <input type="password" id="inputNewPassword2" class="input-control" style="width: 100%; box-sizing: border-box; padding-right: 48px;" placeholder="再輸入一次新密碼" autocomplete="new-password">
+          <button type="button" class="pw-eye-btn" title="顯示／隱藏新密碼" aria-label="顯示或隱藏新密碼" style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: none; background: transparent; font-size: 1.15rem; line-height: 1; cursor: pointer; padding: 6px 8px;">👁️</button>
+        </div>
       </div>
       <!-- 密碼提醒：忘記密碼、輸入錯誤好幾次時，登入畫面會顯示這段提醒 -->
       <div id="hintFieldsWrap" style="width: 100%; margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.4); text-align: left;">
@@ -1170,10 +1176,16 @@
           把密碼想成三段：<b>前綴</b>、<b>主要內容</b>、<b>後綴</b>。「主要內容」寫的是<b>那一段是什麼</b>（例如「媽媽的電話號碼」），不是密碼本身；前綴和後綴是密碼裡真正的字，<b>至少填一個</b>。
           <br>⚠️ 忘記密碼時別人也看得到這段提醒，<b>請不要把整個密碼寫進去</b>。
         </div>
-        <div style="display: flex; gap: 6px; width: 100%;">
-          <input type="text" id="inputHintPrefix" class="input-control" style="flex: 1; min-width: 0; box-sizing: border-box;" placeholder="前綴（例：xy）" maxlength="20" autocomplete="off">
-          <input type="text" id="inputHintMain" class="input-control" style="flex: 2; min-width: 0; box-sizing: border-box;" placeholder="主要內容（必填，例：媽媽的電話號碼）" maxlength="40" autocomplete="off">
-          <input type="text" id="inputHintSuffix" class="input-control" style="flex: 1; min-width: 0; box-sizing: border-box;" placeholder="後綴（例：sd）" maxlength="20" autocomplete="off">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;">
+          <label style="flex: 1 1 110px; min-width: 0; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">前綴
+            <input type="text" id="inputHintPrefix" class="input-control" style="width: 100%; box-sizing: border-box; margin-top: 4px;" placeholder="例：xy" maxlength="20" autocomplete="off">
+          </label>
+          <label style="flex: 3 1 220px; min-width: 0; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">主要內容（必填）
+            <input type="text" id="inputHintMain" class="input-control" style="width: 100%; box-sizing: border-box; margin-top: 4px;" placeholder="例：媽媽的電話號碼" maxlength="40" autocomplete="off">
+          </label>
+          <label style="flex: 1 1 110px; min-width: 0; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">後綴
+            <input type="text" id="inputHintSuffix" class="input-control" style="width: 100%; box-sizing: border-box; margin-top: 4px;" placeholder="例：sd" maxlength="20" autocomplete="off">
+          </label>
         </div>
         <div style="font-size: 0.8rem; margin-top: 6px;">提醒會顯示成：<b id="hintPreview" style="color: var(--primary);">（尚未填寫）</b></div>
       </div>

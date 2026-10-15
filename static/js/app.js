@@ -4329,40 +4329,56 @@ async function loadAdminStudentsData() {
     students.forEach(s => {
       const item = document.createElement('div');
       item.className = 'glass-card';
-      item.style.padding = '10px 14px';
+      // 卡片是窄欄位（約 260～320px）：姓名／學號帳號／密碼狀態／操作按鈕改為上下排列，
+      // 避免標籤與四顆按鈕把文字擠成一條。
+      item.style.padding = '12px 14px';
       item.style.display = 'flex';
-      item.style.alignItems = 'center';
-      item.style.justifyContent = 'space-between';
-      item.style.gap = '10px';
+      item.style.flexDirection = 'column';
+      item.style.alignItems = 'stretch';
+      item.style.textAlign = 'center';
+      item.style.gap = '8px';
+      item.style.minWidth = '0';
 
       const engStr = s.english_name ? ` (${s.english_name})` : '';
+      // 第一行（座號、姓名、英文名）盡量不斷行；英文名的字母超過 12 個才把英文名移到下一行
+      const engLetterCount = (s.english_name || '').replace(/[^A-Za-z]/g, '').length;
+      const engOnNewLine = Boolean(s.english_name) && engLetterCount > 12;
       const codeStr = s.student_code ? (isEn ? ` (ID: ${s.student_code})` : ` (學號: ${s.student_code})`) : '';
       const numText = isEn ? `No. ${s.student_number}` : `${s.student_number}號`;
       const noCodeText = isEn ? 'No ID set' : '未設定學號';
-      const accountStr = s.login_account ? (isEn ? ` · 🔑 Login: ${s.login_account}` : ` · 🔑 登入帳號: ${s.login_account}`) : '';
+      const accountStr = s.login_account ? (isEn ? ` · 🔑 Account: ${s.login_account}` : ` · 🔑 帳號: ${s.login_account}`) : '';
       // 密碼狀態：學生是否已自己設定過密碼（尚未＝仍是預設密碼，或老師恢復預設後還沒再改）
       const pwBadge = s.password_changed
-        ? `<span style="display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:0.72rem; font-weight:700; background:rgba(16,185,129,0.15); color:#059669;">${isEn ? '🔒 Own password set' : '🔒 已自訂密碼'}</span>`
-        : `<span style="display:inline-block; margin-left:6px; padding:1px 8px; border-radius:999px; font-size:0.72rem; font-weight:700; background:rgba(245,158,11,0.18); color:#b45309;">${isEn ? '⚠️ Not changed yet (default)' : '⚠️ 尚未修改（預設密碼）'}</span>`;
+        ? `<span style="display:inline-block; padding:2px 10px; border-radius:999px; font-size:0.74rem; font-weight:700; white-space:nowrap; background:rgba(16,185,129,0.15); color:#059669;">${isEn ? '🔒 Own password set' : '🔒 已自訂密碼'}</span>`
+        : `<span style="display:inline-block; padding:2px 10px; border-radius:999px; font-size:0.74rem; font-weight:700; white-space:nowrap; background:rgba(245,158,11,0.18); color:#b45309;">${isEn ? '⚠️ Not changed yet (default)' : '⚠️ 尚未修改（預設密碼）'}</span>`;
       const hintBadge = s.has_password_hint
-        ? `<span title="${isEn ? 'The student has written a password hint' : '學生已寫下密碼提醒'}" style="margin-left:4px; font-size:0.78rem;">💡</span>`
+        ? `<span title="${isEn ? 'The student has written a password hint' : '學生已寫下密碼提醒'}" style="font-size:0.9rem;">💡</span>`
         : '';
 
       item.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-          <div style="width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
             ${getStudentAvatarImgHtml(s)}
           </div>
-          <div>
-            <div style="font-weight: bold; font-size: 0.95rem;">${numText} ${getStudentDisplayName(s)}${engStr}${pwBadge}${hintBadge}</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">${codeStr ? codeStr : noCodeText}${accountStr}</div>
+          <div style="min-width: 0; flex: 1; text-align: center;">
+            <div style="font-weight: bold; font-size: 0.98rem; line-height: 1.35;">
+              <span style="white-space: nowrap;">${numText} ${getStudentDisplayName(s)}</span>${engOnNewLine || !s.english_name ? '' : ` <span style="white-space: nowrap; font-weight: 500; font-size: 0.88em; color: var(--text-muted);">(${s.english_name})</span>`}
+            </div>
+            ${engOnNewLine ? `<div style="font-weight: 500; font-size: 0.9rem; line-height: 1.3; color: var(--text-muted); overflow-wrap: anywhere;">(${s.english_name})</div>` : ''}
+            <div style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; margin-top: 2px;">
+              <div>${codeStr ? codeStr.trim() : noCodeText}</div>
+              ${s.login_account ? `<div style="overflow-wrap: anywhere;">${accountStr.replace(/^ · /, '')}</div>` : ''}
+            </div>
           </div>
         </div>
-        <div style="display: flex; gap: 6px;">
-          <button class="btn-logs-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('btn_view_logs')}">📜</button>
-          <button class="btn-reset-student-pw btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${isEn ? 'Restore default password' : '恢復預設密碼（學號）'}">🔑</button>
-          <button class="btn-edit-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_edit')}">✏️</button>
-          <button class="btn-del-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_delete')}">✕</button>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; border-top: 1px dashed var(--card-border); padding-top: 8px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">${pwBadge}${hintBadge}</div>
+          <div style="display: flex; justify-content: center; gap: 6px;">
+            <button class="btn-logs-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('btn_view_logs')}">📜</button>
+            <button class="btn-reset-student-pw btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${isEn ? 'Restore default password' : '恢復預設密碼（學號）'}">🔑</button>
+            <button class="btn-edit-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_edit')}">✏️</button>
+            <button class="btn-del-student btn-icon" style="width: 30px; height: 30px; font-size: 0.8rem;" title="${t('admin_delete')}">✕</button>
+          </div>
         </div>
       `;
 

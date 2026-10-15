@@ -1290,6 +1290,16 @@
     let hintOnly = false;
 
     const close = () => { modal.style.display = 'none'; };
+
+    // 👁️ 顯示／隱藏新密碼（兩個新密碼欄位一起切換）
+    const eyeBtns = modal.querySelectorAll('.pw-eye-btn');
+    const setNewPasswordVisible = (visible) => {
+      n1.type = visible ? 'text' : 'password';
+      n2.type = visible ? 'text' : 'password';
+      eyeBtns.forEach((b) => { b.textContent = visible ? '🙈' : '👁️'; });
+    };
+    eyeBtns.forEach((b) => b.addEventListener('click', () => setNewPasswordVisible(n1.type === 'password')));
+
     const composePreview = () => {
       const main = hMain.value.trim();
       if (!main) return '（尚未填寫）';
@@ -1319,6 +1329,7 @@
       forced = Boolean(isForced);
       hintOnly = Boolean(onlyHint);
       cur.value = ''; n1.value = ''; n2.value = ''; err.textContent = '';
+      setNewPasswordVisible(false);
       const knowCurrent = forced && Boolean(knownPassword);
       cur.style.display = knowCurrent ? 'none' : '';
       pwWrap.style.display = hintOnly ? 'none' : 'flex';
