@@ -200,6 +200,11 @@ execFileSync(
 console.log("[4/4] copying static/ and engine/ into system/");
 fs.cpSync(path.join(rootDir, "static"), path.join(systemDir, "static"), { recursive: true });
 fs.mkdirSync(path.join(systemDir, "engine"), { recursive: true });
+// 執行期的「新版本偵測」（src/updateCheck.ts）靠這個檔案得知目前版本；沒有 git 標籤時不寫版本，功能自動停用。
+fs.writeFileSync(
+  path.join(systemDir, "version.json"),
+  JSON.stringify({ version: normVersion ? normVersion.replace(/^V/, "") : null, tag: normVersion || null, built_at: new Date().toISOString() }, null, 2) + "\n"
+);
 fs.copyFileSync(path.join(engineDir, engineFile), path.join(systemDir, "engine", engineFile));
 
 if (target.isMac) {

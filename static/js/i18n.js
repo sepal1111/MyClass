@@ -299,6 +299,9 @@
       'admin_current_password_placeholder': '輸入目前驗證密碼',
       'admin_new_prefix_placeholder': '新的字頭 (至少4碼，例: Admin)',
       'admin_btn_save_prefix': '💾 儲存修改字頭',
+      'update_card_title': '🔄 軟體更新',
+      'update_btn_check': '立即檢查更新',
+      'update_auto_label': '自動檢查新版本（每 12 小時最多一次；只會向 GitHub 查詢最新的版本號，不會傳送任何班級、學生或個人資料）',
       'admin_btn_logout': '🚪 登出系統（清除此瀏覽器驗證）',
 
       // Modals
@@ -1146,6 +1149,9 @@
       'admin_current_password_placeholder': 'Enter current password',
       'admin_new_prefix_placeholder': 'New prefix (min 4 chars, e.g. Admin)',
       'admin_btn_save_prefix': '💾 Save Prefix',
+      'update_card_title': '🔄 Software Update',
+      'update_btn_check': 'Check for updates now',
+      'update_auto_label': 'Check for new versions automatically (at most once every 12 hours; only asks GitHub for the latest version number and sends no class, student or personal data)',
       'admin_btn_logout': '🚪 Sign Out (Clear this browser session)',
 
       // Modals

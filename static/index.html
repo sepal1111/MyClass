@@ -1652,6 +1652,19 @@
     <!-- 14. 密碼與連線 Pane (歸屬設定) -->
     <section id="pane-security" class="tab-pane">
       <div id="admin-subpane-security" class="admin-subpane">
+        <!-- Software Update Card（新版本偵測，見 static/js/updater.js） -->
+        <div class="glass-card" id="update-settings-card">
+          <div class="glass-card-header" style="flex-wrap: wrap; gap: 10px;">
+            <div class="glass-card-title" data-i18n="update_card_title">🔄 軟體更新</div>
+            <button type="button" id="btn-update-check-now" class="btn btn-secondary" style="font-size: 0.88rem; padding: 7px 16px;" data-i18n="update_btn_check">立即檢查更新</button>
+          </div>
+          <div id="update-card-status" style="font-size: 0.92rem; line-height: 1.7; color: var(--text-main);"></div>
+          <label style="display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; font-size: 0.85rem; color: var(--text-muted); cursor: pointer;">
+            <input type="checkbox" id="update-auto-check" style="margin-top: 3px;">
+            <span data-i18n="update_auto_label">自動檢查新版本（每 12 小時最多一次；只會向 GitHub 查詢最新的版本號，不會傳送任何班級、學生或個人資料）</span>
+          </label>
+        </div>
+
         <!-- Teacher Mobile Connection Scoring QR Code Card -->
         <div class="glass-card" style="background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(99, 102, 241, 0.08)); border-color: rgba(14, 165, 233, 0.3);">
           <div class="glass-card-header" style="flex-wrap: wrap; gap: 10px;">
@@ -3842,5 +3855,6 @@
   <script src="/static/js/homework-scan.js?v=1.0"></script>
   <script src="/static/js/whereabouts.js?v=1.0"></script>
   <script src="/static/js/timetable.js?v=1.0"></script>
+  <script src="/static/js/updater.js?v=1.0"></script>
 </body>
 </html>

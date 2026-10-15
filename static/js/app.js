@@ -388,7 +388,10 @@ async function initAuth() {
 
       if (authOverlay) authOverlay.classList.remove('open');
       // 課表提醒：比對當下時間，提示這一節是哪一班的什麼課（見 timetable.js）
-      loadCourses().then(() => { if (window.Timetable) window.Timetable.onAppReady(); });
+      loadCourses().then(() => {
+        if (window.Timetable) window.Timetable.onAppReady();
+        if (window.UpdateNotice) window.UpdateNotice.onAppReady();
+      });
     } else {
       // Must authenticate
       localStorage.removeItem('auth_token');
@@ -546,6 +549,7 @@ async function submitAuthPassword() {
       if (pwdInput) pwdInput.value = '';
       await loadCourses();
       if (window.Timetable) window.Timetable.onAppReady();
+      if (window.UpdateNotice) window.UpdateNotice.onAppReady();
     }
   } catch (err) {
     alert(err.message || (isEn ? 'Authentication failed!' : '密碼驗證失敗！'));

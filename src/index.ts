@@ -40,6 +40,7 @@ import { studentPointCardsRouter } from "./routes/studentPointCards";
 import { rewardsRouter } from "./routes/rewards";
 import { studentRewardsRouter } from "./routes/studentRewards";
 import { studentNotificationsRouter } from "./routes/studentNotifications";
+import { startUpdateChecker } from "./updateCheck";
 import { paperQuizzesRouter } from "./routes/paperQuizzes";
 import { bulletinRouter } from "./routes/bulletin";
 import { fileCollectionsRouter } from "./routes/fileCollections";
@@ -519,6 +520,7 @@ async function main() {
       lan_url: `https://${getLocalIp()}:${port}`,
       started_at: new Date().toISOString(),
     });
+    startUpdateChecker(); // 新版本偵測（只通知；開發模式與無版本號的建置不會啟動）
     if (background) {
       console.log(`[MyClass] 背景執行中：${localUrl}`);
       return;

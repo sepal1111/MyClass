@@ -19,6 +19,7 @@ import {
   requireAuth,
 } from "../middleware/auth";
 import { autoCatch } from "../asyncRoute";
+import { dismissVersion, getUpdateStatus, runUpdateCheck, setUpdateCheckEnabled } from "../updateCheck";
 import { getLocalIp } from "../utils/network";
 import { isLocalRequest } from "../middleware/localOnly";
 
@@ -165,6 +166,35 @@ systemRouter.post("/reset_password_prefix", async (req, res) => {
   invalidatePrefixCache();
   const todayMmdd = getTodayMMDDTaipei();
   res.json({ success: true, message: `密碼字頭已成功恢復為預設『${DEFAULT_PASSWORD_PREFIX}』！今日密碼為：${DEFAULT_PASSWORD_PREFIX}${todayMmdd}，登入後須立即修改字頭。` });
+});
+
+// --- 新版本偵測（只通知，不自動更新；見 src/updateCheck.ts）---
+
+systemRouter.get("/update_status", requireAuth, async (_req, res) => {
+  res.json(await getUpdateStatus());
+});
+
+// 老師按「立即檢查」：向 GitHub 查一次（最短間隔 30 秒）
+systemRouter.post("/update_check", requireAuth, async (_req, res) => {
+  res.json(await runUpdateCheck({ force: true }));
+});
+
+// 「略過此版本」：該版本不再顯示提示，出現更新的版本時才會再提醒
+systemRouter.post("/update_dismiss", requireAuth, async (req, res) => {
+  const version = typeof req.body?.version === "string" ? req.body.version.trim() : "";
+  if (!version) {
+    res.status(400).json({ detail: "缺少版本號" });
+    return;
+  }
+  res.json(await dismissVersion(version));
+});
+
+systemRouter.post("/update_settings", requireAuth, async (req, res) => {
+  if (typeof req.body?.enabled !== "boolean") {
+    res.status(400).json({ detail: "enabled 必須是 true 或 false" });
+    return;
+  }
+  res.json(await setUpdateCheckEnabled(req.body.enabled));
 });
 
 // --- Logo & Favicon 自訂替換支援 ---
