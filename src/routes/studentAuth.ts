@@ -4,6 +4,7 @@
 // revisions also had 座號+密碼 login and a classroom QR join flow; both were removed
 // once every student got a dedicated login_account, since account+password alone
 // already identifies the student (and therefore the course) without picking one first.
+import { findStudentsByAccountIgnoreCase } from "../utils/studentAccount";
 import { Router } from "express";
 import { prisma } from "../db";
 import { autoCatch } from "../asyncRoute";
@@ -16,8 +17,11 @@ studentAuthRouter.post("/login_by_account", async (req, res) => {
   const account: string = (req.body?.account ?? "").trim();
   const password: string = req.body?.password ?? "";
 
-  const student = account ? await prisma.student.findFirst({ where: { loginAccount: account, isActive: 1 } }) : null;
-  if (!student || !verifyPassword(password, student.passwordHash)) {
+  // 帳號不分大小寫（iPad 常把第一個字母自動大寫）。完全相符的優先；若有多個只差大小寫的帳號，
+  // 依序以密碼驗證，第一個密碼相符的才算登入成功。
+  const candidates = account ? await findStudentsByAccountIgnoreCase(account) : [];
+  const student = candidates.find((s) => verifyPassword(password, s.passwordHash)) ?? null;
+  if (!student) {
     res.status(401).json({ detail: "帳號或密碼錯誤，請確認後再試一次！" });
     return;
   }

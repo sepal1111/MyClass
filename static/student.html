@@ -159,9 +159,38 @@
     opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto;
     transition: opacity 0.16s ease, transform 0.16s ease;
   }
-  .notif-dropdown-head { font-size: 0.85rem; font-weight: 800; color: var(--text-main); padding: 12px 14px; border-bottom: 1px solid var(--card-border); }
+  .notif-dropdown { width: 320px; }
+  .notif-dropdown-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    font-size: 0.85rem; font-weight: 800; color: var(--text-main); padding: 12px 14px; border-bottom: 1px solid var(--card-border);
+  }
+  .notif-markall {
+    border: none; background: none; color: var(--student-primary, #0284c7); font-size: 0.78rem; font-weight: 700;
+    cursor: pointer; padding: 2px 4px; font-family: inherit;
+  }
+  .notif-markall:hover { text-decoration: underline; }
   .notif-dropdown-empty { padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
   .notif-dropdown-empty .emoji { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+  .notif-list { max-height: min(60vh, 420px); overflow-y: auto; }
+  .notif-item {
+    display: block; width: 100%; text-align: left; border: none; border-bottom: 1px solid var(--card-border);
+    background: transparent; padding: 10px 14px 10px 26px; cursor: pointer; position: relative; font-family: inherit;
+    color: var(--text-main);
+  }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: rgba(2, 132, 199, 0.07); }
+  .notif-item.unread { background: rgba(2, 132, 199, 0.06); }
+  .notif-item.unread::before {
+    content: ''; position: absolute; left: 11px; top: 16px; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-negative, #ef4444);
+  }
+  .notif-item-title { font-size: 0.86rem; font-weight: 700; line-height: 1.4; word-break: break-word; }
+  .notif-item.read .notif-item-title { font-weight: 500; color: var(--text-muted); }
+  .notif-item-body {
+    font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
+  }
+  .notif-item-time { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; opacity: 0.85; }
 
   /* --- Hero Banner --- */
   .hero-banner {
@@ -196,19 +225,23 @@
   .my-group-empty-text { font-size: 0.82rem; color: var(--text-muted); }
 
   /* --- Tab Bar --- */
-  /* 手機窄螢幕：2x2 網格（4 顆分頁鍵在窄寬度以 flex-wrap 會擠成不對稱的 3+1）；
-     平板/桌機有足夠寬度後改為單排排列。 */
-  .student-tab-bar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+  /* 分頁鍵：一律置中、可換行，每顆都是夠大的觸控目標（≥52px 高）。
+     手機每列 2 顆；平板（≥640px）每列 4 顆，最後一列不足時整列置中；桌機（≥1100px）依文字寬度排成一列。 */
+  .student-tab-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 18px; }
   .student-tab-btn {
-    min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: var(--radius-md);
+    flex: 0 0 calc(50% - 5px); min-width: 0; min-height: 52px; padding: 10px 12px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    border-radius: var(--radius-md);
     border: 1.5px solid var(--card-border); background: var(--card-bg); color: var(--text-muted);
-    font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: var(--transition-normal);
+    font-size: 1rem; font-weight: 700; cursor: pointer; transition: var(--transition-normal);
     line-height: 1.3;
   }
   .student-tab-btn:hover { background: #f1f5f9; }
   @media (min-width: 640px) {
-    .student-tab-bar { display: flex; flex-wrap: nowrap; }
-    .student-tab-btn { flex: 1 1 0; border-radius: var(--radius-full); white-space: nowrap; }
+    .student-tab-btn { flex-basis: calc(25% - 8px); border-radius: var(--radius-full); white-space: nowrap; font-size: 1.05rem; }
+  }
+  @media (min-width: 1100px) {
+    .student-tab-btn { flex: 0 1 auto; min-width: 150px; padding: 10px 22px; }
   }
   .student-tab-btn.active {
     border-color: var(--student-primary); color: #fff; background: var(--student-primary);
@@ -423,7 +456,7 @@
         <form id="accountLoginForm">
           <div class="field">
             <label for="accountInput">帳號</label>
-            <input id="accountInput" type="text" autocomplete="username" required>
+            <input id="accountInput" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
           </div>
           <div class="field">
             <label for="accountPasswordInput">密碼</label>
@@ -452,10 +485,14 @@
             <span id="notifBadge" class="notif-badge" hidden>0</span>
           </button>
           <div id="notifDropdown" class="notif-dropdown">
-            <div class="notif-dropdown-head">🔔 系統通知</div>
-            <div class="notif-dropdown-empty">
-              <span class="emoji">🛠️</span>
-              通知功能開發中，敬請期待！
+            <div class="notif-dropdown-head">
+              <span>🔔 通知</span>
+              <button type="button" id="notifMarkAllBtn" class="notif-markall" hidden>全部標為已讀</button>
+            </div>
+            <div id="notifList" class="notif-list"></div>
+            <div id="notifEmpty" class="notif-dropdown-empty">
+              <span class="emoji">🔕</span>
+              目前沒有通知
             </div>
           </div>
         </div>

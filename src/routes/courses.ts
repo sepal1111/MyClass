@@ -1,3 +1,4 @@
+import { isAccountTaken } from "../utils/studentAccount";
 import fs from "fs";
 import path from "path";
 import { Router } from "express";
@@ -40,8 +41,7 @@ const stripExt = (name: string) => name.replace(/\.[^.]+$/, "").trim();
 // string for a different student — rare, handled defensively rather than left to crash.
 async function generateUniqueAccount(courseId: number, studentNumber: number): Promise<string> {
   const base = defaultStudentAccount(courseId, studentNumber);
-  const existing = await prisma.student.findUnique({ where: { loginAccount: base } });
-  if (!existing) return base;
+  if (!(await isAccountTaken(base))) return base;
   return `${base}-${crypto.randomBytes(2).toString("hex")}`;
 }
 
@@ -54,8 +54,7 @@ async function resolveImportedAccount(
 ): Promise<string> {
   const trimmed = explicit?.trim();
   if (!trimmed) return generateUniqueAccount(courseId, studentNumber);
-  const taken = await prisma.student.findUnique({ where: { loginAccount: trimmed } });
-  return taken ? generateUniqueAccount(courseId, studentNumber) : trimmed;
+  return (await isAccountTaken(trimmed)) ? generateUniqueAccount(courseId, studentNumber) : trimmed;
 }
 
 /** Uses an explicit password from an import row/payload if given (e.g. the CSV/Excel
@@ -225,9 +224,8 @@ coursesRouter.post("/:courseId/students", async (req, res) => {
     res.status(400).json({ detail: "請輸入學生登入帳號" });
     return;
   }
-  const taken = await prisma.student.findUnique({ where: { loginAccount } });
-  if (taken) {
-    res.status(400).json({ detail: "此帳號已被使用，請換一個" });
+  if (await isAccountTaken(loginAccount)) {
+    res.status(400).json({ detail: "此帳號已被使用（帳號不分大小寫），請換一個" });
     return;
   }
 
@@ -360,9 +358,8 @@ coursesRouter.put("/:courseId/students/:studentId", async (req, res) => {
       return;
     }
     if (trimmed !== student.loginAccount) {
-      const taken = await prisma.student.findUnique({ where: { loginAccount: trimmed } });
-      if (taken) {
-        res.status(400).json({ detail: "此帳號已被使用，請換一個" });
+      if (await isAccountTaken(trimmed, studentId)) {
+        res.status(400).json({ detail: "此帳號已被使用（帳號不分大小寫），請換一個" });
         return;
       }
       loginAccount = trimmed;

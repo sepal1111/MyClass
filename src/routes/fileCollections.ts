@@ -1,5 +1,6 @@
 // File collections management (Teacher-side): topics CRUD, allowUpload toggle,
 // list files with preview metadata, item deletion, and ZIP archive download.
+import { notifyCourseFileCollection } from "../utils/notifications";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -103,6 +104,7 @@ fileCollectionsRouter.post("/courses/:courseId", async (req, res) => {
   });
 
   broadcastToCourse(courseId, "file_collection_updated");
+  if (allowUpload === 1) void notifyCourseFileCollection(courseId, title, false);
   res.status(201).json(created);
 });
 
@@ -154,6 +156,10 @@ fileCollectionsRouter.put("/:id", async (req, res) => {
   });
 
   broadcastToCourse(existing.courseId, "file_collection_updated");
+  // 由「停止上傳」改為「開放上傳」時通知全班
+  if (existing.allowUpload === 0 && allowUpload === 1) {
+    void notifyCourseFileCollection(existing.courseId, title, true);
+  }
   res.json(updated);
 });
 
@@ -176,6 +182,7 @@ fileCollectionsRouter.patch("/:id/toggle_upload", async (req, res) => {
   });
 
   broadcastToCourse(existing.courseId, "file_collection_updated");
+  if (nextState === 1) void notifyCourseFileCollection(existing.courseId, existing.title, true);
   res.json({
     id: updated.id,
     allow_upload: updated.allowUpload,

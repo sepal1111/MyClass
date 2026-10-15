@@ -1051,15 +1051,124 @@
     });
   }
 
-  // --- Notification Bell（UI 佔位，尚未串接後端通知系統）---
+  // --- 🔔 通知：老師批改、退回、回覆提問、獎品審核、新內容等事件（後端見 utils/notifications.ts）---
+  const Notifications = {
+    items: [],
+    unread: 0,
+    pollTimer: null,
+
+    isLoggedIn() {
+      return Boolean(localStorage.getItem(TOKEN_KEY));
+    },
+
+    async refresh() {
+      if (!this.isLoggedIn()) return;
+      try {
+        const data = await api('/api/student/notifications');
+        this.items = data.items || [];
+        this.unread = data.unread_count || 0;
+        this.render();
+      } catch (e) {
+        /* 通知是附帶功能：取得失敗時靜默略過，不打擾學生 */
+      }
+    },
+
+    formatTime(createdAt) {
+      if (!createdAt) return '';
+      const d = new Date();
+      const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const [date, time = ''] = createdAt.split(' ');
+      const hm = time.slice(0, 5);
+      return date === today ? `今天 ${hm}` : `${date.slice(5)} ${hm}`;
+    },
+
+    render() {
+      const list = document.getElementById('notifList');
+      const empty = document.getElementById('notifEmpty');
+      const markAll = document.getElementById('notifMarkAllBtn');
+      const badge = document.getElementById('notifBadge');
+      if (!list) return;
+
+      badge.hidden = this.unread <= 0;
+      badge.textContent = this.unread > 99 ? '99+' : String(this.unread);
+      empty.hidden = this.items.length > 0;
+      markAll.hidden = this.unread <= 0;
+
+      list.innerHTML = this.items
+        .map((n) => `
+          <button type="button" class="notif-item ${n.is_read ? 'read' : 'unread'}" data-id="${n.id}" data-tab="${escapeHtml(n.tab || '')}">
+            <div class="notif-item-title">${escapeHtml(n.title)}</div>
+            ${n.body ? `<div class="notif-item-body">${escapeHtml(n.body)}</div>` : ''}
+            <div class="notif-item-time">${escapeHtml(this.formatTime(n.created_at))}</div>
+          </button>`)
+        .join('');
+    },
+
+    async markRead(payload) {
+      try {
+        const data = await api('/api/student/notifications/read', { method: 'POST', body: JSON.stringify(payload) });
+        this.unread = data.unread_count || 0;
+      } catch (e) {
+        /* 靜默略過 */
+      }
+    },
+
+    async markAllRead() {
+      this.items.forEach((n) => { n.is_read = true; });
+      this.unread = 0;
+      this.render();
+      await this.markRead({ all: true });
+    },
+
+    // 點一則通知：標為已讀並切換到對應分頁（讓學生直接看到老師的批改、新內容…）
+    async open(id, tab) {
+      const item = this.items.find((n) => n.id === id);
+      if (item && !item.is_read) {
+        item.is_read = true;
+        this.unread = Math.max(0, this.unread - 1);
+        this.render();
+        this.markRead({ ids: [id] });
+      }
+      notifDropdown.classList.remove('open');
+      const tabButtons = {
+        materials: btnContentTabMaterials,
+        fileCollect: btnContentTabFileCollect,
+        quizzes: btnContentTabQuizzes,
+        scores: btnContentTabScores,
+      };
+      tabButtons[tab]?.click();
+    },
+
+    // 沒有即時連線（或連線中斷）時的備援：頁面可見時每 60 秒更新一次未讀數。
+    startPolling() {
+      if (this.pollTimer) return;
+      this.pollTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') this.refresh();
+      }, 60000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') this.refresh();
+      });
+    },
+  };
+
   notifBellBtn.addEventListener('click', (evt) => {
     evt.stopPropagation();
+    const willOpen = !notifDropdown.classList.contains('open');
     notifDropdown.classList.toggle('open');
+    if (willOpen) Notifications.refresh();
   });
   document.addEventListener('click', (evt) => {
     if (!notifDropdown.contains(evt.target) && evt.target !== notifBellBtn) {
       notifDropdown.classList.remove('open');
     }
+  });
+  document.getElementById('notifList').addEventListener('click', (evt) => {
+    const btn = evt.target.closest('.notif-item');
+    if (btn) Notifications.open(Number(btn.dataset.id), btn.dataset.tab);
+  });
+  document.getElementById('notifMarkAllBtn').addEventListener('click', (evt) => {
+    evt.stopPropagation();
+    Notifications.markAllRead();
   });
 
   // --- 頂部導覽列與歡迎橫幅 ---
@@ -1099,6 +1208,8 @@
       await checkStudentLeadership();
       await loadContent();
       connectStudentRealtime(me.course.id);
+      Notifications.refresh();
+      Notifications.startPolling();
     } catch (e) {
       if (String(e.message).includes('登入')) {
         exitToLogin();
@@ -3835,6 +3946,11 @@
 
       updateResultUI('studentKahoot');
       updateResultUI('studentTabKahoot');
+    },
+
+    onNotification(payload) {
+      Notifications.refresh();
+      if (payload && payload.title) showToast(`🔔 ${payload.title}`, 'info');
     },
 
     onKahootFinished(payload) {

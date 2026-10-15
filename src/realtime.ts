@@ -20,6 +20,10 @@ function courseRoom(courseId: number): string {
   return `course:${courseId}`;
 }
 
+function studentRoom(studentId: number): string {
+  return `student:${studentId}`;
+}
+
 export interface ActiveKahootQuestion {
   courseId: number;
   quizSetId: number;
@@ -97,6 +101,7 @@ export function setupRealtime(httpServer: HttpServer | HttpsServer): Server {
       const courseId = studentPayload.courseId;
       const studentId = studentPayload.studentId;
       socket.join(courseRoom(courseId));
+      socket.join(studentRoom(studentId)); // 個人通知用，只有這位學生的連線會收到
 
       // 若目前該課程有正在進行中的文字雲活動，推送給剛上線的學生
       const activeWordCloud = activeWordCloudMap.get(courseId);
@@ -493,4 +498,9 @@ function parseCookieToken(cookieHeader?: string): string | undefined {
  *  (score/attendance/group changes, etc.) — call after every mutating write. */
 export function broadcastToCourse(courseId: number, event: string): void {
   io?.to(courseRoom(courseId)).emit("server_event", { event, course_id: courseId });
+}
+
+/** 通知這位學生「有新通知」（只推給他自己的連線；內容由學生端再向 API 取得）。 */
+export function pushStudentNotification(studentId: number, title: string): void {
+  io?.to(studentRoom(studentId)).emit("server_event", { event: "notification:new", payload: { title } });
 }

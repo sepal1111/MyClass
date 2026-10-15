@@ -1,3 +1,4 @@
+import { notifyStudent } from "../utils/notifications";
 import fs from "fs";
 import path from "path";
 import { Router } from "express";
@@ -258,6 +259,14 @@ rewardsRouter.post("/:courseId/redemptions/:id/approve", async (req, res) => {
 
   broadcastToCourse(courseId, "score_updated");
   broadcastToCourse(courseId, "rewards_updated");
+  await notifyStudent({
+    courseId,
+    studentId: redemption.studentId,
+    type: "reward_approved",
+    title: `「${redemption.reward.name}」兌換申請已核准`,
+    body: "點數已先保留，請依老師通知到講台領取",
+    tab: "scores",
+  });
   res.json({ message: "申請已核准！點數已暫時預扣，請等候學生至講台領取。" });
 });
 
@@ -312,6 +321,14 @@ rewardsRouter.post("/:courseId/redemptions/:id/fulfill", async (req, res) => {
 
   broadcastToCourse(courseId, "score_updated");
   broadcastToCourse(courseId, "rewards_updated");
+  await notifyStudent({
+    courseId,
+    studentId: redemption.studentId,
+    type: "reward_fulfilled",
+    title: `已領取「${redemption.reward.name}」`,
+    body: `點數已正式扣除 ${Math.abs(redemption.pointsSpent)} 點`,
+    tab: "scores",
+  });
   res.json({ message: "實體獎品已確認交件，點數已正式扣除！" });
 });
 
@@ -322,6 +339,7 @@ rewardsRouter.post("/:courseId/redemptions/:id/reject", async (req, res) => {
 
   const redemption = await prisma.rewardRedemption.findFirst({
     where: { id, courseId },
+    include: { reward: true },
   });
 
   if (!redemption) {
@@ -343,6 +361,14 @@ rewardsRouter.post("/:courseId/redemptions/:id/reject", async (req, res) => {
   });
 
   broadcastToCourse(courseId, "rewards_updated");
+  await notifyStudent({
+    courseId,
+    studentId: redemption.studentId,
+    type: "reward_rejected",
+    title: `「${redemption.reward.name}」兌換申請未通過`,
+    body: req.body?.teacherNote || null,
+    tab: "scores",
+  });
   res.json({ message: "已駁回該兌換申請。" });
 });
 
@@ -388,5 +414,13 @@ rewardsRouter.post("/:courseId/redemptions/:id/cancel", async (req, res) => {
 
   broadcastToCourse(courseId, "score_updated");
   broadcastToCourse(courseId, "rewards_updated");
+  await notifyStudent({
+    courseId,
+    studentId: redemption.studentId,
+    type: "reward_cancelled",
+    title: `「${redemption.reward.name}」兌換已取消`,
+    body: "保留的點數已退還",
+    tab: "scores",
+  });
   res.json({ message: "已取消該發放，預扣點數已退還給學生，庫存已歸還。" });
 });

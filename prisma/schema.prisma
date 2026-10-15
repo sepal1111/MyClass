@@ -894,3 +894,23 @@ model WhereaboutsKiosk {
 
   @@map("whereabouts_kiosks")
 }
+
+// 學生端「🔔 通知」：老師批改、退回、回覆提問、獎品審核、開放新內容等事件會寫入這張表，
+// 學生登入後在頁首鈴鐺查看。為避免無限成長，每位學生只保留最新 100 筆（見 utils/notifications.ts）。
+// 實體資料表在 db.ts 以 CREATE TABLE IF NOT EXISTS 建立（含 course/student 的 ON DELETE CASCADE）。
+model StudentNotification {
+  id          Int     @id @default(autoincrement())
+  courseId    Int     @map("course_id")
+  studentId   Int     @map("student_id")
+  type        String
+  title       String
+  body        String?
+  tab         String? // 點擊後要切換到的學生分頁：materials | fileCollect | quizzes | scores
+  refId       Int?    @map("ref_id") // 合併用的關聯 id（例如 new_content 以單元 id 合併）
+  repeatCount Int     @default(1) @map("repeat_count")
+  isRead      Int     @default(0) @map("is_read")
+  createdAt   String  @map("created_at")
+
+  @@index([studentId, isRead, createdAt])
+  @@map("student_notifications")
+}

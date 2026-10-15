@@ -325,6 +325,28 @@ export async function initSchema(): Promise<void> {
     "CREATE INDEX IF NOT EXISTS idx_submission_comments_thread ON submission_comments(sub_unit_id, student_id, group_id);"
   );
 
+  // 學生端通知（🔔）：見 utils/notifications.ts。每位學生只保留最新 100 筆。
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS student_notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_id INTEGER NOT NULL,
+      student_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      body TEXT NULL,
+      tab TEXT NULL,
+      ref_id INTEGER NULL,
+      repeat_count INTEGER NOT NULL DEFAULT 1,
+      is_read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(course_id) REFERENCES courses(id) ON DELETE CASCADE,
+      FOREIGN KEY(student_id) REFERENCES students(id) ON DELETE CASCADE
+    );
+  `);
+  await prisma.$executeRawUnsafe(
+    "CREATE INDEX IF NOT EXISTS idx_student_notifications_student ON student_notifications(student_id, is_read, created_at);"
+  );
+
   // 即時互動牆（Live Wall）：教師開一個限時場次，學生每人限交一則文字/手繪/拍照貼文。
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS live_sessions (

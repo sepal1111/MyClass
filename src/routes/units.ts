@@ -1,6 +1,7 @@
 // Teacher-side course materials & units management (Course -> Unit -> SubUnit -> Material).
 // Mounted behind requireAuth (teacher system session) — see src/routes/studentContent.ts
 // for the read-only, JWT-guarded student-facing counterpart.
+import { groupMemberIds, notifyNewContent, notifyStudent, notifyStudents } from "../utils/notifications";
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
@@ -204,6 +205,15 @@ unitsRouter.post("/:courseId/:unitId/subunits", async (req, res) => {
   const subUnit = await prisma.subUnit.create({
     data: { ...data, orderIndex: (maxOrder._max.orderIndex ?? 0) + 1 } as Parameters<typeof prisma.subUnit.create>[0]["data"],
   });
+  void notifyNewContent({
+    courseId,
+    unitId,
+    unitTitle: unit.title,
+    title,
+    category,
+    isHidden: false,
+    publishAt: (data.publishAt as string | null) ?? null,
+  });
   res.json({ id: subUnit.id, message: "小單元建立成功！" });
 });
 
@@ -252,10 +262,29 @@ unitsRouter.put("/:courseId/:unitId/subunits/:subUnitId", async (req, res) => {
     data.revealAnswersAfterSubmit = req.body.reveal_answers_after_submit ? 1 : 0;
   }
 
+  const before =
+    data.isHidden === 0
+      ? await prisma.subUnit.findFirst({ where: { id: subUnitId, unitId }, include: { unit: true } })
+      : null;
   const result = await prisma.subUnit.updateMany({ where: { id: subUnitId, unitId }, data });
   if (result.count === 0) {
     res.status(404).json({ detail: "Sub-unit not found" });
     return;
+  }
+  // 從「隱藏」改為「顯示」＝對學生而言是新內容，通知全班
+  if (before && before.isHidden === 1) {
+    const after = await prisma.subUnit.findUnique({ where: { id: subUnitId } });
+    if (after) {
+      void notifyNewContent({
+        courseId,
+        unitId,
+        unitTitle: before.unit.title,
+        title: after.title,
+        category: after.category,
+        isHidden: after.isHidden === 1,
+        publishAt: after.publishAt,
+      });
+    }
   }
   res.json({ message: "小單元已更新" });
 });
@@ -522,6 +551,26 @@ unitsRouter.post("/:courseId/:unitId/subunits/:subUnitId/submissions/:studentId/
     },
   });
 
+  if (hasScore) {
+    await notifyStudent({
+      courseId,
+      studentId,
+      type: "graded",
+      title: `「${subUnit.title}」已評分：${Number(score)} 分`,
+      body: feedback || null,
+      tab: "materials",
+    });
+  } else if (typeof feedback === "string" && feedback.trim()) {
+    await notifyStudent({
+      courseId,
+      studentId,
+      type: "feedback",
+      title: `老師在「${subUnit.title}」留下評語`,
+      body: feedback,
+      tab: "materials",
+    });
+  }
+
   res.json({ message: "評分已送出" });
 });
 
@@ -534,6 +583,18 @@ unitsRouter.put("/:courseId/:unitId/subunits/:subUnitId/submissions/:studentId/l
     create: { subUnitId, studentId, locked: locked ? 1 : 0, ...(locked ? {} : { teacherReopened: 1, resubmitRequested: 0 }) },
     update: { locked: locked ? 1 : 0, ...(locked ? {} : { teacherReopened: 1, resubmitRequested: 0 }) },
   });
+  if (!locked) {
+    const subUnit = await prisma.subUnit.findUnique({ where: { id: subUnitId } });
+    if (subUnit) {
+      await notifyStudent({
+        courseId: Number(req.params.courseId),
+        studentId,
+        type: "reopened",
+        title: `老師開放你重新繳交「${subUnit.title}」`,
+        tab: "materials",
+      });
+    }
+  }
   res.json({ message: locked ? "作業已鎖定" : "作業已解鎖，學生可重新繳交" });
 });
 
@@ -568,6 +629,14 @@ unitsRouter.post("/:courseId/:unitId/subunits/:subUnitId/submissions/:studentId/
     return;
   }
   await createSubmissionComment(prisma, { subUnitId, studentId }, "teacher", null, message, getNowStrTaipei());
+  await notifyStudent({
+    courseId,
+    studentId,
+    type: "reply",
+    title: `老師回覆了你在「${subUnit.title}」的提問`,
+    body: message,
+    tab: "materials",
+  });
   res.json(await listSubmissionComments(prisma, { subUnitId, studentId }));
 });
 
@@ -601,6 +670,16 @@ unitsRouter.post("/:courseId/:unitId/subunits/:subUnitId/submissions/batch_reque
         scoreLogIdsJson: null,
         ...(feedback ? { feedback } : {}),
       },
+    });
+  }
+  const returned = await prisma.subUnit.findUnique({ where: { id: subUnitId } });
+  if (returned) {
+    await notifyStudents(studentIds, {
+      courseId: Number(req.params.courseId),
+      type: "reopened",
+      title: `老師請你重新繳交「${returned.title}」`,
+      body: feedback || null,
+      tab: "materials",
     });
   }
   res.json({ message: `已退回 ${studentIds.length} 份作業，學生可重新繳交` });
@@ -665,6 +744,29 @@ unitsRouter.post("/:courseId/:unitId/subunits/:subUnitId/submissions/group/:grou
     },
   });
 
+  if (hasScore) {
+    for (const memberId of await groupMemberIds(groupId)) {
+      const override = memberScoreMap[String(memberId)];
+      const finalScore = override !== undefined && String(override).trim() !== "" ? Number(override) : Number(score);
+      await notifyStudent({
+        courseId,
+        studentId: memberId,
+        type: "graded",
+        title: `小組作業「${subUnit.title}」已評分：${finalScore} 分`,
+        body: feedback || null,
+        tab: "materials",
+      });
+    }
+  } else if (typeof feedback === "string" && feedback.trim()) {
+    await notifyStudents(await groupMemberIds(groupId), {
+      courseId,
+      type: "feedback",
+      title: `老師在小組作業「${subUnit.title}」留下評語`,
+      body: feedback,
+      tab: "materials",
+    });
+  }
+
   res.json({ message: "評分已送出" });
 });
 
@@ -677,6 +779,17 @@ unitsRouter.put("/:courseId/:unitId/subunits/:subUnitId/submissions/group/:group
     create: { subUnitId, groupId, locked: locked ? 1 : 0, ...(locked ? {} : { teacherReopened: 1, resubmitRequested: 0 }) },
     update: { locked: locked ? 1 : 0, ...(locked ? {} : { teacherReopened: 1, resubmitRequested: 0 }) },
   });
+  if (!locked) {
+    const subUnit = await prisma.subUnit.findUnique({ where: { id: subUnitId } });
+    if (subUnit) {
+      await notifyStudents(await groupMemberIds(groupId), {
+        courseId: Number(req.params.courseId),
+        type: "reopened",
+        title: `老師開放你的小組重新繳交「${subUnit.title}」`,
+        tab: "materials",
+      });
+    }
+  }
   res.json({ message: locked ? "小組作業已鎖定" : "小組作業已解鎖" });
 });
 
@@ -711,5 +824,12 @@ unitsRouter.post("/:courseId/:unitId/subunits/:subUnitId/submissions/group/:grou
     return;
   }
   await createSubmissionComment(prisma, { subUnitId, groupId }, "teacher", null, message, getNowStrTaipei());
+  await notifyStudents(await groupMemberIds(groupId), {
+    courseId,
+    type: "reply",
+    title: `老師回覆了你們小組在「${subUnit.title}」的提問`,
+    body: message,
+    tab: "materials",
+  });
   res.json(await listSubmissionComments(prisma, { subUnitId, groupId }));
 });

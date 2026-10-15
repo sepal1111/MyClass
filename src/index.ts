@@ -39,6 +39,7 @@ import { pointCardsRouter } from "./routes/pointCards";
 import { studentPointCardsRouter } from "./routes/studentPointCards";
 import { rewardsRouter } from "./routes/rewards";
 import { studentRewardsRouter } from "./routes/studentRewards";
+import { studentNotificationsRouter } from "./routes/studentNotifications";
 import { paperQuizzesRouter } from "./routes/paperQuizzes";
 import { bulletinRouter } from "./routes/bulletin";
 import { fileCollectionsRouter } from "./routes/fileCollections";
@@ -367,6 +368,7 @@ app.use("/api/student", studentContentRouter);
 app.use("/api/student/live-wall", studentLiveWallRouter);
 app.use("/api/student/point-cards", studentPointCardsRouter);
 app.use("/api/student/rewards", studentRewardsRouter);
+app.use("/api/student/notifications", studentNotificationsRouter);
 app.use("/api/student/file-collections", studentFileCollectionsRouter);
 
 // --- Global error handler: isolate a single request's failure instead of

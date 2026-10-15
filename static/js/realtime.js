@@ -67,6 +67,10 @@ function connectCourseRealtime(courseId, onUpdate, onToolkitAction, tokenOverrid
       if (window.StudentApp?.onKahootFinished) {
         window.StudentApp.onKahootFinished(data.payload);
       }
+    } else if (data.event === 'notification:new') {
+      if (window.StudentApp?.onNotification) {
+        window.StudentApp.onNotification(data.payload);
+      }
     } else if (data.event === 'wordcloud:start') {
       if (window.Projection?.onWordCloudStart) {
         window.Projection.onWordCloudStart(data.payload);
