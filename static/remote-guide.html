@@ -687,7 +687,7 @@
         <div class="guide-item-body">
           <p>請先確認下面幾件事都準備好了：</p>
           <ul class="checklist">
-            <li><b>MyClass 是有「學生在家連線」功能的版本。</b>不確定的話，請問提供 MyClass 給你的老師。</li>
+            <li><b>MyClass 是 v4.3.0 以上的版本。</b>資料夾裡會看到 <code>MyClass.exe</code>，螢幕右下角有 MyClass 圖示。不確定的話，請問提供 MyClass 給你的老師。</li>
             <li><b>一個 Google 帳號</b>（或 Microsoft 帳號），用來登入 Tailscale。
               <div class="guide-tip-box tip-warning">⚠️ 這個帳號很重要，就像學生在家連線的「鑰匙」。請一定要<b>開啟 Google 的「兩步驟驗證」</b>，避免帳號被別人盜用。建議使用學校或教學專用的帳號。</div>
             </li>
@@ -780,7 +780,7 @@
               <img src="pic/remote-guide/open-powershell.svg" alt="在資料夾網址列輸入 powershell 按 Enter">
             </figure>
             <ol>
-              <li>打開「<b>有 MyClass 程式的那個資料夾</b>」，也就是你平常點兩下開啟 MyClass 的那個資料夾（裡面會看到 <code>MyClassV…exe</code> 和 <code>system</code> 資料夾）。</li>
+              <li>打開「<b>有 MyClass 程式的那個資料夾</b>」，也就是你平常點兩下開啟 MyClass 的那個資料夾（裡面會看到 <code>MyClass.exe</code>、<code>MyClassV…exe</code> 和 <code>system</code> 資料夾）。<br>不知道在哪裡的話：在右下角 MyClass 圖示按右鍵 →「開啟資料資料夾（bin）」，再回到上一層資料夾。</li>
               <li>用滑鼠點一下視窗上方的<b>網址列</b>（顯示資料夾位置的那一長條），裡面的文字會被選取起來。</li>
               <li>直接打 <code>powershell</code>（會取代原本的文字），然後按鍵盤的 <b>Enter</b>。</li>
               <li>跳出一個藍色（或黑色）的視窗，就代表成功了。</li>
@@ -883,7 +883,7 @@ To enable, visit:
         <div class="guide-item-body">
           <p>步驟 3 打開了 MyClass 的「學生在家連線」功能，要<b>把 MyClass 關掉再重新開啟</b>才會生效：</p>
           <ol>
-            <li>在螢幕右下角找到 MyClass 的圖示（可能要先按 <code>^</code> 才看得到），按<b>右鍵</b>，選「<b>結束 MyClass</b>」。<br>（如果你的 MyClass 是黑色視窗的版本，直接把黑色視窗關掉。）</li>
+            <li>在螢幕右下角找到 MyClass 的圖示（可能要先按 <code>^</code> 才看得到），按<b>右鍵</b>，選「<b>結束 MyClass</b>」。<br>（如果開的是黑色視窗，直接把黑色視窗關掉。）</li>
             <li>跟平常一樣，點兩下開啟 MyClass。</li>
           </ol>
           <div class="guide-tip-box">💡 <b>建議順便打開「開機時自動啟動」</b>：在右下角 MyClass 圖示上按右鍵，勾選「<b>開機時自動啟動</b>」。這樣電腦一開機，MyClass 就會自己開好，不用擔心忘記開、學生在家連不上。</div>
@@ -1003,6 +1003,10 @@ To enable, visit:
         <summary>Q9. 我換了一台電腦</summary>
         <div class="faq-body">新電腦要重新做一次步驟 1～6。注意：<b>網址會改變</b>，要重新通知學生。</div>
       </details>
+      <details class="faq-item">
+        <summary>Q10. 我原本用的是「安裝版」（裝在 <code>C:\MyClass</code>）</summary>
+        <div class="faq-body">從 v4.3.0 起 MyClass 只提供可攜版（不用安裝，功能完全相同）。請先依<a href="/guide#install">老師使用手冊</a>的步驟換成可攜版：解壓縮新版 → 結束 MyClass → 把 <code>C:\MyClass\bin</code> 複製到新資料夾 → 解除安裝舊版 → 點兩下新資料夾的 <code>MyClass.exe</code>。換好之後，再從步驟 3 開始設定。</div>
+      </details>
     </section>
 
     <div class="part-banner part-advanced">🔧 第二部分：進階參考<small>給資訊老師或想多了解的老師參考，一般老師可以跳過。</small></div>
@@ -1044,7 +1048,7 @@ To enable, visit:
             <li>學生在家看到的是「目前正在執行的那台電腦」上的資料。學校、家裡各用一台電腦時，兩邊資料不會同步。</li>
             <li>學生專用入口只綁在 <code>127.0.0.1:8100</code>，區網內其他裝置連不到；只有同一台電腦上的 Tailscale 會連它。</li>
             <li>設定檔位置：<code>bin\remote_access.json</code>（與資料庫 <code>classroom_record.db</code> 同一個資料夾），內容為 <code>{ "enabled": true, "port": 8100 }</code>。也可以改用環境變數 <code>MYCLASS_REMOTE_PORT=8100</code>。兩者都沒有設定時，這個功能完全不啟動。</li>
-            <li>開發版（<code>npm run dev</code>）的 <code>bin</code> 在專案資料夾內；可攜版的 <code>bin</code> 在 <code>MyClassV…exe</code> 旁邊。</li>
+            <li>開發版（<code>npm run dev</code>）的 <code>bin</code> 在專案資料夾內；可攜版的 <code>bin</code> 在 <code>MyClass.exe</code> 旁邊。</li>
             <li>啟動成功時，主控台會顯示：<code>[MyClass] 學生在家專用入口：http://127.0.0.1:8100（請用 Tailscale Funnel 對外開放這個埠）</code></li>
             <li>Tailscale 帳號被盜用時，對方可以把自己的裝置加入這個 Tailscale 網路，直接連到老師電腦。請開啟帳號的兩步驟驗證，並定期到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 檢查有沒有不認識的裝置。</li>
           </ul>

@@ -3,10 +3,9 @@
 //   npm run package:release            # 自動挑 release/ 底下版本最大的
 //   npm run package:release -- 4.1.1   # 指定版本
 //
-// 封裝（build-win.bat／build-win-installer.bat）完成後 release/ 只會留下壓縮檔與安裝程式：
-//   MyClassV<版本>-win-portable.zip   可攜版 Windows（不含 bin，即不含任何班級資料）
+// 封裝（build-win.bat）完成後 release/ 只會留下壓縮檔（v4.3.0 起不再提供安裝版）：
+//   MyClassV<版本>-win-portable.zip   可攜版 Windows（含托盤程式 MyClass.exe；不含 bin，即不含任何班級資料）
 //   MyClassV<版本>-Mac*.zip           可攜版 macOS（若有封裝）
-//   MyClassSetupV<版本>.exe           安裝版
 // 若你用 --keep-folder 留下了資料夾，這裡會先把資料夾壓成 zip（同樣排除 bin）。
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -27,12 +26,12 @@ function cmp(a, b) {
 }
 
 if (!fs.existsSync(releaseDir)) {
-  console.error("找不到 release/ 資料夾，請先執行 build-win.bat（或 build-win-installer.bat）封裝。");
+  console.error("找不到 release/ 資料夾，請先執行 build-win.bat 封裝。");
   process.exit(1);
 }
 
 const entries = fs.readdirSync(releaseDir, { withFileTypes: true });
-const versionOf = (name) => name.match(/^MyClass(?:Setup)?V(\d+(?:\.\d+)*)/)?.[1] ?? null;
+const versionOf = (name) => name.match(/^MyClassV(\d+(?:\.\d+)*)/)?.[1] ?? null;
 const versions = [...new Set(entries.map((e) => versionOf(e.name)).filter(Boolean))];
 if (versions.length === 0) {
   console.error("release/ 底下沒有 MyClass 的封裝結果，請先封裝。");
@@ -53,12 +52,11 @@ for (const d of entries) {
 
 const files = fs
   .readdirSync(releaseDir)
-  .filter((f) => versionOf(f) === wanted && /\.(zip|exe)$/i.test(f))
+  .filter((f) => versionOf(f) === wanted && /\.zip$/i.test(f))
   .filter((f) => !fs.statSync(path.join(releaseDir, f)).isDirectory())
   .map((f) => path.join(releaseDir, f));
 
 if (!files.some((f) => /-win-portable\.zip$/i.test(f))) console.warn("[package-release] 沒有可攜版 zip（先執行 build-win.bat）。");
-if (!files.some((f) => /Setup.*\.exe$/i.test(f))) console.warn("[package-release] 沒有安裝程式（要發佈安裝版請先執行 build-win-installer.bat）。");
 
 console.log(`\n版本 v${wanted} 的發佈檔案：`);
 for (const f of files) {

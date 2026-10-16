@@ -5,6 +5,8 @@
 // see src/paths.ts:getPackagedPrismaEngineLibraryPath for why). `bin/` is
 // deliberately NOT created here; the app creates it next to the exe on first
 // run (src/paths.ts:getBinDir).
+// Windows 另外編譯托盤程式 MyClass.exe（tools/tray/MyClassTray.cs）放在同一層：老師點它開啟 MyClass，
+// 伺服器在背景執行、右下角顯示圖示，並可設定開機自動啟動。（v4.3.0 起不再提供安裝版，托盤併入可攜版。）
 import { zipAndRemove } from "./lib/portable-zip.mjs";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -113,7 +115,7 @@ const normVersion = gitVersion
     ? `V${gitVersion.slice(1)}`
     : `V${gitVersion}`
   : "";
-// 伺服器執行檔一律含「V」（MyClassV<版本>.exe），托盤程式與安裝程式才能靠檔名區分它與托盤程式 MyClass.exe
+// 伺服器執行檔一律含「V」（MyClassV<版本>.exe），托盤程式才能靠檔名區分它與自己（MyClass.exe）
 const exeName = `${target.baseName}${normVersion || "Vdev"}${target.ext}`;
 const folderBase = `${target.baseName}${normVersion || "Vdev"}`;
 const folderName = `${folderBase}${target.folderSuffix || ""}`;
@@ -208,6 +210,35 @@ fs.writeFileSync(
 );
 fs.copyFileSync(path.join(engineDir, engineFile), path.join(systemDir, "engine", engineFile));
 
+// 托盤程式：用 Windows 內建的 .NET Framework 4 編譯器（csc.exe），不需要另外安裝 SDK。
+// 編譯失敗只警告：可攜版仍可直接點兩下 MyClassV<版本>.exe 執行（黑色視窗），只是沒有右下角圖示。
+if (which === "win") {
+  console.log("[tray] compiling tray launcher MyClass.exe (csc.exe)");
+  const windir = process.env.WINDIR || "C:\\Windows";
+  const csc = [
+    path.join(windir, "Microsoft.NET", "Framework64", "v4.0.30319", "csc.exe"),
+    path.join(windir, "Microsoft.NET", "Framework", "v4.0.30319", "csc.exe"),
+  ].find((p) => fs.existsSync(p));
+  if (!csc) {
+    console.warn("[build-exe] 警告：找不到 .NET Framework 4 的 csc.exe，這次封裝不含托盤程式 MyClass.exe。");
+  } else {
+    try {
+      execFileSync(
+        csc,
+        [
+          "/nologo", "/target:winexe", `/out:${path.join(outDir, "MyClass.exe")}`,
+          `/win32icon:${path.join(rootDir, "assets", "myclass.ico")}`,
+          "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/r:System.dll", "/r:System.Core.dll",
+          path.join(rootDir, "tools", "tray", "MyClassTray.cs"),
+        ],
+        { cwd: rootDir, stdio: "inherit" }
+      );
+    } catch (err) {
+      console.warn(`[build-exe] 警告：托盤程式編譯失敗，這次封裝不含 MyClass.exe（${err.message}）`);
+    }
+  }
+}
+
 if (target.isMac) {
   // A bare Mach-O binary has no registered LaunchServices handler, so
   // double-clicking it in Finder fails silently ("no application knows how
@@ -248,8 +279,7 @@ if (target.isMac) {
 }
 
 // 預設只留下壓縮檔：資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。
-// 加 --keep-folder（或環境變數 MYCLASS_KEEP_FOLDER=1）可保留資料夾，例如本機直接執行測試；
-// build-installer.mjs 也會用它，因為安裝程式需要這個資料夾的內容，打包完才由它負責壓縮。
+// 加 --keep-folder（或環境變數 MYCLASS_KEEP_FOLDER=1）可保留資料夾，例如本機直接執行測試。
 const keepFolder = process.argv.includes("--keep-folder") || process.env.MYCLASS_KEEP_FOLDER === "1";
 if (keepFolder) {
   console.log(`\n[build-exe] Done! Package folder kept at: ${outDir}`);

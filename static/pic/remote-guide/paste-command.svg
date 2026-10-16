@@ -4,7 +4,7 @@
   <rect x="30" y="45" width="560" height="180" rx="8" fill="#012456"/>
   <rect x="30" y="45" width="560" height="28" rx="8" fill="#1e3a5f"/>
   <text x="42" y="64" font-size="13" fill="#e2e8f0">Windows PowerShell</text>
-  <text x="42" y="100" font-size="13" fill="#e2e8f0" font-family="Consolas, monospace">PS D:\MyClassV4.2.1&gt; New-Item -ItemType Directory ...</text>
+  <text x="42" y="100" font-size="13" fill="#e2e8f0" font-family="Consolas, monospace">PS D:\MyClass&gt; New-Item -ItemType Directory ...</text>
   <text x="42" y="122" font-size="13" fill="#e2e8f0" font-family="Consolas, monospace">&gt;&gt; $ts = "C:\Program Files\Tailscale\tailscale.exe"</text>
   <text x="42" y="144" font-size="13" fill="#e2e8f0" font-family="Consolas, monospace">&gt;&gt; ...</text>
   <rect x="300" y="160" width="160" height="40" rx="6" fill="#ffffff" stroke="#94a3b8"/>

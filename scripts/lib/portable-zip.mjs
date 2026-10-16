@@ -19,13 +19,13 @@ const NOTE_FILE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..
 const HOWTO = `MyClass 更新方式
 ================
 
-1. 先關閉 MyClass（關掉黑色的執行視窗）。
-2. 把你「舊版資料夾」裡的 bin 資料夾，整個複製到這個新資料夾裡（和 MyClass 執行檔放在同一層）。
+1. 先關閉 MyClass：在右下角 MyClass 圖示按右鍵 →「結束 MyClass」（舊版沒有圖示的話，關掉黑色的執行視窗）。
+2. 把你「舊版資料夾」裡的 bin 資料夾，整個複製到這個新資料夾裡（和 MyClass.exe 放在同一層）。
    bin 裡面是你所有的班級、學生、成績與上傳檔案，一定要複製過來。
-3. 開啟這個資料夾裡的 MyClass 執行檔。第一次啟動時，系統會先自動備份資料庫。
+3. 點兩下這個資料夾裡的 MyClass.exe。第一次啟動時，系統會先自動備份資料庫。
 4. 確認班級資料都在之後，再把舊版資料夾刪除。
 
-注意：執行檔和 system 資料夾要放在一起，不能只搬其中一個。
+注意：MyClass.exe、MyClassV（版本）.exe 和 system 資料夾要放在一起，不能只搬其中一個。
 `;
 
 /** 讀取要放進 zip 的說明文字；回傳 { text, source }。統一成 CRLF，舊版記事本才能正確換行。 */
@@ -65,11 +65,6 @@ export function zipPortableFolder(releaseDir, folderName) {
     stdio: "inherit",
   });
   return zipPath;
-}
-
-/** 把 zip 解開到 releaseDir（會得到原本的可攜版資料夾）。用於 --skip-server 沿用既有封裝。 */
-export function unzipPortable(zipPath, releaseDir) {
-  execFileSync(tarExe(), ["-x", "-f", zipPath, "-C", releaseDir], { stdio: "inherit" });
 }
 
 /** 壓縮並刪除原資料夾；回傳 zip 路徑與大小（MB）。 */

@@ -5,7 +5,7 @@
 // 參數：
 //   (無)         開啟托盤；第一次啟動時自動開啟瀏覽器
 //   --autostart  開機自動啟動用：只在背景執行，不開瀏覽器
-//   --exit       結束執行中的托盤與伺服器（安裝／解除安裝程式使用）
+//   --exit       結束執行中的托盤與伺服器（舊版安裝程式解除安裝時使用）
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -46,7 +46,7 @@ namespace MyClass
                 return 0;
             }
 
-            // 每個安裝資料夾只允許一個托盤；再次點捷徑時只開啟瀏覽器
+            // 每個 MyClass 資料夾只允許一個托盤；再次點兩下時只開啟瀏覽器
             bool created;
             string name = "MyClass.Tray." + Math.Abs(baseDir.ToLowerInvariant().GetHashCode());
             Mutex mutex = new Mutex(true, name, out created);
@@ -224,6 +224,7 @@ namespace MyClass
             timer.Interval = 1000;
             timer.Tick += delegate { Tick(); };
 
+            if (!autostart) RepointAutostart();
             StartServer();
             timer.Start();
         }
@@ -266,7 +267,7 @@ namespace MyClass
             string exe = FindServerExe();
             if (exe == null)
             {
-                MessageBox.Show("找不到伺服器程式（MyClassV*.exe），請重新安裝 MyClass。", "MyClass", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("找不到伺服器程式（MyClassV*.exe）。請確認 MyClass.exe 和 MyClassV*.exe、system 資料夾放在同一個資料夾，或重新下載 MyClass。", "MyClass", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ExitThread();
                 return;
             }
@@ -380,6 +381,34 @@ namespace MyClass
             catch { }
         }
 
+        private static string AutostartCommand()
+        {
+            return "\"" + Process.GetCurrentProcess().MainModule.FileName + "\" --autostart";
+        }
+
+        /// <summary>
+        /// 可攜版的更新方式是「換一個新資料夾、把 bin 複製過去」。開機自動啟動若還指向舊資料夾的 MyClass.exe，
+        /// 下次開機就會跑舊版、讀到舊資料夾裡的舊資料。所以老師手動開啟這一份時，若已經設定開機自動啟動、
+        /// 但指向別的位置，就改成指向自己（舊版安裝版用的也是同一個登錄值，換成可攜版時一併接手）。
+        /// </summary>
+        private void RepointAutostart()
+        {
+            try
+            {
+                using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunKey, true))
+                {
+                    if (k == null) return;
+                    string current = k.GetValue(RunValue) as string;
+                    if (string.IsNullOrEmpty(current)) return;
+                    string wanted = AutostartCommand();
+                    if (string.Equals(current, wanted, StringComparison.OrdinalIgnoreCase)) return;
+                    k.SetValue(RunValue, wanted);
+                    Log("開機自動啟動改為指向這個資料夾（原本：" + current + "）");
+                }
+            }
+            catch { /* 寫不進登錄檔時維持原狀 */ }
+        }
+
         private bool IsAutostart()
         {
             using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunKey, false))
@@ -393,7 +422,7 @@ namespace MyClass
             using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunKey))
             {
                 if (IsAutostart()) k.DeleteValue(RunValue, false);
-                else k.SetValue(RunValue, "\"" + Process.GetCurrentProcess().MainModule.FileName + "\" --autostart");
+                else k.SetValue(RunValue, AutostartCommand());
             }
         }
 
@@ -424,7 +453,7 @@ namespace MyClass
 
     internal static class IconFactory
     {
-        /// <summary>程式內繪製的圖示（藍色圓角方塊與白色「T」），托盤與安裝程式用的 .ico 都用同一個設計。</summary>
+        /// <summary>程式內繪製的備用圖示（藍色圓角方塊與白色「T」）。</summary>
         public static Icon Create(int size)
         {
             using (Bitmap bmp = Draw(size))

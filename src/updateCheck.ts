@@ -44,7 +44,7 @@ export interface UpdateStatus {
   current_version: string | null;
   edition: Edition;
   latest: LatestRelease | null;
-  /** 依本機版本類型挑出的下載檔（可攜版 zip／安裝程式）；找不到時為 null，介面改導向下載頁。 */
+  /** 依平台挑出的下載檔（可攜版 zip）；找不到時為 null，介面改導向下載頁。 */
   download: ReleaseAsset | null;
   has_update: boolean;
   checked_at: string | null; // ISO
@@ -73,9 +73,9 @@ export function compareVersions(a: number[], b: number[]): number {
 
 /**
  * 從 Release 附件挑出這台電腦該下載的那一個。命名慣例（見 scripts/package-release.mjs）：
- *   安裝版：MyClassSetupV<版本>.exe
  *   可攜版 Windows：MyClassV<版本>-win-portable.zip
  *   可攜版 macOS：MyClassV<版本>-Mac*.zip
+ * v4.3.0 起不再發佈安裝版；舊的安裝版也改下載可攜版 zip（更新說明會引導換成可攜版，見 static/js/updater.js）。
  */
 export function pickDownload(
   assets: ReleaseAsset[] | undefined,
@@ -84,8 +84,7 @@ export function pickDownload(
 ): ReleaseAsset | null {
   const list = assets ?? [];
   const find = (re: RegExp) => list.find((a) => re.test(a.name)) ?? null;
-  if (edition === "installed") return find(/setup.*\.exe$/i);
-  if (edition !== "portable") return null;
+  if (edition === "dev") return null;
   if (platform === "darwin") return find(/mac.*\.zip$/i);
   return find(/portable.*\.zip$/i) ?? list.find((a) => /\.zip$/i.test(a.name) && !/mac/i.test(a.name)) ?? null;
 }
@@ -108,7 +107,8 @@ export function getCurrentVersion(): string | null {
   return m ? m[1] : null;
 }
 
-/** 安裝版（Inno Setup）會在程式資料夾放 unins000.exe；其餘為可攜版。 */
+/** 舊版安裝版（Inno Setup）會在程式資料夾放 unins000.exe；其餘為可攜版。v4.3.0 起只發佈可攜版，
+ *  仍辨識安裝版是為了讓更新說明改成「換成可攜版」的步驟。 */
 export function detectEdition(): Edition {
   if (!(process as unknown as { pkg?: unknown }).pkg) return "dev";
   try {

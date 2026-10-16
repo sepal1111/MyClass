@@ -94,23 +94,25 @@
 
   // ------------------------------------------------------------ 更新說明視窗
   function stepsHtml() {
+    const fmt = (list) => list.map((t, i) => `<div style="margin:6px 0;">${i + 1}. ${t}</div>`).join('');
+    // v4.3.0 起不再提供安裝版：安裝版要換成可攜版（資料在安裝資料夾的 bin，複製過去即可）。
+    // 順序要「先解除安裝舊版、再開新版並勾開機自動啟動」：舊安裝程式解除安裝時會刪掉同名的開機啟動登錄值。
     if (status.edition === 'installed') {
-      return [
-        T('按下方的「下載更新檔」（或「前往下載頁」），取得最新的<b>安裝程式</b>（檔名含 Setup）。', 'Click “Download update” (or “Open download page”) below to get the latest <b>installer</b> (file name contains Setup).'),
-        T('直接執行安裝程式，一路按「下一步」。你的班級與學生資料<b>會自動保留</b>，不需要另外備份或匯入。', 'Run the installer and keep clicking Next. Your classes and student data are <b>kept automatically</b>.'),
-        T('安裝完成後重新開啟 MyClass 即可。', 'Open MyClass again when the installation finishes.'),
-      ]
-        .map((t, i) => `<div style="margin:6px 0;">${i + 1}. ${t}</div>`)
-        .join('');
+      return fmt([
+        T('從 v4.3.0 起 MyClass <b>只提供可攜版</b>（不用安裝，功能完全相同，右下角一樣有圖示）。請依下面步驟換成可攜版。', 'From v4.3.0 MyClass is <b>portable only</b> (no installation, same features, still with a tray icon). Follow the steps below to switch.'),
+        T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>到你想放的位置（例如 <code>D:\\MyClass</code>），會得到一個新的資料夾。', 'Click “Download update” and <b>extract</b> the zip to where you want to keep it (e.g. <code>D:\\MyClass</code>).'),
+        T('在右下角 MyClass 圖示按右鍵 →「<b>結束 MyClass</b>」。', 'Right-click the MyClass tray icon → “<b>Exit MyClass</b>”.'),
+        T('打開舊的安裝資料夾（通常是 <code>C:\\MyClass</code>），把裡面的 <code>bin</code> 資料夾<b>整個複製</b>到新資料夾裡（和 <code>MyClass.exe</code> 放在同一層）。<code>bin</code> 裡面是你所有的班級、學生與上傳檔案。', 'Open the old install folder (usually <code>C:\\MyClass</code>) and <b>copy its whole <code>bin</code> folder</b> into the new folder (next to <code>MyClass.exe</code>). <code>bin</code> holds all your classes, students and uploads.'),
+        T('到「Windows 設定 → 應用程式」<b>解除安裝</b>舊的「MyClass 課堂即時記錄系統」。', '<b>Uninstall</b> the old “MyClass” from Windows Settings → Apps.'),
+        T('點兩下新資料夾裡的 <b>MyClass.exe</b>。需要開機自動啟動的話，在右下角圖示按右鍵勾選「開機時自動啟動」。確認班級資料都在之後，舊的 <code>C:\\MyClass</code> 資料夾就可以刪除。', 'Double-click <b>MyClass.exe</b> in the new folder. To start with Windows, right-click the tray icon and tick “Start with Windows”. Once your classes are there, you can delete the old <code>C:\\MyClass</code> folder.'),
+      ]);
     }
-    return [
-      T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>，會得到一個新的資料夾（裡面有 MyClass 執行檔和 <code>system</code> 資料夾，<b>兩個要放在一起</b>）。', 'Click “Download update” below and <b>extract</b> the zip. You get a new folder containing the MyClass program and a <code>system</code> folder (<b>keep them together</b>).'),
-      T('先<b>關閉 MyClass</b>（關掉黑色的執行視窗）。', '<b>Close MyClass</b> first (close the black console window).'),
+    return fmt([
+      T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>，會得到一個新的資料夾（裡面有 <code>MyClass.exe</code>、MyClass 伺服器程式和 <code>system</code> 資料夾，<b>要放在一起</b>）。', 'Click “Download update” below and <b>extract</b> the zip. You get a new folder containing <code>MyClass.exe</code>, the MyClass server program and a <code>system</code> folder (<b>keep them together</b>).'),
+      T('先<b>關閉 MyClass</b>：在右下角 MyClass 圖示按右鍵 →「結束 MyClass」（舊版沒有圖示的話，關掉黑色的執行視窗）。', '<b>Close MyClass</b> first: right-click the MyClass tray icon → “Exit MyClass” (older versions without an icon: close the black console window).'),
       T('打開<b>舊版的資料夾</b>，把裡面的 <code>bin</code> 資料夾<b>整個複製</b>到新資料夾裡（和執行檔放在同一層）。<code>bin</code> 裡面是你所有的班級、學生與上傳檔案。', 'Open the <b>old folder</b> and <b>copy its whole <code>bin</code> folder</b> into the new folder (next to the program). <code>bin</code> holds all your classes, students and uploads.'),
-      T('開啟新資料夾裡的 MyClass 執行檔。第一次啟動時系統會先自動備份資料庫；確認班級資料都在之後，再刪除舊資料夾。', 'Start MyClass from the new folder. On the first start the database is backed up automatically; delete the old folder once you have confirmed your classes are there.'),
-    ]
-      .map((t, i) => `<div style="margin:6px 0;">${i + 1}. ${t}</div>`)
-      .join('');
+      T('點兩下新資料夾裡的 <b>MyClass.exe</b>。第一次啟動時系統會先自動備份資料庫；有設定開機自動啟動的話，也會自動改成新資料夾。確認班級資料都在之後，再刪除舊資料夾。', 'Double-click <b>MyClass.exe</b> in the new folder. On the first start the database is backed up automatically, and “Start with Windows” (if enabled) switches to the new folder. Delete the old folder once you have confirmed your classes are there.'),
+    ]);
   }
 
   function openDetail() {

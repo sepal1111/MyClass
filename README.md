@@ -1,6 +1,6 @@
 # MyClass 課堂即時記錄系統
 
-給國小教師使用的課堂管理工具：點名、加減分、分組、座位表、作業與測驗、即時互動牆，一套搭配大螢幕投影與學生手機／平板的區網系統。整個系統以單一 Node.js 伺服器執行，資料存在本機的 SQLite，不需要連到任何雲端服務，也可以打包成免安裝的隨身碟版或 Windows 安裝版。
+給國小教師使用的課堂管理工具：點名、加減分、分組、座位表、作業與測驗、即時互動牆，一套搭配大螢幕投影與學生手機／平板的區網系統。整個系統以單一 Node.js 伺服器執行，資料存在本機的 SQLite，不需要連到任何雲端服務，打包成免安裝的可攜版（可放隨身碟）。
 
 ## 功能
 
@@ -76,17 +76,18 @@ npm start       # node dist/index.js
 
 ## 新版本偵測
 
-打包版（可攜版與安裝版）啟動後，會在背景向 GitHub 查詢最新發佈的版本；有新版時，老師登入後畫面上方會出現提示，並說明更新步驟。**只通知，不會自動下載或更換任何檔案。**
+打包版（可攜版）啟動後，會在背景向 GitHub 查詢最新發佈的版本；有新版時，老師登入後畫面上方會出現提示，並說明更新步驟。**只通知，不會自動下載或更換任何檔案。**
 
 - **只傳送什麼**：對 `api.github.com` 的一個匿名 GET（沒有班級、學生、教師或機器識別資料）。每 12 小時最多一次，失敗時靜默略過。
 - **怎麼關閉**：「設定 ➔ 密碼與連線 ➔ 軟體更新」取消勾選；或設定環境變數 `MYCLASS_NO_UPDATE_CHECK=1` 強制停用。
 - **目前版本**來自打包時寫入的 `system/version.json`（由 git 標籤產生）；開發模式沒有版本，功能不啟動。
-- **使用者怎麼取得更新**：更新視窗會依版本類型直接提供下載連結（可攜版是 zip、安裝版是 Setup 安裝程式），並說明步驟。可攜版的封裝結果是「執行檔 + `system/` 資料夾」，使用者的資料在旁邊的 `bin/`；更新就是換上新的「執行檔 + `system/`」，再把舊的 `bin/` 複製過去。
+- **使用者怎麼取得更新**：更新視窗會直接提供可攜版 zip 的下載連結並說明步驟。可攜版的封裝結果是「`MyClass.exe`（托盤）＋伺服器執行檔＋`system/` 資料夾」，使用者的資料在旁邊的 `bin/`；更新就是換上新的資料夾，再把舊的 `bin/` 複製過去。
+- **舊版安裝版的使用者**：v4.3.0 起不再提供安裝版。系統仍會辨識安裝版（程式資料夾有 `unins000.exe`），更新視窗改為說明「下載可攜版 → 結束 MyClass → 複製 `C:\MyClass\bin` → 解除安裝舊版 → 開啟新的 `MyClass.exe`」。v4.2.x 以前的安裝版看到的是舊程式內建的說明（找不到 Setup 時導向 Release 頁），所以 **Release 說明也要寫上這段換版步驟**。
 - **發佈新版本**（維護者）：
-  1. `build-win.bat`（可攜版 zip）與 `build-win-installer.bat`（安裝程式，同時產生可攜版 zip）打包；完成後 `release/` 只有 `MyClassV<版本>-win-portable.zip`（**不含 `bin/`**，內附 `HOW-TO-UPDATE.txt`）與 `MyClassSetupV<版本>.exe`。
+  1. `build-win.bat` 打包；完成後 `release/` 只有 `MyClassV<版本>-win-portable.zip`（**不含 `bin/`**，內附 `HOW-TO-UPDATE.txt`）。
   2. `npm run package:release` ➔ 列出該版本要發佈的檔案、大小與雜湊，並印出建立 Release 的步驟與 `gh release create` 指令。
-  3. 打上 `v<版本>` 標籤並推送，在 GitHub 建立同名 **Release**，附上 zip 與 `MyClassSetupV<版本>.exe`。
-  - 附件檔名須維持上述命名（含 `portable.zip`、`Setup`），更新視窗才能挑出對應的檔案；挑不到時會改為導向 Release 頁面。
+  3. 打上 `v<版本>` 標籤並推送，在 GitHub 建立同名 **Release**，附上 zip。
+  - 附件檔名須維持上述命名（含 `portable.zip`），更新視窗才能挑出對應的檔案；挑不到時會改為導向 Release 頁面。
   - 偵測依據是 Release（沒有 Release 時退而求其次看標籤）；草稿與預先發行版不會通知使用者。
 - 若儲存庫改名或搬家，用環境變數 `MYCLASS_UPDATE_REPO=帳號/儲存庫` 指定，或修改 `src/updateCheck.ts` 的預設值。
 
@@ -103,17 +104,19 @@ npm start       # node dist/index.js
 
 ## 打包
 
-| | Windows 可攜版 | Windows 安裝版 | macOS 可攜版 |
-|---|---|---|---|
-| 建置 | `build-win.bat`（`npm run build:exe:win`） | `build-win-installer.bat`（`npm run build:installer:win`） | `build-mac.command` 或 `build-mac.sh`（`npm run build:mac`） |
-| 輸出（只留壓縮檔） | `release\MyClassV版本-win-portable.zip` | `release\MyClassSetupV版本.exe`（同時產生可攜版 zip） | `release/MyClassV版本-Mac*.zip` |
-| 啟動 | 雙擊執行檔，開啟主控台並自動開啟瀏覽器 | 開始功能表／桌面捷徑，背景執行並在通知區顯示圖示 | 雙擊資料夾內的 `.command` |
-| 資料位置 | 資料夾內 `bin\` | 預設 `C:\MyClass\bin\` | 資料夾內 `bin/` |
+| | Windows 可攜版 | macOS 可攜版 |
+|---|---|---|
+| 建置 | `build-win.bat`（`npm run build:exe:win`） | `build-mac.command` 或 `build-mac.sh`（`npm run build:mac`） |
+| 輸出（只留壓縮檔） | `release\MyClassV版本-win-portable.zip` | `release/MyClassV版本-Mac*.zip` |
+| 啟動 | 雙擊 `MyClass.exe`，背景執行並在通知區顯示圖示（也可直接雙擊 `MyClassV版本.exe`，以主控台執行） | 雙擊資料夾內的 `.command` |
+| 資料位置 | 資料夾內 `bin\` | 資料夾內 `bin/` |
 
-- **封裝完成後 `release/` 只會留下壓縮檔與安裝程式**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`（內容取自專案根目錄的 `初始密碼與更新文件.txt`，直接編輯該檔案即可，下次封裝就會帶入）。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
-- 安裝版使用 Inno Setup 6（<https://jrsoftware.org/isdl.php>，或用環境變數 `ISCC_PATH` 指定 `ISCC.exe`），需要管理員身分以加入防火牆規則，區網內的學生裝置才連得進來。
-- 通知區托盤程式（`tools/tray/MyClassTray.cs`）以 Windows 內建的 `csc.exe` 編譯，不需另外安裝 SDK。它負責隱藏啟動伺服器、意外結束時自動重啟，並提供開啟系統、複製學生連線網址、開機自動啟動等選項。
-- 升級時只覆蓋程式檔，不動 `bin/`。每次程式版本改變後的第一次啟動，會先把資料庫備份到 `bin/backups/`（保留最近 10 份）。
+v4.3.0 起不再提供 Windows 安裝版（Inno Setup）：托盤程式與開機自動啟動都已併入可攜版，兩者功能相同。
+
+- **封裝完成後 `release/` 只會留下壓縮檔**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`（內容取自專案根目錄的 `初始密碼與更新文件.txt`，直接編輯該檔案即可，下次封裝就會帶入）。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
+- **Windows 防火牆**：伺服器第一次執行時，Windows 會詢問是否允許存取，按「允許」後區網內的學生裝置才連得進來。老師電腦沒有系統管理員權限時，請資訊組協助按允許，或手動新增允許 `MyClassV版本.exe` 的輸入規則。
+- 通知區托盤程式 `MyClass.exe`（`tools/tray/MyClassTray.cs`）在 `build-exe.mjs win` 時以 Windows 內建的 `csc.exe` 編譯並放進可攜版，不需另外安裝 SDK（找不到 `csc.exe` 時只警告，封裝結果不含托盤）。它負責隱藏啟動伺服器、意外結束時自動重啟，並提供開啟系統、複製學生連線網址、開機自動啟動（寫在目前使用者的開機啟動登錄值，不需要系統管理員）等選項。因為可攜版更新是換新資料夾，老師手動開啟托盤時，若開機自動啟動指向別的資料夾，會自動改成指向自己。
+- 升級時只換程式檔，`bin/` 由使用者複製到新資料夾。每次程式版本改變後的第一次啟動，會先把資料庫備份到 `bin/backups/`（保留最近 10 份）。
 - 同一份資料已有伺服器在執行時，再次啟動只會開啟既有網址，不會同時開兩個程序寫同一個資料庫。
 
 ## 專案結構
@@ -133,7 +136,6 @@ src/
 prisma/schema.prisma  資料模型
 static/               前端頁面、腳本、樣式與素材
 scripts/              Windows／macOS 打包與圖示產生腳本
-installer/            Inno Setup 安裝程式腳本
 tools/tray/           Windows 通知區托盤程式
 tools_cards/          點數卡片批次產生工具（Python，獨立使用）
 ```
@@ -149,7 +151,7 @@ iPhone 同時有 Wi-Fi 與行動數據時，iOS 可能把流量送往行動網�
 ## 已知限制
 
 - 目前沒有自動化測試。
-- 全新安裝在教師第一次登入並修改字頭之前，預設密碼仍是 `Admin` 加當天月日。請在安裝後盡快完成第一次登入。
+- 全新使用時，在教師第一次登入並修改字頭之前，預設密碼仍是 `Admin` 加當天月日。請在第一次開啟後盡快完成第一次登入。
 - 教師端目前沒有拖曳排序單元的介面，單元依建立順序排列。
 
 ## 素材來源

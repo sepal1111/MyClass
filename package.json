@@ -11,7 +11,6 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "build:exe:win": "node scripts/build-exe.mjs win",
-    "build:installer:win": "node scripts/build-installer.mjs",
     "build:exe:mac": "node scripts/build-exe.mjs mac",
     "build:mac": "node scripts/build-exe.mjs mac",
     "build:mac:arm64": "node scripts/build-exe.mjs mac-arm64",
