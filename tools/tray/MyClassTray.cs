@@ -252,13 +252,20 @@ namespace MyClass
             catch { /* 記錄失敗不應影響程式 */ }
         }
 
+        /// <summary>伺服器執行檔放在 system\ 裡（v4.3.0 起）；舊的擺法放在同一層，也一併找。</summary>
         private string FindServerExe()
         {
             string self = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
-            return Directory.GetFiles(baseDir, "MyClassV*.exe")
-                .Where(f => !string.Equals(Path.GetFileName(f), self, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(f => File.GetLastWriteTime(f))
-                .FirstOrDefault();
+            foreach (string dir in new string[] { Path.Combine(baseDir, "system"), baseDir })
+            {
+                if (!Directory.Exists(dir)) continue;
+                string found = Directory.GetFiles(dir, "MyClassV*.exe")
+                    .Where(f => !string.Equals(Path.GetFileName(f), self, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(f => File.GetLastWriteTime(f))
+                    .FirstOrDefault();
+                if (found != null) return found;
+            }
+            return null;
         }
 
         private void StartServer()
@@ -267,7 +274,7 @@ namespace MyClass
             string exe = FindServerExe();
             if (exe == null)
             {
-                MessageBox.Show("找不到伺服器程式（MyClassV*.exe）。請確認 MyClass.exe 和 MyClassV*.exe、system 資料夾放在同一個資料夾，或重新下載 MyClass。", "MyClass", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("找不到伺服器程式（system 資料夾裡的 MyClassV*.exe）。請確認 MyClass.exe 和 system 資料夾放在同一個資料夾，或重新下載 MyClass。", "MyClass", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ExitThread();
                 return;
             }

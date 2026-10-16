@@ -25,7 +25,7 @@ const HOWTO = `MyClass 更新方式
 3. 點兩下這個資料夾裡的 MyClass.exe。第一次啟動時，系統會先自動備份資料庫。
 4. 確認班級資料都在之後，再把舊版資料夾刪除。
 
-注意：MyClass.exe、MyClassV（版本）.exe 和 system 資料夾要放在一起，不能只搬其中一個。
+注意：MyClass.exe 和 system 資料夾要放在一起，不能只搬其中一個。
 `;
 
 /** 讀取要放進 zip 的說明文字；回傳 { text, source }。統一成 CRLF，舊版記事本才能正確換行。 */

@@ -5,8 +5,9 @@
 // see src/paths.ts:getPackagedPrismaEngineLibraryPath for why). `bin/` is
 // deliberately NOT created here; the app creates it next to the exe on first
 // run (src/paths.ts:getBinDir).
-// Windows 另外編譯托盤程式 MyClass.exe（tools/tray/MyClassTray.cs）放在同一層：老師點它開啟 MyClass，
-// 伺服器在背景執行、右下角顯示圖示，並可設定開機自動啟動。（v4.3.0 起不再提供安裝版，托盤併入可攜版。）
+// 伺服器執行檔放在 system/ 裡；Windows 另外編譯托盤程式 MyClass.exe（tools/tray/MyClassTray.cs）放在
+// 資料夾最上層，是老師唯一要點的程式：伺服器在背景執行、右下角顯示圖示，並可設定開機自動啟動。
+// （v4.3.0 起不再提供安裝版，托盤併入可攜版。）
 import { zipAndRemove } from "./lib/portable-zip.mjs";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -153,12 +154,10 @@ fs.mkdirSync(outDir, { recursive: true });
 const systemDir = path.join(outDir, "system");
 fs.mkdirSync(systemDir, { recursive: true });
 
-// On Windows the exe stays at the top level (outDir) so double-clicking it
-// in Explorer just works. On mac the exe is placed *inside* system/ instead,
-// so the only thing visible at the top level is the .command launcher below
-// — src/paths.ts:getAppRootDir() knows to step up out of a "system" parent
-// when locating bin/ and system/ at runtime.
-const exeDir = target.isMac ? systemDir : outDir;
+// 伺服器執行檔一律放在 system/ 裡，資料夾最上層只留老師要點的入口：Windows 是托盤程式
+// MyClass.exe（見下方），mac 是 .command 啟動檔。src/paths.ts:getExeDir() 遇到上一層名為
+// "system" 時會再往上一層，所以 bin/ 仍建在資料夾最上層。
+const exeDir = systemDir;
 const exePath = path.join(exeDir, exeName);
 
 // Windows：把執行檔縮圖換成 assets/myclass.ico（由 assets/logo.svg 產生，見 scripts/make-icon.mjs）。
@@ -211,7 +210,8 @@ fs.writeFileSync(
 fs.copyFileSync(path.join(engineDir, engineFile), path.join(systemDir, "engine", engineFile));
 
 // 托盤程式：用 Windows 內建的 .NET Framework 4 編譯器（csc.exe），不需要另外安裝 SDK。
-// 編譯失敗只警告：可攜版仍可直接點兩下 MyClassV<版本>.exe 執行（黑色視窗），只是沒有右下角圖示。
+// 它是 Windows 版唯一放在最上層的入口（伺服器執行檔在 system/ 裡），編譯不出來就讓封裝失敗，
+// 避免發出一個老師找不到程式可以點的資料夾。
 if (which === "win") {
   console.log("[tray] compiling tray launcher MyClass.exe (csc.exe)");
   const windir = process.env.WINDIR || "C:\\Windows";
@@ -220,23 +220,18 @@ if (which === "win") {
     path.join(windir, "Microsoft.NET", "Framework", "v4.0.30319", "csc.exe"),
   ].find((p) => fs.existsSync(p));
   if (!csc) {
-    console.warn("[build-exe] 警告：找不到 .NET Framework 4 的 csc.exe，這次封裝不含托盤程式 MyClass.exe。");
-  } else {
-    try {
-      execFileSync(
-        csc,
-        [
-          "/nologo", "/target:winexe", `/out:${path.join(outDir, "MyClass.exe")}`,
-          `/win32icon:${path.join(rootDir, "assets", "myclass.ico")}`,
-          "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/r:System.dll", "/r:System.Core.dll",
-          path.join(rootDir, "tools", "tray", "MyClassTray.cs"),
-        ],
-        { cwd: rootDir, stdio: "inherit" }
-      );
-    } catch (err) {
-      console.warn(`[build-exe] 警告：托盤程式編譯失敗，這次封裝不含 MyClass.exe（${err.message}）`);
-    }
+    throw new Error("找不到 .NET Framework 4 的 csc.exe（Windows 內建，通常位於 C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\），無法編譯托盤程式 MyClass.exe。");
   }
+  execFileSync(
+    csc,
+    [
+      "/nologo", "/target:winexe", `/out:${path.join(outDir, "MyClass.exe")}`,
+      `/win32icon:${path.join(rootDir, "assets", "myclass.ico")}`,
+      "/r:System.Windows.Forms.dll", "/r:System.Drawing.dll", "/r:System.dll", "/r:System.Core.dll",
+      path.join(rootDir, "tools", "tray", "MyClassTray.cs"),
+    ],
+    { cwd: rootDir, stdio: "inherit" }
+  );
 }
 
 if (target.isMac) {

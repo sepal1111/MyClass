@@ -9,7 +9,7 @@
   <text x="56" y="113" font-size="17" fill="#111827" font-family="Consolas, monospace">powershell</text>
   <text x="170" y="113" font-size="14" fill="#2563eb">◀ ② 點這裡，改成 powershell，按 Enter</text>
   <text x="56" y="152" font-size="15" fill="#334155">🟦 MyClass.exe（平常點這個開啟）</text>
-  <text x="56" y="176" font-size="15" fill="#334155">📄 MyClassV4.3.0.exe</text>
+  <text x="56" y="176" font-size="15" fill="#334155">📄 HOW-TO-UPDATE.txt</text>
   <text x="56" y="200" font-size="15" fill="#334155">📁 system</text>
   <text x="56" y="224" font-size="15" fill="#334155">📁 bin（啟動過 MyClass 才會出現）</text>
   <text x="56" y="270" font-size="14" fill="#64748b">① 先打開「有 MyClass 程式的那個資料夾」</text>

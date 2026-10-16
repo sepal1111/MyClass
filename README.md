@@ -108,13 +108,13 @@ npm start       # node dist/index.js
 |---|---|---|
 | 建置 | `build-win.bat`（`npm run build:exe:win`） | `build-mac.command` 或 `build-mac.sh`（`npm run build:mac`） |
 | 輸出（只留壓縮檔） | `release\MyClassV版本-win-portable.zip` | `release/MyClassV版本-Mac*.zip` |
-| 啟動 | 雙擊 `MyClass.exe`，背景執行並在通知區顯示圖示（也可直接雙擊 `MyClassV版本.exe`，以主控台執行） | 雙擊資料夾內的 `.command` |
+| 啟動 | 雙擊 `MyClass.exe`，背景執行並在通知區顯示圖示（伺服器執行檔在 `system\MyClassV版本.exe`，資料夾最上層只有 `MyClass.exe`） | 雙擊資料夾內的 `.command` |
 | 資料位置 | 資料夾內 `bin\` | 資料夾內 `bin/` |
 
 v4.3.0 起不再提供 Windows 安裝版（Inno Setup）：托盤程式與開機自動啟動都已併入可攜版，兩者功能相同。
 
 - **封裝完成後 `release/` 只會留下壓縮檔**：可攜版資料夾裡的執行檔約 140 MB（超過 GitHub 單檔 100 MB 上限），壓縮後約 90 MB。zip 不含 `bin/`（使用者資料），並附 `HOW-TO-UPDATE.txt`（內容取自專案根目錄的 `初始密碼與更新文件.txt`，直接編輯該檔案即可，下次封裝就會帶入）。要保留解壓縮後的資料夾（例如本機直接測試），封裝時加 `--keep-folder`（`node scripts/build-exe.mjs win --keep-folder`）或設定環境變數 `MYCLASS_KEEP_FOLDER=1`。
-- **Windows 防火牆**：伺服器第一次執行時，Windows 會詢問是否允許存取，按「允許」後區網內的學生裝置才連得進來。老師電腦沒有系統管理員權限時，請資訊組協助按允許，或手動新增允許 `MyClassV版本.exe` 的輸入規則。
+- **Windows 防火牆**：伺服器第一次執行時，Windows 會詢問是否允許存取，按「允許」後區網內的學生裝置才連得進來。老師電腦沒有系統管理員權限時，請資訊組協助按允許，或手動新增允許 `system\MyClassV版本.exe` 的輸入規則。
 - 通知區托盤程式 `MyClass.exe`（`tools/tray/MyClassTray.cs`）在 `build-exe.mjs win` 時以 Windows 內建的 `csc.exe` 編譯並放進可攜版，不需另外安裝 SDK（找不到 `csc.exe` 時只警告，封裝結果不含托盤）。它負責隱藏啟動伺服器、意外結束時自動重啟，並提供開啟系統、複製學生連線網址、開機自動啟動（寫在目前使用者的開機啟動登錄值，不需要系統管理員）等選項。因為可攜版更新是換新資料夾，老師手動開啟托盤時，若開機自動啟動指向別的資料夾，會自動改成指向自己。
 - 升級時只換程式檔，`bin/` 由使用者複製到新資料夾。每次程式版本改變後的第一次啟動，會先把資料庫備份到 `bin/backups/`（保留最近 10 份）。
 - 同一份資料已有伺服器在執行時，再次啟動只會開啟既有網址，不會同時開兩個程序寫同一個資料庫。

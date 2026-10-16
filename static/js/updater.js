@@ -108,7 +108,7 @@
       ]);
     }
     return fmt([
-      T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>，會得到一個新的資料夾（裡面有 <code>MyClass.exe</code>、MyClass 伺服器程式和 <code>system</code> 資料夾，<b>要放在一起</b>）。', 'Click “Download update” below and <b>extract</b> the zip. You get a new folder containing <code>MyClass.exe</code>, the MyClass server program and a <code>system</code> folder (<b>keep them together</b>).'),
+      T('按下方的「下載更新檔」，把壓縮檔<b>解壓縮</b>，會得到一個新的資料夾（裡面有 <code>MyClass.exe</code> 和 <code>system</code> 資料夾，<b>要放在一起</b>）。', 'Click “Download update” below and <b>extract</b> the zip. You get a new folder containing <code>MyClass.exe</code> and a <code>system</code> folder (<b>keep them together</b>).'),
       T('先<b>關閉 MyClass</b>：在右下角 MyClass 圖示按右鍵 →「結束 MyClass」（舊版沒有圖示的話，關掉黑色的執行視窗）。', '<b>Close MyClass</b> first: right-click the MyClass tray icon → “Exit MyClass” (older versions without an icon: close the black console window).'),
       T('打開<b>舊版的資料夾</b>，把裡面的 <code>bin</code> 資料夾<b>整個複製</b>到新資料夾裡（和執行檔放在同一層）。<code>bin</code> 裡面是你所有的班級、學生與上傳檔案。', 'Open the <b>old folder</b> and <b>copy its whole <code>bin</code> folder</b> into the new folder (next to the program). <code>bin</code> holds all your classes, students and uploads.'),
       T('點兩下新資料夾裡的 <b>MyClass.exe</b>。第一次啟動時系統會先自動備份資料庫；有設定開機自動啟動的話，也會自動改成新資料夾。確認班級資料都在之後，再刪除舊資料夾。', 'Double-click <b>MyClass.exe</b> in the new folder. On the first start the database is backed up automatically, and “Start with Windows” (if enabled) switches to the new folder. Delete the old folder once you have confirmed your classes are there.'),
