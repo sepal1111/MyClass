@@ -10,6 +10,7 @@
 // 記憶體內計數，程式重新啟動後歸零。
 import type { Request } from "express";
 import { isLocalRequest } from "./localOnly";
+import { remoteClientIp } from "../remoteGateway";
 
 interface Entry {
   failures: number;
@@ -73,14 +74,30 @@ export function recordLoginSuccess(req: Request): void {
 const student = makeThrottle(10, 10 * 60 * 1000, 5 * 60 * 1000);
 const accountKey = (account: string) => account.trim().toLowerCase();
 
+// ---- 學生從外網（學生專用入口）登入：與校內分開計算
+// 外網任何人都能嘗試，所以另外依「來源 IP」限制（10 分鐘失敗 30 次，封鎖該 IP 15 分鐘），
+// 擋住同一個人對全班帳號輪流猜密碼。帳號的計數也獨立一份（10 分鐘失敗 10 次，只封鎖這個帳號的
+// 外網登入 15 分鐘）：外面的人故意輸錯，只會暫時擋住這個帳號「在家」登入，學生在學校照常能登入。
+const remoteIp = makeThrottle(30, 10 * 60 * 1000, 15 * 60 * 1000);
+const remoteAccount = makeThrottle(10, 10 * 60 * 1000, 15 * 60 * 1000);
+
 export function studentLoginBlockedSeconds(req: Request, account: string, now = Date.now()): number {
+  const ip = remoteClientIp(req);
+  if (ip !== null) return Math.max(remoteIp.blockedSeconds(ip, now), remoteAccount.blockedSeconds(accountKey(account), now));
   return isLocalRequest(req) ? 0 : student.blockedSeconds(accountKey(account), now);
 }
 export function recordStudentLoginFailure(req: Request, account: string, now = Date.now()): void {
+  const ip = remoteClientIp(req);
+  if (ip !== null) {
+    remoteIp.fail(ip, now);
+    remoteAccount.fail(accountKey(account), now);
+    return;
+  }
   if (!isLocalRequest(req)) student.fail(accountKey(account), now);
 }
-export function recordStudentLoginSuccess(account: string): void {
-  student.ok(accountKey(account));
+export function recordStudentLoginSuccess(req: Request, account: string): void {
+  if (remoteClientIp(req) !== null) remoteAccount.ok(accountKey(account));
+  else student.ok(accountKey(account));
 }
 
 // ---- 密碼提醒的觸發計數（依帳號，不分大小寫）

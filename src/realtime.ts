@@ -12,7 +12,8 @@ import { Server, Socket } from "socket.io";
 import { prisma } from "./db";
 import { getNowStrTaipei } from "./timezone";
 import { validateSessionToken } from "./middleware/auth";
-import { verifyStudentToken } from "./middleware/studentAuth";
+import { authenticateStudentToken } from "./middleware/studentAuth";
+import { REMOTE_HEADER } from "./remoteGateway";
 
 let io: Server | undefined;
 
@@ -98,8 +99,9 @@ export function setupRealtime(httpServer: HttpServer | HttpsServer): Server {
       return;
     }
 
-    // --- 學生連線處理 ---
-    const studentPayload = await verifyStudentToken(token);
+    // --- 學生連線處理（外網連線另外要求 7 天內簽發；密碼改過的舊憑證一律不接受） ---
+    const remote = socket.handshake.headers[REMOTE_HEADER] !== undefined;
+    const studentPayload = (await authenticateStudentToken(token, remote))?.payload;
     if (studentPayload) {
       const courseId = studentPayload.courseId;
       const studentId = studentPayload.studentId;
@@ -313,9 +315,13 @@ export function setupRealtime(httpServer: HttpServer | HttpsServer): Server {
       return;
     }
 
-    // --- 教師端連線處理 ---
+    // --- 教師端連線處理（經由學生專用入口從外網進來的連線不接受教師身分） ---
     const courseId = Number(socket.handshake.query.course_id);
-    if (!Number.isInteger(courseId) || !(await validateSessionToken(token))) {
+    if (
+      remote ||
+      !Number.isInteger(courseId) ||
+      !(await validateSessionToken(token))
+    ) {
       socket.disconnect(true);
       return;
     }

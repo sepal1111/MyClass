@@ -10,7 +10,8 @@ import { autoCatch } from "../asyncRoute";
 import { requireStudentAuth } from "../middleware/studentAuth";
 import { getNowStrTaipei } from "../timezone";
 import { getUploadsDir } from "../paths";
-import { fixUploadFilename, sanitizeFolderSegment } from "../utils/upload";
+import { fixUploadFilename, sanitizeFolderSegment, STUDENT_UPLOAD_LIMIT_BYTES } from "../utils/upload";
+import { isRemoteRequest } from "../remoteGateway";
 import { broadcastToCourse } from "../realtime";
 
 export const studentFileCollectionsRouter = autoCatch(Router());
@@ -99,6 +100,11 @@ const upload = multer({
   storage: diskStorage,
   limits: { fileSize: 250 * 1024 * 1024 }, // 250MB per file
 });
+// 在家（外網）上傳：每個檔案上限較小（見 utils/upload.ts 的 STUDENT_UPLOAD_LIMIT_MB）
+const remoteUpload = multer({
+  storage: diskStorage,
+  limits: { fileSize: STUDENT_UPLOAD_LIMIT_BYTES },
+});
 
 // 2. 檔案上傳前置防護中介軟體：先驗證該主題是否存在、是否允許上傳，並計算目標目錄路徑
 async function guardAllowUpload(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -168,7 +174,7 @@ async function guardAllowUpload(req: Request, res: Response, next: NextFunction)
 studentFileCollectionsRouter.post(
   "/:collectionId/upload",
   guardAllowUpload,
-  upload.array("files", 10),
+  (req: Request, res: Response, next: NextFunction) => (isRemoteRequest(req) ? remoteUpload : upload).array("files", 10)(req, res, next),
   async (req, res) => {
     const { courseId, studentId } = req.studentAuth!;
     const collectionId = Number(req.params.collectionId);

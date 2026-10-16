@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>學生在家上線設定教學 - MyClass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/api/system/logo">
+  <style>
+    /* ===== 以下沿用 static/guide.html 的樣式 ===== */
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+      --card-bg: rgba(30, 41, 59, 0.75);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --accent-positive: #10b981;
+      --accent-negative: #ef4444;
+      --accent-warning: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --input-bg: rgba(15, 23, 42, 0.65);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.25), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.65;
+      padding: 24px 20px 80px;
+    }
+
+    .guide-container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    /* Top Sticky Action Bar */
+    .guide-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      padding: 12px 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 15px;
+      z-index: 1000;
+      box-shadow: var(--shadow-md);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .guide-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .guide-header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      background: rgba(37, 99, 235, 0.18);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: var(--radius-full);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-bottom: 12px;
+    }
+
+    .guide-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .guide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .guide-nav-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 18px 24px;
+      margin-bottom: 36px;
+      backdrop-filter: blur(12px);
+    }
+
+    .guide-nav-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .guide-nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .guide-nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+    }
+
+    .guide-nav-pill:hover {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .guide-section {
+      margin-bottom: 44px;
+      scroll-margin-top: 90px;
+    }
+
+    .guide-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .guide-section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4));
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .guide-section-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .guide-item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .guide-item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 22px 26px;
+      backdrop-filter: blur(12px);
+      transition: all var(--transition-normal);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .guide-item-card:hover {
+      border-color: rgba(96, 165, 250, 0.35);
+      box-shadow: var(--shadow-md);
+    }
+
+    .guide-item-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .guide-item-badge {
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+    }
+
+    .guide-item-badge.badge-primary { background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd; }
+    .guide-item-badge.badge-success { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .guide-item-badge.badge-warning { background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d; }
+    .guide-item-badge.badge-purple { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd; }
+
+    .guide-item-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .guide-item-body {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.7;
+    }
+
+    .guide-item-body b {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .guide-item-body code {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px 7px;
+      border-radius: 6px;
+      color: #38bdf8;
+      font-size: 0.88rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .guide-tip-box {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(59, 130, 246, 0.12);
+      border-left: 4px solid var(--primary-light);
+      font-size: 0.9rem;
+      color: #bfdbfe;
+    }
+
+    .guide-tip-box.tip-success {
+      background: rgba(16, 185, 129, 0.12);
+      border-left-color: var(--accent-positive);
+      color: #a7f3d0;
+    }
+
+    .guide-tip-box.tip-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border-left-color: var(--accent-warning);
+      color: #fde68a;
+    }
+
+    .guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      font-size: 0.9rem;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .guide-table th, .guide-table td {
+      padding: 10px 14px;
+      border: 1px solid var(--card-border);
+      text-align: left;
+    }
+
+    .guide-table th {
+      background: rgba(255, 255, 255, 0.06);
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .guide-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+
+    /* Light Mode Theme */
+    [data-theme="light"], body.theme-light {
+      --bg-gradient: linear-gradient(135deg, #eff6ff 0%, #f8fafc 45%, #f5f3ff 100%);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --input-bg: #f8fafc;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    body.theme-light {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+    }
+
+    body.theme-light .guide-top-bar {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    body.theme-light .guide-title {
+      background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    body.theme-light .guide-header {
+      border-bottom-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-header-badge {
+      background: rgba(37, 99, 235, 0.1);
+      border-color: rgba(37, 99, 235, 0.25);
+      color: var(--primary-dark);
+    }
+
+    body.theme-light .guide-nav-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    body.theme-light .guide-nav-pill {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    body.theme-light .guide-nav-pill:hover {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #ffffff;
+    }
+
+    body.theme-light .guide-item-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
+
+    body.theme-light .guide-item-card:hover {
+      border-color: #93c5fd;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.08);
+    }
+
+    body.theme-light .guide-item-body {
+      color: #475569;
+    }
+
+    body.theme-light .guide-item-body b {
+      color: #0f172a;
+    }
+
+    body.theme-light .guide-item-body code {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #0284c7;
+    }
+
+    body.theme-light .guide-tip-box {
+      background: #eff6ff;
+      color: #1e40af;
+      border-left-color: #3b82f6;
+    }
+
+    body.theme-light .guide-tip-box.tip-success {
+      background: #ecfdf5;
+      color: #065f46;
+      border-left-color: #10b981;
+    }
+
+    body.theme-light .guide-tip-box.tip-warning {
+      background: #fffbeb;
+      color: #92400e;
+      border-left-color: #f59e0b;
+    }
+
+    body.theme-light .guide-table {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-table th {
+      background: #f8fafc;
+      color: #1e293b;
+      border-color: #e2e8f0;
+    }
+
+    body.theme-light .guide-table td {
+      border-color: #e2e8f0;
+      color: #334155;
+    }
+
+    body.theme-light .guide-item-badge {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #64748b;
+    }
+
+    body.theme-light .guide-item-badge.badge-primary {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
+    }
+
+    body.theme-light .guide-item-badge.badge-success {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #047857;
+    }
+
+    body.theme-light .guide-item-badge.badge-warning {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #b45309;
+    }
+
+    body.theme-light .guide-item-badge.badge-purple {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+      color: #6d28d9;
+    }
+
+    /* ===== 學生在家上線教學頁專用 ===== */
+    body { font-family: 'Plus Jakarta Sans', 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+    .guide-item-body { font-size: 1rem; }
+    .guide-item-body p { margin: 8px 0; }
+    .guide-item-body ol, .guide-item-body ul { margin: 8px 0 8px 1.4em; }
+    .guide-item-body li { margin: 6px 0; }
+    .guide-item-body a { color: #60a5fa; word-break: break-all; }
+    body.theme-light .guide-item-body a { color: #1d4ed8; }
+
+    .part-banner {
+      margin: 56px 0 26px;
+      padding: 18px 24px;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(139, 92, 246, 0.3));
+      border: 1px solid rgba(147, 197, 253, 0.35);
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+    .part-banner small { display: block; font-size: 0.92rem; font-weight: 500; opacity: 0.85; margin-top: 4px; }
+    .part-banner.part-advanced { background: linear-gradient(135deg, rgba(100, 116, 139, 0.35), rgba(71, 85, 105, 0.35)); border-color: rgba(148, 163, 184, 0.35); }
+    body.theme-light .part-banner { background: linear-gradient(135deg, #dbeafe, #ede9fe); border-color: #bfdbfe; color: #1e293b; }
+    body.theme-light .part-banner.part-advanced { background: #f1f5f9; border-color: #cbd5e1; }
+
+    .step-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 44px; height: 44px; padding: 0 10px;
+      border-radius: var(--radius-lg);
+      background: var(--primary); color: #fff;
+      font-size: 1.05rem; font-weight: 900; flex-shrink: 0;
+    }
+
+    .guide-figure { margin: 16px 0 6px; text-align: center; }
+    .guide-figure img {
+      max-width: 100%; height: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
+      background: #ffffff;
+      cursor: zoom-in;
+    }
+    .guide-figure figcaption { margin-top: 8px; font-size: 0.86rem; color: var(--text-muted); }
+
+    .cmd-box { position: relative; margin: 14px 0; }
+    .cmd-box pre {
+      background: #012456; color: #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 18px 18px 18px 18px;
+      padding-right: 120px;
+      overflow-x: auto;
+      font-family: Consolas, ui-monospace, Menlo, monospace;
+      font-size: 0.9rem; line-height: 1.6;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      white-space: pre;
+    }
+    .guide-item-body .cmd-box pre code,
+    body.theme-light .guide-item-body .cmd-box pre code {
+      background: none; border: 0; padding: 0; border-radius: 0;
+      color: inherit; font-size: inherit; font-family: inherit;
+    }
+    .cmd-box pre.plain { background: rgba(15, 23, 42, 0.8); padding-right: 18px; }
+    body.theme-light .cmd-box pre.plain { background: #f1f5f9; color: #0f172a; border-color: #cbd5e1; }
+    .copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: #2563eb; color: #fff;
+      font-weight: 800; font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .copy-btn:hover { background: #1d4ed8; }
+    .copy-btn.copied { background: #059669; }
+
+    .checklist { list-style: none; margin: 8px 0 !important; padding: 0; }
+    .checklist > li { padding-left: 34px; position: relative; margin: 12px 0 !important; }
+    .checklist > li::before { content: "☐"; position: absolute; left: 4px; top: -2px; font-size: 1.3rem; color: #60a5fa; }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .faq-item summary {
+      cursor: pointer; padding: 16px 20px;
+      font-weight: 800; font-size: 1rem;
+      list-style: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::before { content: "▶"; display: inline-block; margin-right: 10px; font-size: 0.75rem; transition: transform 0.2s; color: #60a5fa; }
+    .faq-item[open] summary::before { transform: rotate(90deg); }
+    .faq-item .faq-body { padding: 0 20px 18px 42px; color: #cbd5e1; line-height: 1.75; }
+    body.theme-light .faq-item { background: #ffffff; border-color: #e2e8f0; }
+    body.theme-light .faq-item .faq-body { color: #475569; }
+
+    .notice-card {
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px dashed rgba(16, 185, 129, 0.5);
+      margin-top: 12px;
+    }
+    body.theme-light .notice-card { background: #f0fdf4; border-color: #86efac; }
+
+    .lightbox {
+      position: fixed; inset: 0; z-index: 3000;
+      background: rgba(2, 6, 23, 0.85);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px; cursor: zoom-out;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 100%; border-radius: var(--radius-md); background: #fff; }
+
+    @media (max-width: 640px) {
+      body { padding: 14px 12px 60px; }
+      .guide-item-card { padding: 18px 16px; }
+      .cmd-box pre { padding-right: 18px; padding-top: 56px; }
+      .guide-section-title { font-size: 1.2rem; }
+    }
+
+    @media print {
+      .guide-top-bar, .copy-btn { display: none !important; }
+      body { background: #fff !important; color: #000 !important; padding: 0; }
+      .faq-item { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="guide-container">
+
+    <!-- Top Sticky Bar -->
+    <div class="guide-top-bar">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a href="/" class="guide-nav-pill" style="background: var(--primary); border-color: var(--primary-light); color: #fff; font-weight: 700;">⬅️ 回到 MyClass</a>
+        <a href="/guide" class="guide-nav-pill" style="font-weight: 800;">📖 老師使用手冊</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button id="btn-guide-print" class="guide-nav-pill" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); font-weight: 800; font-size: 0.92rem;">🖨️ 列印</button>
+        <button id="btn-guide-toggle-theme" class="guide-nav-pill" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); font-weight: 800; font-size: 0.92rem;">
+          <span id="guide-theme-label-zh">☀️ 淺色模式</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="guide-header">
+      <div class="guide-header-badge">🏠 學生在家上線</div>
+      <h1 class="guide-title">讓學生在家也能上 MyClass</h1>
+      <p class="guide-subtitle">
+        設定完成後，學生在家裡用手機、平板或電腦打開一個網址，就能看教材、看作業和成績、繳交作業，跟在學校一樣。<br>
+        不需要懂電腦程式，跟著步驟做就可以了。
+      </p>
+    </header>
+
+    <!-- Table of Contents -->
+    <nav class="guide-nav-card">
+      <div class="guide-nav-title">📌 第一部分：圖文教學（所有老師）</div>
+      <div class="guide-nav-grid">
+        <a href="#how" class="guide-nav-pill">💡 這是怎麼運作的？</a>
+        <a href="#prepare" class="guide-nav-pill">✅ 開始前的準備</a>
+        <a href="#step1" class="guide-nav-pill">1️⃣ 安裝 Tailscale</a>
+        <a href="#step2" class="guide-nav-pill">2️⃣ 打開兩個開關</a>
+        <a href="#step3" class="guide-nav-pill">3️⃣ 貼上一段設定文字</a>
+        <a href="#step4" class="guide-nav-pill">4️⃣ 確認成功、記下網址</a>
+        <a href="#step5" class="guide-nav-pill">5️⃣ 重新開啟 MyClass</a>
+        <a href="#step6" class="guide-nav-pill">6️⃣ 用手機測試</a>
+        <a href="#step7" class="guide-nav-pill">7️⃣ 通知學生</a>
+        <a href="#daily" class="guide-nav-pill">🗓️ 平常要怎麼用？</a>
+        <a href="#faq" class="guide-nav-pill">❓ 常見問題</a>
+      </div>
+      <div class="guide-nav-title" style="margin-top: 18px;">🔧 第二部分：進階參考（資訊老師）</div>
+      <div class="guide-nav-grid">
+        <a href="#rules" class="guide-nav-pill">🛡️ 學生在家使用的安全規則</a>
+        <a href="#limits" class="guide-nav-pill">📋 其他限制與注意事項</a>
+        <a href="#athome" class="guide-nav-pill">🏡 老師在家裡執行 MyClass</a>
+        <a href="#verify" class="guide-nav-pill">🔍 確認教師端沒有對外開放</a>
+        <a href="#troubleshoot" class="guide-nav-pill">🧰 用指令檢查與疑難排解</a>
+        <a href="#remove" class="guide-nav-pill">🗑️ 關閉或移除</a>
+      </div>
+    </nav>
+
+    <div class="part-banner">📘 第一部分：圖文教學<small>寫給所有老師，跟著步驟做就好。</small></div>
+
+    <!-- 運作方式 -->
+    <section id="how" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">💡</div>
+        <div class="guide-section-title">這是怎麼運作的？</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/concept.svg" alt="運作示意圖：學生在家開網址，經過 Tailscale 轉送到老師的電腦">
+          </figure>
+          <ul>
+            <li>學生的資料<b>一樣只存在老師的電腦裡</b>，不會被上傳到別的地方。</li>
+            <li>我們要在老師電腦上安裝一個免費軟體 <b>Tailscale</b>，它負責把「學生在家的連線」轉送到老師的電腦。資料在傳送時是加密的，Tailscale 公司也看不到內容。</li>
+            <li><b>學生不用安裝任何東西</b>，用瀏覽器打開網址就可以。</li>
+            <li>學生在家<b>只能使用學生的功能</b>。老師的管理畫面從校外是打不開的，所以很安全。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 準備 -->
+    <section id="prepare" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">✅</div>
+        <div class="guide-section-title">開始前的準備</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>請先確認下面幾件事都準備好了：</p>
+          <ul class="checklist">
+            <li><b>MyClass 是有「學生在家連線」功能的版本。</b>不確定的話，請問提供 MyClass 給你的老師。</li>
+            <li><b>一個 Google 帳號</b>（或 Microsoft 帳號），用來登入 Tailscale。
+              <div class="guide-tip-box tip-warning">⚠️ 這個帳號很重要，就像學生在家連線的「鑰匙」。請一定要<b>開啟 Google 的「兩步驟驗證」</b>，避免帳號被別人盜用。建議使用學校或教學專用的帳號。</div>
+            </li>
+            <li><b>讓電腦不會自動睡眠。</b>電腦睡著的話，學生就連不上。設定方法：
+              <ol>
+                <li>按螢幕左下角的「開始」→「設定」（齒輪圖示）。</li>
+                <li>點「系統」→「電源」（有些電腦叫「電源與電池」）。</li>
+                <li>找到「睡眠」相關的選項，全部改成「<b>永不</b>」。</li>
+                <li>如果是筆電，「闔上螢幕時」也要改成「<b>不採取任何動作</b>」。</li>
+              </ol>
+            </li>
+            <li><b>已經取得學校同意。</b>這會讓學生資料可以從校外連線，建議先跟學校資訊組說一聲。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 1 -->
+    <section id="step1" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">1</div>
+        <div class="guide-section-title">安裝 Tailscale</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/install-flow.svg" alt="安裝流程：下載、安裝、登入、完成">
+          </figure>
+          <ol>
+            <li>用瀏覽器打開 Tailscale 的下載網頁：<a href="https://tailscale.com/download/windows" target="_blank" rel="noopener">https://tailscale.com/download/windows</a></li>
+            <li>按下 <b>Download Tailscale for Windows</b>（下載），等它下載完成。</li>
+            <li>打開剛剛下載的檔案（通常在「下載」資料夾，檔名開頭是 <code>tailscale-setup</code>）。</li>
+            <li>安裝畫面出現後，勾選「<b>I agree to the license terms</b>」（我同意授權條款），再按「<b>Install</b>」（安裝）。<br>如果電腦問「是否允許這個 App 變更您的裝置？」，請按「<b>是</b>」。</li>
+            <li>安裝完成後，瀏覽器會自動打開 Tailscale 的登入頁面。<br>如果沒有自動打開：在螢幕右下角找到 Tailscale 的小圖示（可能要先按 <code>^</code> 才看得到），按一下圖示，選「<b>Log in…</b>」。</li>
+            <li>選擇「<b>Sign in with Google</b>」，用準備好的 Google 帳號登入。</li>
+            <li>如果網頁出現問卷（例如問你的使用目的），隨意選擇後按下一步，或按「<b>Skip</b>」（略過）。</li>
+            <li>看到「<b>Connect</b>」（連線）按鈕就按下去。網頁顯示連線成功，這個步驟就完成了。</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 2 -->
+    <section id="step2" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">2</div>
+        <div class="guide-section-title">在 Tailscale 網站打開兩個開關</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <ol>
+            <li>用瀏覽器打開：<a href="https://login.tailscale.com/admin/dns" target="_blank" rel="noopener">https://login.tailscale.com/admin/dns</a>（如果要求登入，請用剛剛的 Google 帳號登入。）</li>
+            <li>往下捲動，找到 <b>MagicDNS</b> 和 <b>HTTPS Certificates</b> 這兩個項目。</li>
+            <li>看按鈕上的文字，確認兩個都是「開啟」的狀態：</li>
+          </ol>
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/admin-dns-settings.png" alt="MagicDNS 與 HTTPS Certificates 都已開啟的畫面">
+            <figcaption>這張圖是「兩個都已經開啟」的樣子</figcaption>
+          </figure>
+          <table class="guide-table">
+            <tr><th>按鈕上寫的字</th><th>代表什麼</th><th>要做什麼</th></tr>
+            <tr><td><b>Disable</b> MagicDNS… / <b>Disable</b> HTTPS…</td><td>已經開啟 ✅</td><td><b>不用按</b>，維持原狀</td></tr>
+            <tr><td><b>Enable</b> MagicDNS / <b>Enable</b> HTTPS</td><td>還沒開啟</td><td>請按下去開啟</td></tr>
+          </table>
+          <div class="guide-tip-box">💡「Disable」是「關閉」的意思。按鈕上寫「Disable」，表示它<b>現在是開著的</b>，所以不要去按它。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 3 -->
+    <section id="step3" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">3</div>
+        <div class="guide-section-title">貼上一段設定文字</div>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-body">
+            <p>這個步驟要打開一個「可以輸入指令的視窗」（叫做 PowerShell），然後貼上一段文字。不用擔心，<b>只要複製、貼上就好</b>，不需要自己打字。</p>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary">3-1</span>
+            <span class="guide-item-title">從 MyClass 資料夾打開 PowerShell</span>
+          </div>
+          <div class="guide-item-body">
+            <figure class="guide-figure">
+              <img src="pic/remote-guide/open-powershell.svg" alt="在資料夾網址列輸入 powershell 按 Enter">
+            </figure>
+            <ol>
+              <li>打開「<b>有 MyClass 程式的那個資料夾</b>」，也就是你平常點兩下開啟 MyClass 的那個資料夾（裡面會看到 <code>MyClassV…exe</code> 和 <code>system</code> 資料夾）。</li>
+              <li>用滑鼠點一下視窗上方的<b>網址列</b>（顯示資料夾位置的那一長條），裡面的文字會被選取起來。</li>
+              <li>直接打 <code>powershell</code>（會取代原本的文字），然後按鍵盤的 <b>Enter</b>。</li>
+              <li>跳出一個藍色（或黑色）的視窗，就代表成功了。</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-primary">3-2</span>
+            <span class="guide-item-title">複製並貼上設定文字</span>
+          </div>
+          <div class="guide-item-body">
+            <ol>
+              <li>按下面藍色框框右上角的「<b>📋 複製</b>」按鈕，按鈕變成「✅ 已複製」就好了：</li>
+            </ol>
+            <div class="cmd-box">
+              <button class="copy-btn" type="button">📋 複製</button>
+<pre><code>New-Item -ItemType Directory -Force bin | Out-Null
+Set-Content -Path bin\remote_access.json -Value '{ "enabled": true, "port": 8100 }' -Encoding Ascii
+$ts = "C:\Program Files\Tailscale\tailscale.exe"
+&amp; $ts set --unattended=true
+&amp; $ts set --hostname=myclass
+&amp; $ts funnel --bg 8100
+&amp; $ts funnel status</code></pre>
+            </div>
+            <ol start="2">
+              <li>回到剛剛的藍色視窗，<b>在視窗裡按一下滑鼠右鍵</b>（或按鍵盤 <code>Ctrl</code> + <code>V</code>）貼上。</li>
+              <li>貼上後，再按一次 <b>Enter</b>。</li>
+            </ol>
+            <figure class="guide-figure">
+              <img src="pic/remote-guide/paste-command.svg" alt="在藍色視窗按右鍵或 Ctrl+V 貼上">
+            </figure>
+            <div class="guide-tip-box">
+              💡 <b>這段文字做了什麼？</b>（看不懂也沒關係）<br>
+              ① 打開 MyClass 的「學生在家連線」功能。<br>
+              ② 讓 Tailscale 在電腦登出時也繼續運作。<br>
+              ③ 把這台電腦在 Tailscale 上的名字取為 <code>myclass</code>，學生的網址會比較好記。<br>
+              ④ 開始讓學生從家裡連進來，並顯示學生要用的網址。
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item-card">
+          <div class="guide-item-header">
+            <span class="guide-item-badge badge-warning">3-3</span>
+            <span class="guide-item-title">第一次設定時，要多按一個「同意」</span>
+          </div>
+          <div class="guide-item-body">
+            <p><b>第一次</b>做這個步驟時，藍色視窗可能會出現這段英文：</p>
+            <div class="cmd-box">
+<pre class="plain"><code>Funnel is not enabled on your tailnet.
+To enable, visit:
+
+         https://login.tailscale.com/f/funnel?node=........</code></pre>
+            </div>
+            <p>意思是「需要你先同意開啟這個功能」。請這樣做：</p>
+            <ol>
+              <li>按住鍵盤的 <code>Ctrl</code> 鍵，再用滑鼠點那個網址，瀏覽器就會打開。<br>（如果點不開，就用滑鼠把網址選起來，按右鍵複製，再貼到瀏覽器的網址列。）</li>
+              <li>在打開的網頁上按<b>同意／開啟</b>（Enable）的按鈕。</li>
+              <li>回到藍色視窗，稍等一下，它就會繼續往下執行。如果一直沒有動靜，就<b>再貼上一次</b>步驟 3-2 的文字並按 Enter。</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 4 -->
+    <section id="step4" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">4</div>
+        <div class="guide-section-title">確認設定成功，記下網址</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>藍色視窗出現下面這樣的文字，就代表設定成功了：</p>
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/funnel-success.svg" alt="設定成功時，視窗會顯示學生要用的網址">
+          </figure>
+          <ul>
+            <li>黃色標示的那一行 <code>https://myclass.tail……ts.net/</code> 就是<b>學生在家要用的網址</b>。每位老師的網址都不一樣，請把<b>整行</b>抄下來，或選取後按右鍵複製。</li>
+            <li>也可以到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 確認：<code>myclass</code> 這台電腦下面有綠色的 <b>Funnel</b> 標籤，就表示成功。</li>
+          </ul>
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/admin-machine-funnel.png" alt="Tailscale 網站上 myclass 電腦顯示 Funnel 標籤">
+            <figcaption>電腦名稱下方出現綠色的「Funnel」標籤</figcaption>
+          </figure>
+          <div class="guide-tip-box tip-success">✅ 確認完成後，藍色視窗就可以關掉了。<b>以後不需要再做步驟 1～4</b>，電腦重新開機也會自動恢復。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 5 -->
+    <section id="step5" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">5</div>
+        <div class="guide-section-title">重新開啟 MyClass</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>步驟 3 打開了 MyClass 的「學生在家連線」功能，要<b>把 MyClass 關掉再重新開啟</b>才會生效：</p>
+          <ol>
+            <li>在螢幕右下角找到 MyClass 的圖示（可能要先按 <code>^</code> 才看得到），按<b>右鍵</b>，選「<b>結束 MyClass</b>」。<br>（如果你的 MyClass 是黑色視窗的版本，直接把黑色視窗關掉。）</li>
+            <li>跟平常一樣，點兩下開啟 MyClass。</li>
+          </ol>
+          <div class="guide-tip-box">💡 <b>建議順便打開「開機時自動啟動」</b>：在右下角 MyClass 圖示上按右鍵，勾選「<b>開機時自動啟動</b>」。這樣電腦一開機，MyClass 就會自己開好，不用擔心忘記開、學生在家連不上。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 6 -->
+    <section id="step6" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">6</div>
+        <div class="guide-section-title">用手機測試</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <div class="guide-tip-box tip-warning" style="margin-top: 0;">⚠️ <b>請用手機測試，不要用老師自己的電腦測試。</b>老師的電腦裝了 Tailscale，就算還沒設定好也打得開，會誤以為成功了。</div>
+          <ol>
+            <li>把手機的 <b>Wi-Fi 關掉</b>，改用行動網路（4G／5G），這樣才是跟學生在家一樣的狀況。</li>
+            <li>用手機瀏覽器打開步驟 4 抄下來的網址。</li>
+            <li>看到 MyClass 的學生登入畫面，用一個學生帳號登入試試看：</li>
+          </ol>
+          <figure class="guide-figure">
+            <img src="pic/remote-guide/student-portal-success.png" alt="學生在家登入成功的畫面">
+            <figcaption>登入成功的畫面（學生姓名為範例）</figcaption>
+          </figure>
+          <div class="guide-tip-box">⏳ <b>打不開的話，先不要緊張。</b>第一次設定後，網址可能要等 <b>10 分鐘到 1 小時</b>才會生效，請過一陣子再試。如果手機之前試過打不開，請把手機的<b>飛航模式開了再關</b>，然後再試一次。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 步驟 7 -->
+    <section id="step7" class="guide-section">
+      <div class="guide-section-header">
+        <div class="step-badge">7</div>
+        <div class="guide-section-title">通知學生</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>把網址做成 QR Code（可以用 Google 搜尋「QR Code 產生器」），貼在聯絡簿、班級網頁或 Google Classroom 上。以下是可以直接使用的通知範例，按「📋 複製」後貼到你要發布的地方，再把網址換成你自己的：</p>
+          <div class="cmd-box">
+            <button class="copy-btn" type="button">📋 複製</button>
+<pre class="plain" style="white-space: pre-wrap; padding-right: 120px;"><code>📢 各位同學：在家也可以使用 MyClass 了！
+
+網址：https://myclass.tail……ts.net（請換成老師的網址）
+
+1. 第一次使用前，請先在學校把密碼改好。密碼要「至少 8 個字」，而且「同時有英文字母和數字」。太簡單的密碼只能在學校使用，在家會無法登入。
+2. 在家打開上面的網址，用平常的帳號、密碼登入。
+3. 為了安全，在家登入 7 天後要重新登入一次。
+4. 在家上傳的檔案，每個檔案最多 50MB。</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 平常 -->
+    <section id="daily" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🗓️</div>
+        <div class="guide-section-title">平常要怎麼用？</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <ul>
+            <li><b>什麼都不用做。</b>只要老師的電腦有開機、MyClass 有開著，學生在家就能連線。</li>
+            <li>電腦重新開機後，Tailscale 會自動啟動；<b>MyClass 記得要像平常一樣開啟</b>（或依步驟 5 的建議，勾選「開機時自動啟動」）。</li>
+          </ul>
+          <p><b>想暫停學生在家連線（例如寒暑假）：</b>照步驟 3-1 打開藍色視窗，貼上下面這行並按 Enter：</p>
+          <div class="cmd-box">
+            <button class="copy-btn" type="button">📋 複製</button>
+<pre><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel --https=443 off</code></pre>
+          </div>
+          <p><b>想恢復：</b>照步驟 3 重新貼上那段設定文字就可以了。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">❓</div>
+        <div class="guide-section-title">常見問題（點一下展開）</div>
+      </div>
+
+      <details class="faq-item">
+        <summary>Q1. 貼上設定文字後，出現 <code>unexpected state: NoState</code></summary>
+        <div class="faq-body">Tailscale 還沒準備好。請到「開始」功能表打開 <b>Tailscale</b>，等 10 秒左右，再貼上一次步驟 3-2 的文字。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q2. 老師的電腦打得開網址，但學生（或手機）打不開</summary>
+        <div class="faq-body">網址還沒正式生效，通常要等 10 分鐘到 1 小時。請過一陣子再用手機測試（記得關 Wi-Fi）。等超過 1 小時還是打不開，請找資訊老師協助（參考第二部分的<a href="#troubleshoot">用指令檢查與疑難排解</a>）。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q3. 學生說「你的密碼太簡單，只能在學校使用」</summary>
+        <div class="faq-body">這是為了保護學生帳號。請學生在學校登入後，按右上角「🔑 密碼」，改成<b>至少 8 個字、有英文也有數字</b>的密碼。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q4. 學生說「你還沒有設定自己的密碼」</summary>
+        <div class="faq-body">學生還在使用預設密碼（學號）。請學生先在學校登入一次，系統會要求設定新密碼。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q5. 學生說「登入已逾期，請重新登入」</summary>
+        <div class="faq-body">在家登入 7 天後，或學生改過密碼後，都需要重新登入。這是正常的安全機制。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q6. 學生說檔案打不開，出現「這個檔案只能在學校區網內開啟」</summary>
+        <div class="faq-body">在家只能打開「自己班級的教材」和「自己的作業」。其他的檔案只能在學校打開，這是正常的。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q7. 學生上傳檔案時出現「檔案太大了」</summary>
+        <div class="faq-body">在家上傳每個檔案最多 50MB。可以請學生把影片壓縮後再傳，或改到學校上傳。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q8. 在學校，學生掃 QR Code 後連不上，網址變成 <code>https://100.……</code></summary>
+        <div class="faq-body">請確認使用的是有「學生在家連線」功能的 MyClass 版本，這個版本已經修正這個問題。暫時的解決方法：請學生直接輸入老師電腦的網址（在 MyClass 啟動畫面上可以看到）。</div>
+      </details>
+      <details class="faq-item">
+        <summary>Q9. 我換了一台電腦</summary>
+        <div class="faq-body">新電腦要重新做一次步驟 1～6。注意：<b>網址會改變</b>，要重新通知學生。</div>
+      </details>
+    </section>
+
+    <div class="part-banner part-advanced">🔧 第二部分：進階參考<small>給資訊老師或想多了解的老師參考，一般老師可以跳過。</small></div>
+
+    <!-- 安全規則 -->
+    <section id="rules" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🛡️</div>
+        <div class="guide-section-title">學生在家使用的安全規則</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>這些規則只對「從校外連線」生效，學生在學校使用時不受影響。</p>
+          <table class="guide-table">
+            <tr><th style="width: 22%;">項目</th><th>規則</th></tr>
+            <tr><td>密碼門檻</td><td>在家登入的密碼必須至少 8 個字，並同時包含英文字母和數字；仍在使用預設密碼（學號）的帳號不能在家登入</td></tr>
+            <tr><td>登入失敗次數</td><td>同一個來源 IP 10 分鐘內失敗 30 次，封鎖該 IP 15 分鐘；同一個帳號在外網 10 分鐘內失敗 10 次，只封鎖這個帳號的「在家登入」15 分鐘，學生在學校照常能登入</td></tr>
+            <tr><td>密碼提醒</td><td>外網登入失敗時一律不顯示</td></tr>
+            <tr><td>登入有效期</td><td>在家登入 7 天後需重新登入；學校登入的裝置拿回家用，也只在登入後 7 天內有效</td></tr>
+            <tr><td>修改密碼</td><td>學生改密碼（或老師重設密碼）後，所有裝置上的舊登入立即失效</td></tr>
+            <tr><td>上傳檔案</td><td>每個檔案最多 50MB（作業、紙本小考照片、即時互動牆在校內也是 50MB；檔案蒐集在校內維持 250MB）</td></tr>
+            <tr><td>附件</td><td>只能開啟自己班級的教材、即時互動牆圖片，以及自己（或自己小組）的作業與檔案；老師的觀察紀錄、日誌附件一律無法開啟</td></tr>
+            <tr><td>錯誤訊息</td><td>伺服器發生錯誤時只顯示一般性訊息，不顯示內部細節</td></tr>
+            <tr><td>教師端</td><td>教師的頁面、API、登入一律無法從外網存取</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 其他限制 -->
+    <section id="limits" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">📋</div>
+        <div class="guide-section-title">其他限制與注意事項</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <ul>
+            <li>學生在家看到的是「目前正在執行的那台電腦」上的資料。學校、家裡各用一台電腦時，兩邊資料不會同步。</li>
+            <li>學生專用入口只綁在 <code>127.0.0.1:8100</code>，區網內其他裝置連不到；只有同一台電腦上的 Tailscale 會連它。</li>
+            <li>設定檔位置：<code>bin\remote_access.json</code>（與資料庫 <code>classroom_record.db</code> 同一個資料夾），內容為 <code>{ "enabled": true, "port": 8100 }</code>。也可以改用環境變數 <code>MYCLASS_REMOTE_PORT=8100</code>。兩者都沒有設定時，這個功能完全不啟動。</li>
+            <li>開發版（<code>npm run dev</code>）的 <code>bin</code> 在專案資料夾內；可攜版的 <code>bin</code> 在 <code>MyClassV…exe</code> 旁邊。</li>
+            <li>啟動成功時，主控台會顯示：<code>[MyClass] 學生在家專用入口：http://127.0.0.1:8100（請用 Tailscale Funnel 對外開放這個埠）</code></li>
+            <li>Tailscale 帳號被盜用時，對方可以把自己的裝置加入這個 Tailscale 網路，直接連到老師電腦。請開啟帳號的兩步驟驗證，並定期到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 檢查有沒有不認識的裝置。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 在家執行 -->
+    <section id="athome" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🏡</div>
+        <div class="guide-section-title">老師在家裡執行 MyClass</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>家用寬頻沒有固定 IP 也可以使用，不需要設定家裡的路由器。網址綁的是電腦而不是 IP，同一台筆電在學校、家裡之間帶來帶去，給學生的網址都不會變。</p>
+          <ul>
+            <li><b>上傳頻寬</b>：學生下載教材使用的是老師家裡網路的「上傳」頻寬。一般光纖（上傳 40Mbps 以上）沒有問題；上傳很慢的網路，影片教材建議改用 YouTube 連結。</li>
+            <li><b>限制只有本機能開教師端</b>：系統預設允許同一個網路的所有裝置連到教師端（學校需要讓學生平板連進來）。在家裡執行時，建議只讓老師電腦自己能開，家人或其他裝置都連不到教師登入畫面：</li>
+          </ul>
+          <div class="cmd-box">
+            <button class="copy-btn" type="button">📋 複製</button>
+<pre><code>$env:MYCLASS_HOST = "127.0.0.1"
+npm run dev</code></pre>
+          </div>
+          <p>老師照常用 <code>https://localhost:8000</code>；學生透過 Tailscale 網址在家連線不受影響。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 確認 -->
+    <section id="verify" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🔍</div>
+        <div class="guide-section-title">確認教師端沒有對外開放</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <p>用手機行動網路開啟：</p>
+          <ul>
+            <li><code>https://你的網址/</code> → 應出現學生登入畫面</li>
+            <li><code>https://你的網址/api/courses</code> → 應顯示「這個功能只能在學校區網內使用。」</li>
+            <li><code>https://你的網址/guide</code> → 同上</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 疑難排解 -->
+    <section id="troubleshoot" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🧰</div>
+        <div class="guide-section-title">用指令檢查與疑難排解</div>
+      </div>
+      <div class="guide-item-list">
+        <div class="guide-item-card">
+          <div class="guide-item-body">
+            <p>以下指令都在 PowerShell 執行。剛安裝完 Tailscale 時，PowerShell 可能還找不到 <code>tailscale</code> 指令，所以一律寫完整路徑；重新開一個 PowerShell 視窗後，可以直接打 <code>tailscale</code>。</p>
+            <table class="guide-table">
+              <tr><th style="width: 28%;">用途</th><th>指令</th></tr>
+              <tr><td>查看連線狀態</td><td><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" status</code></td></tr>
+              <tr><td>查看 Funnel 狀態</td><td><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel status</code></td></tr>
+              <tr><td>暫停對外</td><td><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel --https=443 off</code></td></tr>
+              <tr><td>恢復對外</td><td><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel --bg 8100</code></td></tr>
+              <tr><td>清除所有 Funnel 設定</td><td><code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel reset</code></td></tr>
+              <tr><td>重新啟動 Tailscale 服務（需系統管理員）</td><td><code>Restart-Service Tailscale</code></td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="guide-item-card">
+          <div class="guide-item-header"><span class="guide-item-title"><code>unexpected state: NoState</code></span></div>
+          <div class="guide-item-body">Tailscale 背景服務還沒開始運作，通常是 Tailscale 視窗程式沒在執行、又沒開無人值守模式（<code>set --unattended=true</code>）。開啟 Tailscale 程式，或以系統管理員身分執行 <code>Restart-Service Tailscale</code> 即可。</div>
+        </div>
+        <div class="guide-item-card">
+          <div class="guide-item-header"><span class="guide-item-title">確認公開網址是否已生效</span></div>
+          <div class="guide-item-body">
+            <p>老師電腦本身會走 Tailscale 內部線路，自己連得上不代表外網連得到。用瀏覽器開啟（換成自己的網址）：</p>
+            <div class="cmd-box"><pre class="plain"><code>https://dns.google/resolve?name=myclass.tailXXXX.ts.net&amp;type=A</code></pre></div>
+            <p>回應中有 <code>"Answer"</code> 且 IP <b>不是</b> <code>100.</code> 開頭，才代表已生效。官方說明一般 10 分鐘內生效，實際可能要等到約 1 小時，尤其是剛開啟 Funnel 或剛改過電腦名稱時。超過 1 小時仍沒有記錄時：</p>
+            <ol>
+              <li>執行 <code>funnel reset</code>，再執行 <code>funnel --bg 8100</code> 重新建立。</li>
+              <li>以系統管理員身分執行 <code>Restart-Service Tailscale</code>。</li>
+              <li>確認 MagicDNS、HTTPS 已開啟，後台該電腦有 Funnel 標籤。</li>
+              <li>到 <a href="https://status.tailscale.com" target="_blank" rel="noopener">https://status.tailscale.com</a> 查看 Tailscale 是否服務異常。</li>
+            </ol>
+          </div>
+        </div>
+        <div class="guide-item-card">
+          <div class="guide-item-header"><span class="guide-item-title">改了電腦名稱之後連不上</span></div>
+          <div class="guide-item-body">Funnel 記的是改名前的網址，要先 <code>funnel reset</code> 再 <code>funnel --bg 8100</code> 重新建立，並等待新網址的公開記錄生效。建議在第一次開啟 Funnel 前就決定好名稱。</div>
+        </div>
+        <div class="guide-item-card">
+          <div class="guide-item-header"><span class="guide-item-title">學生 QR Code 變成 <code>100.x.x.x</code></span></div>
+          <div class="guide-item-body">舊版 MyClass 在安裝 Tailscale 後，可能把 Tailscale 的內部位址誤當成區網位址。含有本功能的版本會自動略過 Tailscale 與其他虛擬網卡，改用實體網卡的區網 IP。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 移除 -->
+    <section id="remove" class="guide-section">
+      <div class="guide-section-header">
+        <div class="guide-section-icon">🗑️</div>
+        <div class="guide-section-title">關閉或移除</div>
+      </div>
+      <div class="guide-item-card">
+        <div class="guide-item-body">
+          <ul>
+            <li><b>暫停對外</b>：<code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel --https=443 off</code></li>
+            <li><b>完全停用學生在家連線</b>：刪除 <code>bin\remote_access.json</code>（或把 <code>enabled</code> 改為 <code>false</code>），並重新啟動 MyClass。</li>
+            <li><b>移除 Tailscale</b>：「Windows 設定 → 應用程式」解除安裝 Tailscale，並到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 刪除這台電腦。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 點圖片放大 -->
+  <div class="lightbox" id="lightbox"><img alt=""></div>
+
+  <script>
+    // 主題：與 MyClass 主系統、老師使用手冊共用 app_theme
+    let currentTheme = 'dark';
+    try { currentTheme = localStorage.getItem('app_theme') || 'dark'; } catch (e) { /* 直接開檔或隱私模式可能不能用 localStorage */ }
+    function applyGuideTheme(theme) {
+      currentTheme = theme;
+      try { localStorage.setItem('app_theme', theme); } catch (e) { /* ignore */ }
+      const label = document.getElementById('guide-theme-label-zh');
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.body.classList.add('theme-light');
+        if (label) label.textContent = '🌙 深色模式';
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.classList.remove('theme-light');
+        if (label) label.textContent = '☀️ 淺色模式';
+      }
+    }
+
+    // 複製按鈕：優先用 Clipboard API，不支援（例如非 https 連線）時退回 execCommand
+    function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+      }
+      return new Promise((resolve, reject) => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy') ? resolve() : reject(new Error('copy failed')); }
+        catch (err) { reject(err); }
+        finally { document.body.removeChild(ta); }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyGuideTheme(currentTheme);
+      document.getElementById('btn-guide-toggle-theme').addEventListener('click', () => {
+        applyGuideTheme(currentTheme === 'light' ? 'dark' : 'light');
+      });
+      document.getElementById('btn-guide-print').addEventListener('click', () => {
+        document.querySelectorAll('details.faq-item').forEach((d) => { d.open = true; });
+        window.print();
+      });
+
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const code = btn.parentElement.querySelector('pre code');
+          if (!code) return;
+          copyText(code.textContent).then(() => {
+            btn.textContent = '✅ 已複製';
+            btn.classList.add('copied');
+          }, () => {
+            btn.textContent = '❌ 請手動選取複製';
+          }).finally(() => {
+            setTimeout(() => { btn.textContent = '📋 複製'; btn.classList.remove('copied'); }, 2500);
+          });
+        });
+      });
+
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = lightbox.querySelector('img');
+      document.querySelectorAll('.guide-figure img').forEach((img) => {
+        img.addEventListener('click', () => {
+          lightboxImg.src = img.src;
+          lightboxImg.alt = img.alt;
+          lightbox.classList.add('open');
+        });
+      });
+      lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+    });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'app_theme' && e.newValue && ['dark', 'light'].includes(e.newValue)) applyGuideTheme(e.newValue);
+    });
+  </script>
+</body>
+</html>

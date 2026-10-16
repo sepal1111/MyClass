@@ -8,7 +8,7 @@ import { findStudentsByAccountIgnoreCase } from "../utils/studentAccount";
 import { Router } from "express";
 import { prisma } from "../db";
 import { autoCatch } from "../asyncRoute";
-import { hashPassword, verifyPassword } from "../utils/studentPassword";
+import { hashPassword, isStrongEnoughForRemote, REMOTE_PASSWORD_RULE, verifyPassword } from "../utils/studentPassword";
 import {
   clearHintFailures,
   recordHintFailure,
@@ -18,6 +18,7 @@ import {
   studentLoginBlockedSeconds,
 } from "../middleware/loginThrottle";
 import { composeHint, validateHint } from "../utils/passwordHint";
+import { isRemoteRequest } from "../remoteGateway";
 import { requireStudentAuth, signStudentToken } from "../middleware/studentAuth";
 
 export const studentAuthRouter = autoCatch(Router());
@@ -27,8 +28,10 @@ studentAuthRouter.post("/login_by_account", async (req, res) => {
   const password: string = req.body?.password ?? "";
 
   // 密碼多次輸入錯誤後，把這個帳號的「密碼提醒」顯示出來（帳號不存在或沒設提醒就不顯示）。
+  // 從外網（學生專用入口）登入時一律不顯示提醒：提醒內容可能是個資，也會讓陌生人更容易猜到密碼。
+  const remote = isRemoteRequest(req);
   const hintFor = async (): Promise<string | null> => {
-    if (!account || !shouldShowHint(account)) return null;
+    if (remote || !account || !shouldShowHint(account)) return null;
     const found = (await findStudentsByAccountIgnoreCase(account))[0];
     return found ? composeHint({ prefix: found.pwHintPrefix, main: found.pwHintMain, suffix: found.pwHintSuffix }) : null;
   };
@@ -37,7 +40,7 @@ studentAuthRouter.post("/login_by_account", async (req, res) => {
   if (blocked > 0) {
     res.setHeader("Retry-After", String(blocked));
     res.status(429).json({
-      detail: `這個帳號登入失敗次數過多，請 ${Math.ceil(blocked / 60)} 分鐘後再試，或請老師協助。`,
+      detail: `登入失敗次數過多，請 ${Math.ceil(blocked / 60)} 分鐘後再試，或請老師協助。`,
       hint: await hintFor(),
     });
     return;
@@ -50,15 +53,36 @@ studentAuthRouter.post("/login_by_account", async (req, res) => {
   if (!student) {
     if (account) {
       recordStudentLoginFailure(req, account);
-      recordHintFailure(account);
+      if (!remote) recordHintFailure(account);
     }
     res.status(401).json({ detail: "帳號或密碼錯誤，請確認後再試一次！", hint: await hintFor() });
     return;
   }
-  recordStudentLoginSuccess(account);
+  recordStudentLoginSuccess(req, account);
   clearHintFailures(account);
 
-  const token = await signStudentToken({ studentId: student.id, courseId: student.courseId });
+  // 還在用預設密碼（學號）的帳號，同學之間很容易猜到；從外網（學生專用入口）登入時
+  // 先擋下，必須先在學校登入一次、設定自己的密碼後，才能在家使用。
+  if (remote && student.mustChangePassword === 1) {
+    res.status(403).json({
+      detail: "你還沒有設定自己的密碼。請先在學校登入一次並設定新密碼，之後才能在家使用。",
+      code: "REMOTE_REQUIRES_OWN_PASSWORD",
+    });
+    return;
+  }
+  // 太簡單的密碼在外網很容易被猜中：只能在學校使用，要在家登入得先改成夠強的密碼。
+  if (remote && !isStrongEnoughForRemote(password)) {
+    res.status(403).json({
+      detail: `你的密碼太簡單，只能在學校使用。請先在學校登入，把密碼改成${REMOTE_PASSWORD_RULE}，之後才能在家登入。`,
+      code: "REMOTE_WEAK_PASSWORD",
+    });
+    return;
+  }
+
+  const token = await signStudentToken(
+    { studentId: student.id, courseId: student.courseId },
+    { passwordHash: student.passwordHash, remote }
+  );
   res.json({
     token,
     student: { id: student.id, student_number: student.studentNumber, name: student.name, course_id: student.courseId },
@@ -89,7 +113,8 @@ studentAuthRouter.get("/me", requireStudentAuth, async (req, res) => {
   });
 });
 
-// 學生自行修改密碼（需已登入）。已簽發的登入憑證（30 天）不會因此失效；老師重設密碼同理。
+// 學生自行修改密碼（需已登入）。登入憑證帶有「密碼版本」，密碼一改，所有舊的登入（其他裝置）
+// 立即失效；老師重設密碼同理。這次請求的裝置會拿到新憑證，不必重新登入。
 studentAuthRouter.post("/change_password", requireStudentAuth, async (req, res) => {
   const { studentId } = req.studentAuth!;
   const current = String(req.body?.current_password ?? "");
@@ -113,7 +138,7 @@ studentAuthRouter.post("/change_password", requireStudentAuth, async (req, res) 
     res.status(400).json({ detail: "目前的密碼不正確。" });
     return;
   }
-  recordStudentLoginSuccess(account);
+  recordStudentLoginSuccess(req, account);
 
   // 同時送來的密碼提醒先驗證（有任何一格有填才處理；全空代表不動既有提醒）
   const hintInput = {
@@ -140,11 +165,19 @@ studentAuthRouter.post("/change_password", requireStudentAuth, async (req, res) 
     res.status(400).json({ detail: "新密碼太長了。" });
     return;
   }
+  // 在家（外網）改密碼：新密碼必須符合外網門檻，否則改完下次就無法在家登入
+  const remote = isRemoteRequest(req);
+  const strong = isStrongEnoughForRemote(next);
+  if (remote && !strong) {
+    res.status(400).json({ detail: `在家修改密碼時，新密碼必須${REMOTE_PASSWORD_RULE}。` });
+    return;
+  }
 
+  const newHash = hashPassword(next);
   await prisma.student.update({
     where: { id: studentId },
     data: {
-      passwordHash: hashPassword(next),
+      passwordHash: newHash,
       mustChangePassword: 0,
       // 換了新密碼：沒有同時填新的提醒，就清掉舊提醒（舊提醒對新密碼已經沒有意義）
       ...(hintCheck && hintCheck.ok && !hintCheck.clear
@@ -156,7 +189,13 @@ studentAuthRouter.post("/change_password", requireStudentAuth, async (req, res) 
         : { pwHintPrefix: null, pwHintMain: null, pwHintSuffix: null }),
     },
   });
-  res.json({ message: "密碼已更新！下次登入請使用新密碼。" });
+  const token = await signStudentToken({ studentId, courseId: student.courseId }, { passwordHash: newHash, remote });
+  res.json({
+    message: strong
+      ? "密碼已更新！下次登入請使用新密碼。"
+      : `密碼已更新！提醒：這個密碼只能在學校使用；如果想在家登入，密碼需要${REMOTE_PASSWORD_RULE}。`,
+    token,
+  });
 });
 
 // ---- 密碼提醒（學生自己看、自己改；全空代表清除）。改密碼前也可以使用，所以放在 /api/auth/student 底下。

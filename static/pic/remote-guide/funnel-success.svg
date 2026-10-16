@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="300" viewBox="0 0 860 300" font-family="Microsoft JhengHei, PingFang TC, sans-serif">
+  <rect width="860" height="300" rx="14" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="20" y="28" font-size="14" fill="#9ca3af">示意圖（文字內容與實際畫面相同）</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ca8a04"/></marker></defs>
+  <rect x="30" y="45" width="560" height="230" rx="8" fill="#012456"/>
+  <rect x="30" y="45" width="560" height="28" rx="8" fill="#1e3a5f"/>
+  <text x="42" y="64" font-size="13" fill="#e2e8f0">Windows PowerShell</text>
+  <g font-family="Consolas, monospace" font-size="14" fill="#e2e8f0">
+    <text x="42" y="100">Available on the internet:</text>
+    <rect x="38" y="113" width="330" height="26" rx="4" fill="#facc15" opacity="0.35"/>
+    <text x="42" y="132" fill="#fde047">https://myclass.tailXXXX.ts.net/</text>
+    <text x="42" y="156">|-- proxy http://127.0.0.1:8100</text>
+    <text x="42" y="190">Funnel started and running in the</text>
+    <text x="42" y="210">background.</text>
+  </g>
+  <line x1="610" y1="126" x2="378" y2="126" stroke="#ca8a04" stroke-width="3" marker-end="url(#a)"/>
+  <text x="615" y="105" font-size="16" font-weight="bold" fill="#854d0e">這就是給學生的網址</text>
+  <text x="615" y="150" font-size="14" fill="#334155">tailXXXX 每位老師都不一樣</text>
+  <text x="615" y="175" font-size="14" fill="#334155">請把整行抄下來</text>
+  <text x="615" y="215" font-size="14" fill="#334155">看到 Funnel started…</text>
+  <text x="615" y="238" font-size="14" fill="#334155">就代表設定成功</text>
+</svg>

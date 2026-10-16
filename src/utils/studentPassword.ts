@@ -3,6 +3,14 @@
 // 學生第一次登入時必須自己改成新密碼（見 routes/studentAuth.ts）。
 import bcrypt from "bcryptjs";
 
+// 在家（外網）登入的密碼門檻：至少 8 個字，且同時包含英文字母與數字。
+// 校內登入不受此限制；只是太簡單的密碼只能在學校使用。
+export const REMOTE_PASSWORD_RULE = "至少 8 個字，並且同時包含英文字母和數字";
+
+export function isStrongEnoughForRemote(password: string): boolean {
+  return password.length >= 8 && /[A-Za-z]/.test(password) && /[0-9]/.test(password);
+}
+
 export function defaultStudentPassword(studentNumber: number, studentCode?: string | null): string {
   const code = (studentCode ?? "").trim();
   return code || String(studentNumber).padStart(4, "0");

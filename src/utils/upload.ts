@@ -23,3 +23,7 @@ export function sanitizeFolderSegment(text: string, fallback = "folder"): string
   return cleaned || fallback;
 }
 
+/** 學生上傳單一檔案的大小上限（作業、紙本小考照片、即時互動牆；在家上傳檔案蒐集也套用）。
+ *  這些上傳多半先整個放進記憶體，沒有上限時幾個超大檔案就可能把整個伺服器（含上課中的教師端）拖垮。 */
+export const STUDENT_UPLOAD_LIMIT_MB = 50;
+export const STUDENT_UPLOAD_LIMIT_BYTES = STUDENT_UPLOAD_LIMIT_MB * 1024 * 1024;

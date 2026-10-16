@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="330" viewBox="0 0 860 330" font-family="Microsoft JhengHei, PingFang TC, sans-serif">
+  <rect width="860" height="330" rx="14" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="20" y="28" font-size="14" fill="#9ca3af">示意圖</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+  <rect x="30" y="45" width="520" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+  <rect x="30" y="45" width="520" height="34" rx="8" fill="#e2e8f0"/>
+  <text x="44" y="67" font-size="14" fill="#334155">📁 檔案總管</text>
+  <rect x="44" y="90" width="492" height="34" rx="5" fill="#ffffff" stroke="#2563eb" stroke-width="3"/>
+  <text x="56" y="113" font-size="17" fill="#111827" font-family="Consolas, monospace">powershell</text>
+  <text x="170" y="113" font-size="14" fill="#2563eb">◀ ② 點這裡，改成 powershell，按 Enter</text>
+  <text x="56" y="160" font-size="15" fill="#334155">📄 MyClassV4.2.1.exe</text>
+  <text x="56" y="190" font-size="15" fill="#334155">📁 system</text>
+  <text x="56" y="220" font-size="15" fill="#334155">📁 bin（啟動過 MyClass 才會出現）</text>
+  <text x="56" y="270" font-size="14" fill="#64748b">① 先打開「有 MyClass 程式的那個資料夾」</text>
+  <line x1="560" y1="170" x2="600" y2="170" stroke="#64748b" stroke-width="3" marker-end="url(#a)"/>
+  <rect x="610" y="85" width="225" height="170" rx="8" fill="#012456"/>
+  <rect x="610" y="85" width="225" height="28" rx="8" fill="#1e3a5f"/>
+  <text x="620" y="104" font-size="13" fill="#e2e8f0">Windows PowerShell</text>
+  <text x="620" y="140" font-size="12" fill="#e2e8f0" font-family="Consolas, monospace">PS D:\MyClassV4.2.1&gt; _</text>
+  <text x="722" y="285" font-size="14" text-anchor="middle" fill="#334155">③ 跳出藍色視窗就成功了</text>
+</svg>

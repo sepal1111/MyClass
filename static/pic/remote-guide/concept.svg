@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="250" viewBox="0 0 860 250" font-family="Microsoft JhengHei, PingFang TC, sans-serif">
+  <rect width="860" height="250" rx="14" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="20" y="30" font-size="14" fill="#9ca3af">示意圖</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+  <rect x="30" y="70" width="190" height="120" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+  <text x="125" y="115" font-size="34" text-anchor="middle">🏠📱</text>
+  <text x="125" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#1e3a8a">學生在家</text>
+  <text x="125" y="174" font-size="13" text-anchor="middle" fill="#475569">用瀏覽器開網址就好</text>
+  <rect x="335" y="70" width="190" height="120" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <text x="430" y="115" font-size="34" text-anchor="middle">☁️</text>
+  <text x="430" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#14532d">Tailscale</text>
+  <text x="430" y="174" font-size="13" text-anchor="middle" fill="#475569">幫忙轉送，看不到內容</text>
+  <rect x="640" y="70" width="190" height="120" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+  <text x="735" y="115" font-size="34" text-anchor="middle">🏫💻</text>
+  <text x="735" y="150" font-size="18" font-weight="bold" text-anchor="middle" fill="#7c2d12">老師的電腦</text>
+  <text x="735" y="174" font-size="13" text-anchor="middle" fill="#475569">MyClass＋Tailscale</text>
+  <line x1="225" y1="130" x2="328" y2="130" stroke="#64748b" stroke-width="3" marker-end="url(#a)"/>
+  <line x1="635" y1="130" x2="532" y2="130" stroke="#64748b" stroke-width="3" marker-end="url(#a)"/>
+  <text x="277" y="118" font-size="13" text-anchor="middle" fill="#334155">開網址</text>
+  <text x="583" y="118" font-size="13" text-anchor="middle" fill="#334155">電腦主動連出去</text>
+  <text x="430" y="225" font-size="14" text-anchor="middle" fill="#334155">資料只存在老師電腦 ‧ 不需要固定 IP ‧ 學生不用安裝任何東西</text>
+</svg>

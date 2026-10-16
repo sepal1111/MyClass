@@ -13,7 +13,7 @@ import { getNowStrTaipei, getTodayStrTaipei } from "../timezone";
 import { getUploadsDir } from "../paths";
 import { recordGradeScoreLog, undoScoreLogIds } from "../utils/submissionGrading";
 import { listSubmissionComments, createSubmissionComment, type CommentThreadScope } from "../utils/submissionComments";
-import { fixUploadFilename } from "../utils/upload";
+import { fixUploadFilename, STUDENT_UPLOAD_LIMIT_BYTES } from "../utils/upload";
 import { broadcastToCourse } from "../realtime";
 import { notifyTeacher } from "../utils/notifications";
 
@@ -115,7 +115,7 @@ studentContentRouter.get("/me/group", async (req, res) => {
   });
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: STUDENT_UPLOAD_LIMIT_BYTES } });
 
 /** Sub-unit visibility gate for students: must be un-hidden AND (no schedule, or its
  *  scheduled publish_at has already passed) — see prisma/schema.prisma's SubUnit.publishAt. */

@@ -10,12 +10,12 @@ import { requireStudentAuth } from "../middleware/studentAuth";
 import { getNowStrTaipei } from "../timezone";
 import { getUploadsDir } from "../paths";
 import { broadcastToCourse } from "../realtime";
-import { sanitizeFilenamePart } from "../utils/upload";
+import { sanitizeFilenamePart, STUDENT_UPLOAD_LIMIT_BYTES } from "../utils/upload";
 
 export const studentLiveWallRouter = autoCatch(Router());
 studentLiveWallRouter.use(requireStudentAuth);
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: STUDENT_UPLOAD_LIMIT_BYTES } });
 
 function serializePost(p: { textContent: string | null; imageUrl: string | null; createdAt: string }) {
   return { text_content: p.textContent, image_url: p.imageUrl, created_at: p.createdAt };

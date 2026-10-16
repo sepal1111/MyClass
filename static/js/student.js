@@ -1395,11 +1395,19 @@
             hint_suffix: hSuffix.value,
           }),
         });
+        // 改密碼後舊的登入憑證（含其他裝置）全部失效，這台裝置改用伺服器發的新憑證；
+        // 即時連線斷線重連時也要帶新憑證，否則會被伺服器拒絕。
+        if (res.token) {
+          localStorage.setItem(TOKEN_KEY, res.token);
+          const sock = window.activeSocket;
+          if (sock && sock.io && sock.io.opts && sock.io.opts.query) sock.io.opts.query.token = res.token;
+        }
         const wasForced = forced;
         knownPassword = '';
         close();
         showToast('🔑 ' + (res.message || '密碼已更新！'), 'success');
         if (wasForced) showContent(); // 改完才載入課程內容
+        else loadContent(); // 附件連結內含舊憑證，重新產生一次
       } catch (e) {
         err.textContent = e.message;
       } finally {

@@ -8,12 +8,15 @@ import express, { NextFunction, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import QRCode from "qrcode";
+import multer from "multer";
 
 import { initSchema, prisma } from "./db";
 import { backupBeforeUpgrade } from "./backup";
 import { getBinDir, getBundleDir, getUploadsDir } from "./paths";
 import { isRequestAuthenticated, requireAuth } from "./middleware/auth";
-import { getBearerToken, verifyStudentToken } from "./middleware/studentAuth";
+import { authenticateStudentToken, getBearerToken } from "./middleware/studentAuth";
+import { remoteStudentCanReadUpload } from "./utils/remoteUploadAccess";
+import { STUDENT_UPLOAD_LIMIT_MB } from "./utils/upload";
 import { setupRealtime } from "./realtime";
 import { autoCatch } from "./asyncRoute";
 import { getOrCreateHttpsOptions } from "./tls";
@@ -51,6 +54,8 @@ import { quizSetsRouter } from "./routes/quizSets";
 import { wordCloudsRouter } from "./routes/wordClouds";
 import { timetableRouter } from "./routes/timetable";
 import { requireLocalOnly } from "./middleware/localOnly";
+import { getRemoteGatewayPort, isRemoteRequest, startRemoteGateway } from "./remoteGateway";
+import { getLocalIp } from "./utils/network";
 
 const APP_STARTUP_TIMESTAMP = String(Date.now());
 const bundleDir = getBundleDir();
@@ -161,9 +166,16 @@ app.get("/uploads/*", async (req, res) => {
     // 教材/作業附件同時給教師（系統 session）與學生（LMS JWT）存取，兩種驗證只要其一成立即可。
     // 學生端也接受 ?token= query（<img src>/<a href> 無法附加 Authorization header）。
     const token = getBearerToken(req) || (typeof req.query.token === "string" ? req.query.token : undefined);
-    const isStudent = token ? Boolean(await verifyStudentToken(token)) : false;
-    if (!isStudent && !(await isRequestAuthenticated(req))) {
+    const remote = isRemoteRequest(req);
+    const studentAuth = token ? await authenticateStudentToken(token, remote) : null;
+    // 經由學生專用入口（外網）進來的請求只接受學生登入，不接受教師 session
+    if (!studentAuth && (remote || !(await isRequestAuthenticated(req)))) {
       res.status(401).json({ detail: "未登入無法讀取系統附件" });
+      return;
+    }
+    // 外網只能讀自己班級的教材與自己的作業（老師的觀察紀錄、日誌附件等一律不開放）
+    if (remote && !(await remoteStudentCanReadUpload(rel, studentAuth!.payload))) {
+      res.status(403).json({ detail: "這個檔案只能在學校區網內開啟。" });
       return;
     }
   }
@@ -268,6 +280,12 @@ app.get("/student", (_req, res) => {
   } else {
     res.json({ message: "Student page is missing" });
   }
+});
+
+// --- 學生在家上線設定教學（給老師看的圖文說明）：頁面與圖片都放在 static/，圖片用相對路徑，
+// 所以導向 /static/ 底下的實際檔案（直接在檔案總管點兩下開啟也看得到圖片）。內容不含任何資料。 ---
+app.get("/remote-guide", (_req, res) => {
+  res.redirect(302, "/static/remote-guide.html");
 });
 
 // --- 學生使用說明頁：公開頁面（學生端不需要教師登入），與 /student 相同 ---
@@ -377,10 +395,27 @@ app.use("/api/student/file-collections", studentFileCollectionsRouter);
 // --- Global error handler: isolate a single request's failure instead of
 // letting an unhandled rejection crash the whole process (all other teachers'
 // live connections included). Must be registered last, after every route. ---
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    if (res.headersSent) return;
+    const tooBig = err.code === "LIMIT_FILE_SIZE";
+    res.status(tooBig ? 413 : 400).json({
+      detail: tooBig
+        ? isRemoteRequest(req)
+          ? `檔案太大了，在家上傳每個檔案最多 ${STUDENT_UPLOAD_LIMIT_MB}MB。`
+          : "檔案太大了，超過這個功能的上傳大小上限。"
+        : "上傳的檔案數量或格式不符合規定。",
+    });
+    return;
+  }
   console.error("[Request Error]", err);
   if (res.headersSent) return;
-  const message = err instanceof Error ? err.message : "Internal Server Error";
+  // 外網（學生專用入口）不回傳原始錯誤訊息，避免洩漏資料庫、檔案路徑等內部資訊
+  const message = isRemoteRequest(req)
+    ? "伺服器發生錯誤，請稍後再試。"
+    : err instanceof Error
+      ? err.message
+      : "Internal Server Error";
   res.status(500).json({ detail: message });
 });
 
@@ -405,17 +440,6 @@ async function findAvailablePort(startPort = 8000, maxAttempts = 20): Promise<nu
     if (await isPortFree(port)) return port;
   }
   return startPort;
-}
-
-function getLocalIp(): string {
-  const os = require("os") as typeof import("os");
-  const nets = os.networkInterfaces();
-  for (const name of Object.keys(nets)) {
-    for (const net of nets[name] ?? []) {
-      if (net.family === "IPv4" && !net.internal) return net.address;
-    }
-  }
-  return "127.0.0.1";
 }
 
 function openBrowser(url: string) {
@@ -499,9 +523,15 @@ async function main() {
   const httpServer = https.createServer(httpsOptions, app);
   setupRealtime(httpServer);
 
+  // 學生在家專用入口（預設關閉；見 remoteGateway.ts）
+  const remotePort = getRemoteGatewayPort();
+  const remoteServer = remotePort ? startRemoteGateway(remotePort, port) : null;
+
   registerShutdown(
     () =>
       new Promise<void>((resolve) => {
+        remoteServer?.close();
+        (remoteServer as unknown as { closeAllConnections?: () => void } | null)?.closeAllConnections?.();
         httpServer.close(() => resolve());
         // 既有的長連線（Socket.io 等）不會自己斷，讓 close 不必等它們
         (httpServer as unknown as { closeAllConnections?: () => void }).closeAllConnections?.();
