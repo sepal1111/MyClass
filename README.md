@@ -57,9 +57,9 @@ npm start       # node dist/index.js
 
 ## 學生在家上線（選用）
 
-讓學生在家也能看教材、作業與成績並繳交作業。資料仍只存在老師電腦，透過 [Tailscale Funnel](https://tailscale.com/kb/1223/funnel) 由老師電腦主動往外連，不需要固定 IP、網域或設定防火牆。**預設關閉**，沒有啟用時系統行為與校內使用完全相同。
+讓學生在家也能看教材、作業與成績並繳交作業。資料仍只存在老師電腦，透過 [Tailscale Funnel](https://tailscale.com/kb/1223/funnel) 由老師電腦主動往外連，不需要固定 IP、網域或設定防火牆。**沒有在老師電腦設定 Tailscale Funnel 時，外網完全連不到**，校內使用不受影響。
 
-- **啟用**：在 `bin/` 新增 `remote_access.json`（內容 `{ "enabled": true, "port": 8100 }`）或設定環境變數 `MYCLASS_REMOTE_PORT=8100`，伺服器會另外在 `127.0.0.1:8100` 開一個「學生專用入口」，再用 `tailscale funnel --bg 8100` 對外開放。
+- **學生專用入口**：第一次啟動時會在 `bin/` 自動建立 `remote_access.json`（`{ "enabled": true, "port": 8100 }`），伺服器另外在 `127.0.0.1:8100` 開一個只綁本機的「學生專用入口」；老師只要再執行 `tailscale funnel --bg 8100` 就能對外開放。要關閉時把 `enabled` 改成 `false` 再重新啟動（不要刪除檔案，刪掉會被自動建回預設開啟）。環境變數 `MYCLASS_REMOTE_PORT` 優先於設定檔。
 - **給老師的圖文設定教學**：MyClass 執行時開啟 `/remote-guide`（檔案為 `static/remote-guide.html`），老師使用手冊目錄也有連結。
 - **學生專用入口**（`src/remoteGateway.ts`）只綁本機、以白名單轉送：學生頁面、學生 API、附件與 Socket.io；教師頁面與 API 一律 404，教師每日密碼不會暴露在網際網路。轉送時移除 cookie 等教師憑證並標記為外網請求。
 - **外網限制**（只影響在家連線）：

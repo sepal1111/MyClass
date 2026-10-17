@@ -1,5 +1,5 @@
-// 在家上線用的「學生專用入口」：另開一個只綁在 127.0.0.1 的 HTTP 埠，給 Cloudflare Tunnel
-// （cloudflared）之類的通道程式轉送外網連線。這個入口是一層「白名單轉送」：只有學生頁面、
+// 在家上線用的「學生專用入口」：另開一個只綁在 127.0.0.1 的 HTTP 埠，給 Tailscale Funnel
+// 之類的通道程式轉送外網連線。這個入口是一層「白名單轉送」：只有學生頁面、
 // 學生 API、附件與 Socket.io 會被轉給主伺服器，教師端的頁面與 API 一律回 404，
 // 所以教師的每日密碼（字頭 + 月日）不會暴露在網際網路上被猜。
 //
@@ -7,9 +7,12 @@
 // 主伺服器看到這個標頭就套用外網限制（見 isRemoteRequest 的使用處）。外部自己帶來的同名標頭
 // 會先被移除；區網裝置就算自己加上這個標頭，也只會讓自己受到更多限制，不會多拿到權限。
 //
-// 啟用方式（擇一，預設不啟用，原本的區網使用完全不受影響）：
+// 設定（環境變數優先）：
 //   - 環境變數 MYCLASS_REMOTE_PORT=8100
 //   - bin/remote_access.json：{ "enabled": true, "port": 8100 }
+// 第一次啟動（bin 裡還沒有 remote_access.json）時自動建立並預設啟用，老師只需要設定 Tailscale。
+// 預設啟用是安全的：入口只綁 127.0.0.1，沒有在這台電腦設定 Tailscale Funnel 時外網根本連不到；
+// 不想開啟時把 enabled 改為 false 並重新啟動即可（檔案已存在就不會再被改回來）。
 import fs from "fs";
 import http from "http";
 import https from "https";
@@ -40,8 +43,18 @@ export function getRemoteGatewayPort(): number | null {
     const n = Number(envPort);
     return Number.isInteger(n) && n > 0 && n < 65536 ? n : null;
   }
+  const file = path.join(getBinDir(), "remote_access.json");
+  if (!fs.existsSync(file)) {
+    try {
+      fs.writeFileSync(file, JSON.stringify({ enabled: true, port: DEFAULT_REMOTE_PORT }) + "\n", "utf-8");
+      console.log(`[MyClass] 已建立 ${file}（學生在家連線入口預設開啟，設定 Tailscale Funnel 後學生才連得到）`);
+    } catch (err) {
+      console.error("[Remote Gateway] 無法建立 remote_access.json：", (err as Error).message);
+      return null;
+    }
+  }
   try {
-    const cfg = JSON.parse(fs.readFileSync(path.join(getBinDir(), "remote_access.json"), "utf-8"));
+    const cfg = JSON.parse(fs.readFileSync(file, "utf-8"));
     if (!cfg?.enabled) return null;
     const n = Number(cfg.port ?? DEFAULT_REMOTE_PORT);
     return Number.isInteger(n) && n > 0 && n < 65536 ? n : null;

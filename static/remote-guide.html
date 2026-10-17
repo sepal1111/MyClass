@@ -637,7 +637,7 @@
         <a href="#step2" class="guide-nav-pill">2️⃣ 打開兩個開關</a>
         <a href="#step3" class="guide-nav-pill">3️⃣ 貼上一段設定文字</a>
         <a href="#step4" class="guide-nav-pill">4️⃣ 確認成功、記下網址</a>
-        <a href="#step5" class="guide-nav-pill">5️⃣ 重新開啟 MyClass</a>
+        <a href="#step5" class="guide-nav-pill">5️⃣ 確認 MyClass 開著</a>
         <a href="#step6" class="guide-nav-pill">6️⃣ 用手機測試</a>
         <a href="#step7" class="guide-nav-pill">7️⃣ 通知學生</a>
         <a href="#daily" class="guide-nav-pill">🗓️ 平常要怎麼用？</a>
@@ -799,9 +799,7 @@
             </ol>
             <div class="cmd-box">
               <button class="copy-btn" type="button">📋 複製</button>
-<pre><code>New-Item -ItemType Directory -Force bin | Out-Null
-Set-Content -Path bin\remote_access.json -Value '{ "enabled": true, "port": 8100 }' -Encoding Ascii
-$ts = "C:\Program Files\Tailscale\tailscale.exe"
+<pre><code>$ts = "C:\Program Files\Tailscale\tailscale.exe"
 &amp; $ts set --unattended=true
 &amp; $ts set --hostname=myclass
 &amp; $ts funnel --bg 8100
@@ -816,10 +814,10 @@ $ts = "C:\Program Files\Tailscale\tailscale.exe"
             </figure>
             <div class="guide-tip-box">
               💡 <b>這段文字做了什麼？</b>（看不懂也沒關係）<br>
-              ① 打開 MyClass 的「學生在家連線」功能。<br>
-              ② 讓 Tailscale 在電腦登出時也繼續運作。<br>
-              ③ 把這台電腦在 Tailscale 上的名字取為 <code>myclass</code>，學生的網址會比較好記。<br>
-              ④ 開始讓學生從家裡連進來，並顯示學生要用的網址。
+              ① 讓 Tailscale 在電腦登出時也繼續運作。<br>
+              ② 把這台電腦在 Tailscale 上的名字取為 <code>myclass</code>，學生的網址會比較好記。<br>
+              ③ 開始讓學生從家裡連進來，並顯示學生要用的網址。<br>
+              （MyClass 這邊不用另外設定：程式第一次執行時就會自動準備好「學生在家連線」。）
             </div>
           </div>
         </div>
@@ -877,16 +875,15 @@ To enable, visit:
     <section id="step5" class="guide-section">
       <div class="guide-section-header">
         <div class="step-badge">5</div>
-        <div class="guide-section-title">重新開啟 MyClass</div>
+        <div class="guide-section-title">確認 MyClass 開著，並設定開機自動啟動</div>
       </div>
       <div class="guide-item-card">
         <div class="guide-item-body">
-          <p>步驟 3 打開了 MyClass 的「學生在家連線」功能，要<b>把 MyClass 關掉再重新開啟</b>才會生效：</p>
+          <p>MyClass 的「學生在家連線」功能<b>一開啟程式就會自動準備好</b>，不需要另外設定。只要記得：<b>MyClass 要開著</b>，學生才連得進來。</p>
           <ol>
-            <li>在螢幕右下角找到 MyClass 的圖示（可能要先按 <code>^</code> 才看得到），按<b>右鍵</b>，選「<b>結束 MyClass</b>」。<br>（如果開的是黑色視窗，直接把黑色視窗關掉。）</li>
-            <li>跟平常一樣，點兩下開啟 MyClass。</li>
+            <li>確認螢幕右下角有 MyClass 的圖示（可能要先按 <code>^</code> 才看得到）。沒有的話，點兩下 <code>MyClass.exe</code> 開啟。</li>
+            <li><b>建議打開「開機時自動啟動」</b>：在右下角 MyClass 圖示上按右鍵，勾選「<b>開機時自動啟動</b>」。這樣電腦一開機，MyClass 就會自己開好，不用擔心忘記開、學生在家連不上。</li>
           </ol>
-          <div class="guide-tip-box">💡 <b>建議順便打開「開機時自動啟動」</b>：在右下角 MyClass 圖示上按右鍵，勾選「<b>開機時自動啟動</b>」。這樣電腦一開機，MyClass 就會自己開好，不用擔心忘記開、學生在家連不上。</div>
         </div>
       </div>
     </section>
@@ -1047,7 +1044,7 @@ To enable, visit:
           <ul>
             <li>學生在家看到的是「目前正在執行的那台電腦」上的資料。學校、家裡各用一台電腦時，兩邊資料不會同步。</li>
             <li>學生專用入口只綁在 <code>127.0.0.1:8100</code>，區網內其他裝置連不到；只有同一台電腦上的 Tailscale 會連它。</li>
-            <li>設定檔位置：<code>bin\remote_access.json</code>（與資料庫 <code>classroom_record.db</code> 同一個資料夾），內容為 <code>{ "enabled": true, "port": 8100 }</code>。也可以改用環境變數 <code>MYCLASS_REMOTE_PORT=8100</code>。兩者都沒有設定時，這個功能完全不啟動。</li>
+            <li>設定檔位置：<code>bin\remote_access.json</code>（與資料庫 <code>classroom_record.db</code> 同一個資料夾），內容為 <code>{ "enabled": true, "port": 8100 }</code>。<b>第一次執行 MyClass 時會自動建立並預設開啟</b>：入口只綁本機，沒有設定 Tailscale Funnel 的電腦外網連不到，所以不影響只在學校使用的老師。也可以改用環境變數 <code>MYCLASS_REMOTE_PORT=8100</code>（優先於設定檔）。</li>
             <li>開發版（<code>npm run dev</code>）的 <code>bin</code> 在專案資料夾內；可攜版的 <code>bin</code> 在 <code>MyClass.exe</code> 旁邊。</li>
             <li>啟動成功時，主控台會顯示：<code>[MyClass] 學生在家專用入口：http://127.0.0.1:8100（請用 Tailscale Funnel 對外開放這個埠）</code></li>
             <li>Tailscale 帳號被盜用時，對方可以把自己的裝置加入這個 Tailscale 網路，直接連到老師電腦。請開啟帳號的兩步驟驗證，並定期到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 檢查有沒有不認識的裝置。</li>
@@ -1157,7 +1154,7 @@ npm run dev</code></pre>
         <div class="guide-item-body">
           <ul>
             <li><b>暫停對外</b>：<code>&amp; "C:\Program Files\Tailscale\tailscale.exe" funnel --https=443 off</code></li>
-            <li><b>完全停用學生在家連線</b>：刪除 <code>bin\remote_access.json</code>（或把 <code>enabled</code> 改為 <code>false</code>），並重新啟動 MyClass。</li>
+            <li><b>完全停用學生在家連線</b>：用記事本打開 <code>bin\remote_access.json</code>，把 <code>true</code> 改為 <code>false</code> 後存檔，再從右下角圖示選「重新啟動伺服器」。（不要直接刪除這個檔案：刪掉的話，下次啟動會自動建回預設開啟的設定。）</li>
             <li><b>移除 Tailscale</b>：「Windows 設定 → 應用程式」解除安裝 Tailscale，並到 <a href="https://login.tailscale.com/admin/machines" target="_blank" rel="noopener">https://login.tailscale.com/admin/machines</a> 刪除這台電腦。</li>
           </ul>
         </div>
