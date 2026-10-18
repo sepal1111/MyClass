@@ -14,7 +14,7 @@ function isPackaged(): boolean {
  *
  *  The packaged exe is placed inside `system/` (so the release folder's top
  *  level only shows the launcher: the tray program `MyClass.exe` on Windows, the
- *  `.command` file on mac — see scripts/build-exe.mjs), so when the exe's
+ *  `MyClass.app` menu bar program on mac — see scripts/build-exe.mjs), so when the exe's
  *  immediate parent is named `system`, the app root is one level further up.
  *  Older Windows builds kept the exe at the top level; that layout still works. */
 export function getExeDir(): string {

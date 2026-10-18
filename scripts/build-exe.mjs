@@ -7,10 +7,12 @@
 // run (src/paths.ts:getBinDir).
 // 伺服器執行檔放在 system/ 裡；Windows 另外編譯托盤程式 MyClass.exe（tools/tray/MyClassTray.cs）放在
 // 資料夾最上層，是老師唯一要點的程式：伺服器在背景執行、右下角顯示圖示，並可設定開機自動啟動。
+// macOS 對應的是 tools/tray-mac/MyClassTray.swift 編譯成的 MyClass.app（選單列圖示）。
 // （v4.3.0 起不再提供安裝版，托盤併入可攜版。）
 import { zipAndRemove } from "./lib/portable-zip.mjs";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -61,6 +63,39 @@ function getGitVersion(cwd) {
   }
 
   return "";
+}
+
+/** 從 .ico 取出內嵌的 PNG，轉成 macOS 的 .icns（用內建的 sips 與 iconutil）。失敗只警告，沿用預設圖示。 */
+function makeIcns(icoPath, icnsPath) {
+  try {
+    const ico = fs.readFileSync(icoPath);
+    let best = null;
+    for (let i = 0; i < ico.readUInt16LE(4); i++) {
+      const size = ico.readUInt32LE(6 + i * 16 + 8);
+      const offset = ico.readUInt32LE(6 + i * 16 + 12);
+      const data = ico.subarray(offset, offset + size);
+      const isPng = data.subarray(1, 4).toString("latin1") === "PNG";
+      const w = ico[6 + i * 16] || 256;
+      if (isPng && (!best || w > best.w)) best = { w, data };
+    }
+    if (!best) throw new Error(".ico 內沒有 PNG 圖像");
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "myclass-icns-"));
+    const src = path.join(tmp, "src.png");
+    const iconset = path.join(tmp, "MyClass.iconset");
+    fs.writeFileSync(src, best.data);
+    fs.mkdirSync(iconset);
+    for (const base of [16, 32, 128, 256]) {
+      for (const scale of [1, 2]) {
+        const px = base * scale;
+        if (px > best.w) continue;
+        execFileSync("sips", ["-z", String(px), String(px), src, "--out", path.join(iconset, `icon_${base}x${base}${scale === 2 ? "@2x" : ""}.png`)], { stdio: "ignore" });
+      }
+    }
+    execFileSync("iconutil", ["-c", "icns", iconset, "-o", icnsPath], { stdio: "ignore" });
+    fs.rmSync(tmp, { recursive: true, force: true });
+  } catch (err) {
+    console.warn(`[build-exe] 警告：無法產生 .icns 圖示，改用預設圖示（${err.message}）`);
+  }
 }
 
 const gitVersion = getGitVersion(rootDir);
@@ -155,7 +190,7 @@ const systemDir = path.join(outDir, "system");
 fs.mkdirSync(systemDir, { recursive: true });
 
 // 伺服器執行檔一律放在 system/ 裡，資料夾最上層只留老師要點的入口：Windows 是托盤程式
-// MyClass.exe（見下方），mac 是 .command 啟動檔。src/paths.ts:getExeDir() 遇到上一層名為
+// MyClass.exe（見下方），mac 是 MyClass.app（選單列程式）。src/paths.ts:getExeDir() 遇到上一層名為
 // "system" 時會再往上一層，所以 bin/ 仍建在資料夾最上層。
 const exeDir = systemDir;
 const exePath = path.join(exeDir, exeName);
@@ -235,41 +270,63 @@ if (which === "win") {
 }
 
 if (target.isMac) {
-  // A bare Mach-O binary has no registered LaunchServices handler, so
-  // double-clicking it in Finder fails silently ("no application knows how
-  // to open this file" — kLSApplicationNotFoundErr). A `.command` file *is*
-  // a recognized document type: Finder opens it in Terminal.app and Terminal
-  // executes it directly, side-stepping the missing-handler problem. It's
-  // the only thing left at the top level — the real binary lives in system/.
-  const commandScript = `#!/bin/bash\ncd "$(dirname "$0")"\n# 自動清除下載或傳輸時可能附加的隔離屬性\nxattr -d com.apple.quarantine ./system/"${exeName}" 2>/dev/null || true\n./system/"${exeName}"\n`;
+  // 選單列程式 MyClass.app（tools/tray-mac/MyClassTray.swift）是 mac 版唯一放在最上層的入口，
+  // 對應 Windows 的 MyClass.exe：伺服器在背景執行、選單列顯示圖示，並可設定登入時自動啟動。
+  // 以 macOS 內建的 swiftc 編譯（不需 Xcode）；圖示由 assets/myclass.ico 內的 PNG 轉成 .icns。
+  // 編譯不出來就讓封裝失敗，避免發出一個老師找不到程式可以點的資料夾。
+  console.log("[tray] compiling menu bar app MyClass.app (swiftc)");
+  const appDir = path.join(outDir, "MyClass.app");
+  const macosDir = path.join(appDir, "Contents", "MacOS");
+  const resDir = path.join(appDir, "Contents", "Resources");
+  fs.mkdirSync(macosDir, { recursive: true });
+  fs.mkdirSync(resDir, { recursive: true });
 
-  const commandName = `${exeName}.command`;
-  const commandPath = path.join(outDir, commandName);
-  fs.writeFileSync(commandPath, commandScript, { mode: 0o755 });
-  fs.chmodSync(commandPath, 0o755);
+  const swiftTarget = target.pkgTarget.endsWith("arm64") ? "arm64-apple-macos11" : "x86_64-apple-macos10.15";
+  execFileSync(
+    "swiftc",
+    ["-O", "-target", swiftTarget, path.join(rootDir, "tools", "tray-mac", "MyClassTray.swift"), "-o", path.join(macosDir, "MyClass")],
+    { cwd: rootDir, stdio: "inherit" }
+  );
 
-  const friendlyCommand = path.join(outDir, "啟動課堂系統.command");
-  fs.writeFileSync(friendlyCommand, commandScript, { mode: 0o755 });
-  fs.chmodSync(friendlyCommand, 0o755);
+  makeIcns(path.join(rootDir, "assets", "myclass.ico"), path.join(resDir, "MyClass.icns"));
 
-  // Best-effort ad-hoc codesign so the raw binary at least has a valid local
-  // signature. This does NOT satisfy Gatekeeper on another Mac (that needs a
-  // paid Developer ID + notarization) — teachers copying this to a different
-  // machine will still need to right-click > Open the first time, or run
-  // `xattr -d com.apple.quarantine <file>`, to clear the quarantine flag
-  // that Finder/AirDrop/Zip attaches on transfer.
-  try {
-    execFileSync("codesign", ["--force", "--sign", "-", exePath], { stdio: "ignore" });
-  } catch {
-    /* codesign not available or failed — non-fatal, see note above */
+  fs.writeFileSync(
+    path.join(appDir, "Contents", "Info.plist"),
+    `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>MyClass</string>
+  <key>CFBundleDisplayName</key><string>MyClass</string>
+  <key>CFBundleIdentifier</key><string>tw.myclass.tray</string>
+  <key>CFBundleExecutable</key><string>MyClass</string>
+  <key>CFBundleIconFile</key><string>MyClass</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>${normVersion ? normVersion.replace(/^V/, "") : "0"}</string>
+  <key>CFBundleVersion</key><string>${normVersion ? normVersion.replace(/^V/, "") : "0"}</string>
+  <key>LSMinimumSystemVersion</key><string>${swiftTarget.endsWith("macos11") ? "11.0" : "10.15"}</string>
+  <key>LSUIElement</key><true/>
+  <key>NSHighResolutionCapable</key><true/>
+</dict>
+</plist>
+`
+  );
+
+  // Best-effort ad-hoc codesign（app 與伺服器執行檔）。這「不能」讓另一台 Mac 的 Gatekeeper 放行
+  // （那需要付費的 Developer ID 與公證），從網路下載、AirDrop 或解壓縮後的第一次開啟，
+  // 老師需在 MyClass 上按右鍵 >「打開」一次，或執行：xattr -dr com.apple.quarantine <資料夾>
+  for (const p of [exePath, appDir]) {
+    try {
+      execFileSync("codesign", ["--force", "--sign", "-", p], { stdio: "ignore" });
+    } catch {
+      /* codesign not available or failed — non-fatal, see note above */
+    }
   }
 
-  console.log(`[build-exe] Top level now has ${commandName} and 啟動課堂系統.command — the exe moved into system/.`);
+  console.log("[build-exe] Top level now has MyClass.app and system/ — the server binary lives in system/.");
   console.log(
-    "[build-exe] NOTE: this build is unsigned (ad-hoc only). On first launch on any Mac " +
-      "(including this one, once the files are zipped/AirDropped/downloaded), Gatekeeper " +
-      "may refuse to open it. Right-click the .command file (or the exe) and choose \"Open\" " +
-      "once to allow it, or run: xattr -dr com.apple.quarantine \"" + outDir + "\""
+    "[build-exe] NOTE: this build is unsigned (ad-hoc only). On first launch on another Mac, " +
+      "right-click MyClass.app and choose \"Open\" once, or run: xattr -dr com.apple.quarantine \"" + outDir + "\""
   );
 }
 
