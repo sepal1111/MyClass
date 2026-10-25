@@ -881,7 +881,13 @@ function switchTab(tabName) {
   // which turns any rapid repeat-click (e.g. a flaky mouse double-click) into a
   // visible flicker. Mirrors the equivalent guard in student.js's switchTab().
   const targetTab = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
-  if (targetTab && targetTab.classList.contains('active')) return;
+  // 卡片模式的「我的功能」首頁顯示中，目前的分頁是被暫停的（見 suspendActiveTab），
+  // 這時即使點的是同一個分頁也要完整重新進入。
+  const fromLauncherHome = document.body.classList.contains('launcher-home');
+  if (targetTab && targetTab.classList.contains('active') && !fromLauncherHome) return;
+
+  // 通知卡片模式（launcher.js）離開首頁、更新上方的返回列
+  window.dispatchEvent(new CustomEvent('myclass:tabswitch', { detail: { tab: tabName } }));
 
   if (getActiveTabName() === 'paperQuiz' && typeof triggerPaperQuizAutoSave === 'function') {
     triggerPaperQuizAutoSave(true);
@@ -994,6 +1000,26 @@ function switchTab(tabName) {
     openModal('modal-add-course');
   }
 }
+
+// 卡片模式回到「我的功能」首頁時呼叫：做和離開分頁時一樣的收尾
+// （自動儲存、送出暫存分數、暫停計時器背景音樂、關閉互動牆），但不切換分頁。
+function suspendActiveTab() {
+  if (getActiveTabName() === 'paperQuiz' && typeof triggerPaperQuizAutoSave === 'function') {
+    triggerPaperQuizAutoSave(true);
+  }
+  if (window.TeachingToolkit?.bulletin && typeof window.TeachingToolkit.bulletin.flushActivePost === 'function') {
+    window.TeachingToolkit.bulletin.flushActivePost();
+  }
+  if (AppState.quickScoringMode && AppState.pendingQuickScores) {
+    const hasPending = Object.values(AppState.pendingQuickScores).some(s => Number(s) !== 0);
+    if (hasPending) commitPendingQuickScores();
+  }
+  const popover = document.getElementById('cursor-score-popover');
+  if (popover) popover.style.display = 'none';
+  if (window.TeachingToolkit?.timer) window.TeachingToolkit.timer.onLeaveTimerTab();
+  if (window.TeachingToolkit?.liveWall) window.TeachingToolkit.liveWall.onLeaveLiveWallTab();
+}
+window.suspendActiveTab = suspendActiveTab;
 
 function initNavTabs() {
   const tabs = document.querySelectorAll('.nav-tab');

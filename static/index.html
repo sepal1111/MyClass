@@ -16,6 +16,7 @@
   <link id="app-shortcut-favicon" rel="shortcut icon" href="/api/system/logo">
   <link rel="stylesheet" href="/static/css/style.css?v=2.5">
   <link rel="stylesheet" href="/static/css/card-designer.css?v=1.0">
+  <link rel="stylesheet" href="/static/css/launcher.css?v=1.1">
 </head>
 <body>
 
@@ -48,6 +49,8 @@
       </h1>
     </div>
     <div class="header-actions">
+      <!-- 顯示模式切換：分頁模式（原本的情境分頁列）／卡片模式（老師自選功能的卡片首頁），見 static/js/launcher.js -->
+      <button type="button" id="btn-toggle-view-mode" class="btn btn-secondary btn-view-mode-toggle" title="切換顯示模式：分頁／卡片" style="font-size: 0.85rem; padding: 6px 10px; gap: 4px;">🗂️ 模式: 分頁</button>
       <button type="button" id="timetable-now-chip" style="display: none; font-size: 0.88rem; font-weight: 800; color: var(--primary, #4f46e5); background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.35); padding: 5px 12px; border-radius: 9999px; cursor: pointer; white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis;"></button>
       <div id="header-class-label" class="header-class-label" style="display: none; font-size: 0.95rem; font-weight: 800; color: #fff; background: rgba(255,255,255,0.18); padding: 4px 10px; border-radius: var(--radius-md);">班級：</div>
       <select id="course-select" class="course-select">
@@ -203,6 +206,10 @@
       </div>
     </div>
   </div>
+
+  <!-- 卡片模式：「我的功能」首頁、功能內頁上方的返回列、功能選擇器都由 static/js/launcher.js 產生 -->
+  <div id="launcher-backbar" class="launcher-backbar" hidden></div>
+  <section id="launcher-view" class="launcher-view" hidden></section>
 
   <main class="app-main">
 
@@ -3883,7 +3890,8 @@
   <script src="/static/js/realtime.js?v=3.2"></script>
   <script src="/static/js/materials.js?v=1.4"></script>
   <script src="/static/js/journal.js?v=1.0"></script>
-  <script src="/static/js/app.js?v=3.0"></script>
+  <script src="/static/js/app.js?v=3.1"></script>
+  <script src="/static/js/launcher.js?v=1.1"></script>
   <script src="/static/js/point-cards.js?v=1.1"></script>
   <script src="/static/js/card-designer.js?v=1.0"></script>
   <script src="/static/js/rewards.js?v=1.3"></script>
