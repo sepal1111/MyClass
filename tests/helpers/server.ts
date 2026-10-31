@@ -19,17 +19,22 @@ export interface HttpResult {
 export interface RequestOptions {
   method?: string;
   headers?: Record<string, string>;
+  /** 以 JSON 送出 */
   body?: unknown;
+  /** 原樣送出的文字（Socket.io 輪詢用） */
+  rawBody?: string;
+  /** 逾時就中斷，回傳 status 0（用來確認「一段時間內沒有收到東西」） */
+  timeoutMs?: number;
 }
 
 /** 對測試伺服器發請求（接受自簽憑證）。url 以 http:// 開頭時走一般 HTTP（學生專用入口）。 */
 export function request(url: string, opts: RequestOptions = {}): Promise<HttpResult> {
   const u = new URL(url);
   const isHttps = u.protocol === "https:";
-  const payload = opts.body === undefined ? undefined : JSON.stringify(opts.body);
+  const payload = opts.rawBody ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body));
   const headers: Record<string, string> = { ...(opts.headers ?? {}) };
   if (payload !== undefined) {
-    headers["Content-Type"] = "application/json";
+    headers["Content-Type"] ??= opts.rawBody !== undefined ? "text/plain;charset=UTF-8" : "application/json";
     headers["Content-Length"] = String(Buffer.byteLength(payload));
   }
   return new Promise((resolve, reject) => {
@@ -58,7 +63,17 @@ export function request(url: string, opts: RequestOptions = {}): Promise<HttpRes
         });
       }
     );
-    req.on("error", reject);
+    let timedOut = false;
+    if (opts.timeoutMs) {
+      req.setTimeout(opts.timeoutMs, () => {
+        timedOut = true;
+        req.destroy();
+        resolve({ status: 0, text: "", json: null });
+      });
+    }
+    req.on("error", (err) => {
+      if (!timedOut) reject(err);
+    });
     if (payload !== undefined) req.write(payload);
     req.end();
   });

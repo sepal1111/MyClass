@@ -264,6 +264,9 @@ function showPromptModal(options) {
 
   btnCancel.textContent = opts.cancelText;
   btnOk.textContent = opts.confirmText;
+  // hideCancel：只用來顯示內容（例如讓使用者手動複製網址）時，只留一顆按鈕。
+  // 按鈕是共用的，每次都要重設，下一個對話框才會正常顯示取消。
+  btnCancel.style.display = opts.hideCancel ? 'none' : '';
 
   return new Promise((resolve) => {
     let settled = false;

@@ -620,12 +620,12 @@
       const copyLocal = body.querySelector('#wb-k-copy-local');
       if (copyLocal) copyLocal.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(info.local_url); toast('已複製書籤網址', 'success'); }
-        catch (_) { await window.showPromptModal({ title: '請複製書籤網址', desc: '瀏覽器不允許自動複製，請手動選取下方網址複製。', defaultValue: info.local_url, icon: '🔖', confirmText: '關閉' }); }
+        catch (_) { await window.showPromptModal({ title: '請複製書籤網址', desc: '瀏覽器不允許自動複製。網址已經選取好，按 Ctrl+C（Mac 為 ⌘C）即可複製。', defaultValue: info.local_url, icon: '🔖', confirmText: '關閉', hideCancel: true }); }
       });
       const copy = body.querySelector('#wb-k-copy');
       if (copy) copy.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(info.url); toast('已複製連結', 'success'); }
-        catch (_) { await window.showPromptModal({ title: '請複製連結', desc: '瀏覽器不允許自動複製，請手動選取下方網址複製。', defaultValue: info.url, icon: '🔗', confirmText: '關閉' }); }
+        catch (_) { await window.showPromptModal({ title: '請複製連結', desc: '瀏覽器不允許自動複製。網址已經選取好，按 Ctrl+C（Mac 為 ⌘C）即可複製。', defaultValue: info.url, icon: '🔗', confirmText: '關閉', hideCancel: true }); }
       });
       const qr = body.querySelector('#wb-k-qr');
       if (qr && typeof openQrFullscreenTab === 'function') qr.addEventListener('click', () => openQrFullscreenTab(info.qr_code, info.url));
