@@ -28,7 +28,8 @@ export function getExeDir(): string {
 
 /** Path to bin/ subfolder inside the executable directory, created if needed. */
 export function getBinDir(): string {
-  const binPath = path.join(getExeDir(), "bin");
+  // MYCLASS_BIN_DIR：自動化測試用，把資料夾換到暫存位置，測試才不會寫進真正的班級資料
+  const binPath = process.env.MYCLASS_BIN_DIR?.trim() || path.join(getExeDir(), "bin");
   fs.mkdirSync(binPath, { recursive: true });
   return binPath;
 }
@@ -36,6 +37,8 @@ export function getBinDir(): string {
 /** Migrates any legacy root-level db/photo/uploads folders into bin/, matching the
  *  one-time migration the Python version performed when it introduced bin/. */
 function migrateOldRootFiles(): void {
+  // 指定了測試用資料夾時不搬移：否則程式旁的舊資料會被搬進暫存資料夾，測試結束就一起刪掉
+  if (process.env.MYCLASS_BIN_DIR?.trim()) return;
   const exeDir = getExeDir();
   const binDir = getBinDir();
 

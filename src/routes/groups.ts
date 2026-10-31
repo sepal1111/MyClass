@@ -9,7 +9,8 @@ import { broadcastToCourse } from "../realtime";
 import { autoCatch } from "../asyncRoute";
 
 export const groupsRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 組別圖示：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 const ANIMAL_ICONS = [
   "/static/pic/animals/penguin.png",

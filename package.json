@@ -9,6 +9,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate && tsc -p tsconfig.json",
     "start": "node dist/index.js",
+    "test": "node --import tsx --test --test-concurrency=1 \"tests/**/*.test.ts\"",
     "prisma:generate": "prisma generate",
     "build:exe:win": "node scripts/build-exe.mjs win",
     "build:exe:mac": "node scripts/build-exe.mjs mac",

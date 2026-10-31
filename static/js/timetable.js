@@ -330,7 +330,7 @@
       );
       const other = $('tt-teach-other');
       if (other) other.addEventListener('click', async () => {
-        const name = (window.prompt('請輸入科目名稱（例如：綜合、健康、體育）') || '').trim();
+        const name = ((await window.showPromptModal({ title: '其他科目', desc: '請輸入科目名稱', placeholder: '例如：綜合、健康、體育', icon: '📘' })) || '').trim();
         if (name) { await assign(homeId(), name); render(); }
       });
     }
@@ -349,7 +349,7 @@
       });
       asSubject.addEventListener('change', async () => {
         if (asSubject.value === '__other') {
-          const name = (window.prompt('請輸入科目名稱（例如：綜合、健康、體育）') || '').trim().slice(0, 20);
+          const name = ((await window.showPromptModal({ title: '其他科目', desc: '請輸入科目名稱', placeholder: '例如：綜合、健康、體育', icon: '📘' })) || '').trim().slice(0, 20);
           if (name) {
             try {
               const created = await API.post('/api/timetable/subjects', { name });
@@ -410,7 +410,7 @@
 
   // 在課表設定中直接建立班級（只需名稱，名冊之後再到「學生名冊管理」匯入）
   async function createCourse() {
-    const name = (window.prompt('請輸入班級名稱（例如：5年1班）') || '').trim();
+    const name = ((await window.showPromptModal({ title: '新增班級', desc: '請輸入班級名稱', placeholder: '例如：5年1班', icon: '🏫', confirmText: '新增' })) || '').trim();
     if (!name) return null;
     try {
       const res = await API.post('/api/courses', { name, teacher_type: S.role || 'homeroom' });
@@ -707,7 +707,12 @@
         row.querySelector('[data-del]').addEventListener('click', async () => {
           const p = S.periods.find((x) => x.id === id);
           const used = S.entries.filter((e) => e.period_id === id).length;
-          if (!confirm(`確定要刪除「${p.name}」嗎？${used ? `\n這個節次已排的 ${used} 堂課會一併清除。` : ''}`)) return;
+          if (!(await window.showConfirmModal({
+            title: `確定要刪除「${p.name}」嗎？`,
+            desc: used ? `這個節次已排的 ${used} 堂課會一併清除。` : '',
+            danger: true,
+            confirmText: '刪除',
+          }))) return;
           try {
             await API.delete(`/api/timetable/periods/${id}`);
             S.periods = S.periods.filter((x) => x.id !== id);

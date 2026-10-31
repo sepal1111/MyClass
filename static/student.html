@@ -1340,6 +1340,18 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/static/js/vendor/html5-qrcode.min.js"></script>
   <script src="/static/js/realtime.js?v=3.2"></script>
-  <script src="/static/js/student.js?v=3.2"></script>
+  <!-- 學生端主程式：student.js（核心）最先、student/main.js（啟動）最後，
+       其餘依原本在 student.js 裡的順序載入。這些檔案共用同一個全域範圍，順序不要任意調動 -->
+  <script src="/static/js/student.js?v=4.0"></script>
+  <script src="/static/js/student/materials.js?v=1.0"></script>
+  <script src="/static/js/student/scores.js?v=1.0"></script>
+  <script src="/static/js/student/navigation.js?v=1.0"></script>
+  <script src="/static/js/student/session.js?v=1.0"></script>
+  <script src="/static/js/student/live-wall.js?v=1.0"></script>
+  <script src="/static/js/student/point-cards.js?v=1.0"></script>
+  <script src="/static/js/student/rewards.js?v=1.0"></script>
+  <script src="/static/js/student/quizzes-leader.js?v=1.0"></script>
+  <script src="/static/js/student/file-collect.js?v=1.0"></script>
+  <script src="/static/js/student/main.js?v=1.0"></script>
 </body>
 </html>

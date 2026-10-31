@@ -4,7 +4,7 @@ import { prisma } from "../db";
 import { pushStudentNotification, pushTeacherNotification } from "../realtime";
 import { getNowStrTaipei } from "../timezone";
 
-/** 點擊通知後學生端要切換到的分頁（對應 student.js 的 switchTab key）。 */
+/** 點擊通知後學生端要切換到的分頁（對應 student/navigation.js 的 switchTab key）。 */
 export type NotificationTab = "materials" | "fileCollect" | "quizzes" | "scores";
 
 export interface NotificationInput {

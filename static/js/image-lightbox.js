@@ -73,7 +73,7 @@
     document.getElementById('btn-lightbox-zoom-in')?.addEventListener('click', () => zoomBy(STEP));
     document.getElementById('btn-lightbox-zoom-out')?.addEventListener('click', () => zoomBy(-STEP));
     document.getElementById('btn-lightbox-zoom-reset')?.addEventListener('click', resetTransform);
-    // 關閉按鈕本身已掛 .close-modal class，交給 app.js 的 initModals() 通用邏輯處理。
+    // 關閉按鈕本身已掛 .close-modal class，交給 app/dialogs.js 的 initModals() 通用邏輯處理。
 
     wrap.addEventListener('wheel', (e) => {
       e.preventDefault();

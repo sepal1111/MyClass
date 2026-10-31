@@ -1119,7 +1119,7 @@ window.Projection = {
         align-items: center;
         gap: 8px;
       ">
-        <span>${w.word}</span>
+        <span>${escapeHtmlProj(w.word)}</span>
       </div>
     `).join('');
   },

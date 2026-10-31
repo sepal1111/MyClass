@@ -13,7 +13,8 @@ import { autoCatch } from "../asyncRoute";
 import { fixUploadFilename } from "../utils/upload";
 
 export const journalRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 教學日誌的圖片／影音附件：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
 
 const VALID_TAGS = new Set(["progress", "classroom", "material", "todo", "general"]);
 

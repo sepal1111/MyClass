@@ -153,8 +153,19 @@ app.get("/photo/*", async (req, res) => {
   }
 });
 
+const TEACHER_ONLY_UPLOAD_DIRS = ["notes/", "journal/"];
+
 app.get("/uploads/*", async (req, res) => {
-  const rel = (req.params as Record<string, string>)[0] ?? "";
+  const rawRel = (req.params as Record<string, string>)[0] ?? "";
+  // 先解析成實際路徑，再換回「正規化後」的相對路徑做所有權限判斷。
+  // 不能直接用原始字串判斷：/uploads/rewards/..%2Fnotes/x.jpg 開頭是 rewards/，
+  // 實際卻指向 notes/，會被誤判為公開資源而免登入讀到觀察紀錄附件。
+  const filePath = resolveSafePath(uploadsDir, rawRel);
+  if (!filePath) {
+    res.status(404).json({ detail: "File not found" });
+    return;
+  }
+  const rel = path.relative(uploadsDir, filePath).split(path.sep).join("/");
 
   // 點數卡底圖、獎勵圖片與組別圖示等公開卡面視覺資源，允許直接載入顯示（避免 <img> 標籤無法攜帶 Authorization header 導致 401）
   const isPublicVisualAsset =
@@ -178,9 +189,18 @@ app.get("/uploads/*", async (req, res) => {
       res.status(403).json({ detail: "這個檔案只能在學校區網內開啟。" });
       return;
     }
+    // 觀察紀錄與教學日誌的附件只給老師看：校內只憑學生憑證也不行（觀察紀錄檔名是「課程-座號-日期」，猜得到），
+    // 必須同時有教師登入。學生端頁面從來不會讀這兩個資料夾。
+    if (
+      studentAuth &&
+      TEACHER_ONLY_UPLOAD_DIRS.some((d) => rel.startsWith(d)) &&
+      (remote || !(await isRequestAuthenticated(req)))
+    ) {
+      res.status(403).json({ detail: "這個檔案只有老師可以開啟。" });
+      return;
+    }
   }
-  const filePath = resolveSafePath(uploadsDir, rel);
-  if (filePath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
     // 磁碟上的檔名是亂數產生的（避免碰撞），跟素材頁面顯示的標題不同；呼叫端可選擇性帶
     // ?name= 指定下載/另存時要用的檔名（例如素材標題），保留實際副檔名以免存成打不開的檔案。
     const displayName = typeof req.query.name === "string" ? req.query.name.trim() : "";
@@ -271,7 +291,7 @@ app.get("/homework-scan", requireLocalOnly, async (req, res) => {
 
 // --- LMS 學生入口頁（Phase 2）：公開頁面，不需要教師系統密碼登入。
 // 使用者不再直接輸入這個網址——教師與學生一律從 http://localhost:8000 進入，學生登入成功後
-// 由 static/js/app.js 的 enterStudentMode() 把這個頁面載進一個同源全螢幕 iframe 顯示，
+// 由 static/js/app/auth.js 的 enterStudentMode() 把這個頁面載進一個同源全螢幕 iframe 顯示，
 // 此路由純粹是那個 iframe 的內部資源來源，保留路徑不變只是為了不用同時改前後端。 ---
 app.get("/student", (_req, res) => {
   const studentFile = path.join(staticDir, "student.html");

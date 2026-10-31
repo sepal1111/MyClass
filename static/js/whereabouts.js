@@ -242,7 +242,12 @@
     if (!window.ensureCourseSelected || !window.ensureCourseSelected()) return;
     const hasOut = S.students.some((s) => recOf(s));
     if (!hasOut) { toast('目前全班都在教室', 'info'); return; }
-    if (!confirm(`確定要將 ${S.date}「${slotLabel().replace(/^\S+\s/, '')}」所有外出的學生標記為「已回到教室」嗎？\n（外出紀錄會保留，並記下現在的回來時間）`)) return;
+    if (!(await window.showConfirmModal({
+      title: '確定要把所有外出的學生標記為「已回到教室」嗎？',
+      desc: `${S.date}「${slotLabel().replace(/^\S+\s/, '')}」\n外出紀錄會保留，並記下現在的回來時間。`,
+      icon: '🏫',
+      confirmText: '全部回到教室',
+    }))) return;
     try {
       await API.post(`/api/whereabouts/${courseId()}/clear`, { date: S.date, slot: S.slot });
       await load();
@@ -299,7 +304,12 @@
     if (inBtn) inBtn.addEventListener('click', async () => { if (await save(ids, null, '')) close(); });
     const delBtn = el.querySelector('[data-del]');
     if (delBtn) delBtn.addEventListener('click', async () => {
-      if (!confirm('刪除後這筆外出不會留下任何紀錄。確定是誤按嗎？')) return;
+      if (!(await window.showConfirmModal({
+        title: '確定是誤按，要刪除這筆外出嗎？',
+        desc: '刪除後這筆外出不會留下任何紀錄。',
+        danger: true,
+        confirmText: '刪除',
+      }))) return;
       try {
         await API.delete(`/api/whereabouts/${courseId()}/trip/${cur.id}`);
         close();
@@ -393,7 +403,7 @@
         );
         row.querySelector('[data-del]').addEventListener('click', async () => {
           const r = reasons.find((x) => x.id === id);
-          if (!confirm(`確定要刪除「${r.title}」嗎？`)) return;
+          if (!(await window.showConfirmModal({ title: `確定要刪除「${r.title}」嗎？`, danger: true, confirmText: '刪除' }))) return;
           try {
             const res = await API.delete(`/api/whereabouts/reasons/${id}`);
             if (res.deactivated) {
@@ -598,20 +608,24 @@
       const on = body.querySelector('#wb-k-on');
       if (on) on.addEventListener('click', () => change({ enabled: true }, '已啟用'));
       const off = body.querySelector('#wb-k-off');
-      if (off) off.addEventListener('click', () => { if (confirm('停用後，目前的連結與 QR Code 立即失效。確定嗎？')) change({ enabled: false }, '已停用'); });
+      if (off) off.addEventListener('click', async () => {
+        if (await window.showConfirmModal({ title: '確定要停用學生自行登記嗎？', desc: '停用後，目前的連結與 QR Code 立即失效。', icon: '⛔', danger: true, confirmText: '停用' })) change({ enabled: false }, '已停用');
+      });
       const regen = body.querySelector('#wb-k-regen');
-      if (regen) regen.addEventListener('click', () => { if (confirm('重新產生後，舊的連結與 QR Code 會立即失效。確定嗎？')) change({ enabled: true, regenerate: true }, '已重新產生'); });
+      if (regen) regen.addEventListener('click', async () => {
+        if (await window.showConfirmModal({ title: '確定要重新產生連結嗎？', desc: '重新產生後，舊的連結與 QR Code 會立即失效。', icon: '🔄', danger: true, confirmText: '重新產生' })) change({ enabled: true, regenerate: true }, '已重新產生');
+      });
       const open = body.querySelector('#wb-k-open');
       if (open) open.addEventListener('click', () => window.open(info.local_url, '_blank', 'noopener'));
       const copyLocal = body.querySelector('#wb-k-copy-local');
       if (copyLocal) copyLocal.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(info.local_url); toast('已複製書籤網址', 'success'); }
-        catch (_) { window.prompt('請複製書籤網址：', info.local_url); }
+        catch (_) { await window.showPromptModal({ title: '請複製書籤網址', desc: '瀏覽器不允許自動複製，請手動選取下方網址複製。', defaultValue: info.local_url, icon: '🔖', confirmText: '關閉' }); }
       });
       const copy = body.querySelector('#wb-k-copy');
       if (copy) copy.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(info.url); toast('已複製連結', 'success'); }
-        catch (_) { window.prompt('請複製連結：', info.url); }
+        catch (_) { await window.showPromptModal({ title: '請複製連結', desc: '瀏覽器不允許自動複製，請手動選取下方網址複製。', defaultValue: info.url, icon: '🔗', confirmText: '關閉' }); }
       });
       const qr = body.querySelector('#wb-k-qr');
       if (qr && typeof openQrFullscreenTab === 'function') qr.addEventListener('click', () => openQrFullscreenTab(info.qr_code, info.url));

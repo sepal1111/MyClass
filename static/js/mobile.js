@@ -69,8 +69,10 @@
       showOnPc: '📺 顯示在電腦', deletePost: '🗑️ 刪除所選佈告', deletePosts: '🗑️ 刪除所選 {n} 則佈告',
       selectAll: '全選', selectNone: '取消選取', selectedCount: '已選 {n} 則',
       showOneOnly: '一次只能顯示一則佈告，請只選取一則',
-      confirmDeletePost: '確定要刪除佈告「{title}」嗎？此動作無法復原。',
+      confirmDeletePost: '確定要刪除佈告「{title}」嗎？\n此動作無法復原。',
       confirmDeletePosts: '確定要刪除所選的 {n} 則佈告嗎？\n\n{titles}\n\n此動作無法復原。',
+      dialogCancel: '取消',
+      dialogDelete: '刪除',
       postDeleted: '已刪除佈告', postsDeleted: '已刪除 {n} 則佈告', selectPostFirst: '請先選擇佈告',
       needAnnounce: '請輸入公告內容', announced: '已發佈', announceTitlePrefix: '手機公告',
       countdown: '倒數時間', minutesN: '{n} 分鐘', customMin: '自訂（分鐘）', customPh: '例如 7',
@@ -141,8 +143,10 @@
       showOnPc: '📺 Show on computer', deletePost: '🗑️ Delete selected post', deletePosts: '🗑️ Delete {n} selected posts',
       selectAll: 'Select all', selectNone: 'Clear selection', selectedCount: '{n} selected',
       showOneOnly: 'Only one post can be shown at a time. Please select just one.',
-      confirmDeletePost: 'Delete the post "{title}"? This cannot be undone.',
+      confirmDeletePost: 'Delete the post "{title}"?\nThis cannot be undone.',
       confirmDeletePosts: 'Delete the {n} selected posts?\n\n{titles}\n\nThis cannot be undone.',
+      dialogCancel: 'Cancel',
+      dialogDelete: 'Delete',
       postDeleted: 'Post deleted', postsDeleted: '{n} posts deleted', selectPostFirst: 'Please select a post first',
       needAnnounce: 'Please enter an announcement', announced: 'Published', announceTitlePrefix: '手機公告',
       countdown: 'Countdown', minutesN: '{n} min', customMin: 'Custom (minutes)', customPh: 'e.g. 7',
@@ -1011,7 +1015,14 @@
         n: list.length,
         titles: list.slice(0, 8).map((p) => `・${p.title}`).join('\n') + (list.length > 8 ? `\n… +${list.length - 8}` : ''),
       });
-    const ok = typeof confirm === 'function' ? confirm(msg) : true;
+    const [title, ...rest] = msg.split('\n');
+    const ok = await window.showConfirmModal({
+      title,
+      desc: rest.join('\n').trim(),
+      danger: true,
+      confirmText: t('dialogDelete'),
+      cancelText: t('dialogCancel'),
+    });
     if (!ok) return;
 
     let done = 0;

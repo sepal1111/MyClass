@@ -13,7 +13,7 @@
 
   const CONTEXTS = ['inclass', 'routine', 'teaching', 'assessment', 'settings'];
 
-  // 功能清單：tab 對應 app.js 的 switchTab()；sub 是「教學互動工具」面板裡的子分頁
+  // 功能清單：tab 對應 app/navigation.js 的 switchTab()；sub 是「教學互動工具」面板裡的子分頁
   const FEATURES = [
     { id: 'scoring', tab: 'scoring', ctx: 'inclass' },
     { id: 'dashboard', tab: 'dashboard', ctx: 'inclass' },

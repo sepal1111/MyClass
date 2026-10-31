@@ -306,7 +306,13 @@
     const on = S.plan.includes(itemId);
     if (on) {
       const count = [...S.records.values()].filter((r) => r.item_id === itemId).length;
-      if (count && !confirm(`「${itemName(itemId)}」今天已經登記了 ${count} 筆。\n從今日計畫中移除後這些紀錄暫時不顯示在進度中，確定要移除嗎？`)) {
+      if (count && !(await window.showConfirmModal({
+        title: `確定要從今日計畫移除「${itemName(itemId)}」嗎？`,
+        desc: `今天已經登記了 ${count} 筆。移除後這些紀錄暫時不顯示在進度中。`,
+        icon: '📋',
+        danger: true,
+        confirmText: '移除',
+      }))) {
         return;
       }
     }
@@ -576,7 +582,7 @@
             feedback('ok', `${st.number} 號 ${st.name}`, `${itemName(itemId)}：${val}`);
           }
         } catch (err) {
-          alert(err.message || '登記失敗');
+          window.showAlertModal({ title: '登記失敗', desc: err.message || '', type: 'error', icon: '❌' });
         }
 
         updateUndoBtn();
@@ -602,7 +608,7 @@
       feedback('warn', `已復原：${st?.name ?? ''}`, `${itemName(last.item_id)} 回復為「${p?.status ?? ST.MISSING}」`);
     } catch (err) {
       S.undoStack.push(last);
-      alert(err.message || '復原失敗');
+      window.showAlertModal({ title: '復原失敗', desc: err.message || '', type: 'error', icon: '❌' });
     }
     updateUndoBtn();
     renderGrid();
@@ -637,7 +643,7 @@
       $('hw-cam-btn').textContent = '⏹ 關閉相機';
     } catch (e) {
       box.style.display = 'none';
-      alert('無法開啟相機鏡頭：請確認權限或設備');
+      window.showAlertModal({ title: '無法開啟相機鏡頭', desc: '請確認瀏覽器的相機權限，或改用其他設備。', type: 'warning', icon: '📷' });
     }
   }
 
@@ -670,7 +676,7 @@
       a.click();
       setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 5000);
     } catch (e) {
-      alert(e.message || '匯出失敗');
+      window.showAlertModal({ title: '匯出失敗', desc: e.message || '', type: 'error', icon: '❌' });
     }
   }
 

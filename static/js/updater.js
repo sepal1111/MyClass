@@ -252,7 +252,7 @@
   }
 
   window.UpdateNotice = {
-    // app.js 在登入完成、班級載入後呼叫
+    // app/auth.js 在登入完成、班級載入後呼叫
     onAppReady() {
       bindCard();
       load();

@@ -9,7 +9,8 @@ import { getNowStrTaipei, getTodayStrTaipei } from "../timezone";
 import { autoCatch } from "../asyncRoute";
 
 export const notesRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 觀察紀錄的圖片／影音附件：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } });
 
 function sanitizeFilenamePart(text: string): string {
   const cleaned = text.replace(/[\\/*?:"<>|]/g, "").replace(/\s/g, "");

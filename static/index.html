@@ -2240,7 +2240,7 @@
       </div>
 
       <!-- Student Login Panel（不再是預設畫面，只有從「學生連線 QR Code」掃碼進來
-           （網址帶 ?login=student）的裝置才會顯示，見 static/js/app.js 的 getDefaultAuthPanel()） -->
+           （網址帶 ?login=student）的裝置才會顯示，見 static/js/app/auth.js 的 getDefaultAuthPanel()） -->
       <div id="auth-panel-student" style="display: none;">
         <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; color: var(--text-main);" data-i18n="auth_student_title">🎓 學生登入</h2>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;" data-i18n="auth_student_subtitle">請輸入老師提供的登入帳號與密碼</p>
@@ -3624,7 +3624,7 @@
        給使用者直接輸入網址進入。學生登入成功後改為載入這個同源 iframe（src 指向內部沿用的
        /student 資源），localStorage 的 student_token/student_info 兩個 key 在同源 iframe 之間
        本來就共用，不需要額外傳遞；student.html/student.js 完全沒有改動邏輯，只是換了個呈現位置。
-       見 static/js/app.js 的 enterStudentMode()/exitStudentMode()。 -->
+       見 static/js/app/auth.js 的 enterStudentMode()/exitStudentMode()。 -->
   <iframe id="student-app-frame" title="學生課程入口" style="display:none; position:fixed; inset:0; width:100%; height:100%; border:none; z-index:200000; background:#f8fafc;"></iframe>
 
   <!-- Modal: 建立/編輯檔案蒐集主題 -->
@@ -3886,11 +3886,38 @@
   <script src="/static/js/custom-select.js?v=1.0"></script>
   <script src="/static/js/image-lightbox.js?v=1.0"></script>
   <script src="/static/js/audio-engine.js?v=3.0"></script>
-  <script src="/static/js/toolkit.js?v=3.2"></script>
+  <!-- 課堂工具箱：toolkit/common.js 最先、toolkit.js（組合與初始化）最後，中間各工具的順序：
+       floating-dock.js 用到 timer.js，所以 timer.js 要在它前面 -->
+  <script src="/static/js/toolkit/common.js?v=1.0"></script>
+  <script src="/static/js/toolkit/bulletin.js?v=1.0"></script>
+  <script src="/static/js/toolkit/lucky-draw.js?v=1.0"></script>
+  <script src="/static/js/toolkit/timer.js?v=1.0"></script>
+  <script src="/static/js/toolkit/live-wall.js?v=1.0"></script>
+  <script src="/static/js/toolkit/floating-dock.js?v=1.0"></script>
+  <script src="/static/js/toolkit/word-cloud.js?v=1.0"></script>
+  <script src="/static/js/toolkit/kahoot.js?v=1.0"></script>
+  <script src="/static/js/toolkit.js?v=4.0"></script>
   <script src="/static/js/realtime.js?v=3.2"></script>
   <script src="/static/js/materials.js?v=1.4"></script>
   <script src="/static/js/journal.js?v=1.0"></script>
-  <script src="/static/js/app.js?v=3.1"></script>
+  <!-- 教師端主程式：app.js（核心）最先，其餘依原本在 app.js 裡的順序載入。
+       這些檔案共用同一個全域範圍，順序不要任意調動 -->
+  <script src="/static/js/app.js?v=4.0"></script>
+  <script src="/static/js/app/auth.js?v=1.0"></script>
+  <script src="/static/js/app/ui-helpers.js?v=1.0"></script>
+  <script src="/static/js/app/navigation.js?v=1.0"></script>
+  <script src="/static/js/app/courses.js?v=1.0"></script>
+  <script src="/static/js/app/scoring.js?v=1.0"></script>
+  <script src="/static/js/app/attendance.js?v=1.0"></script>
+  <script src="/static/js/app/grouping.js?v=1.0"></script>
+  <script src="/static/js/app/seating.js?v=1.0"></script>
+  <script src="/static/js/app/notes.js?v=1.0"></script>
+  <script src="/static/js/app/dashboard.js?v=1.0"></script>
+  <script src="/static/js/app/admin.js?v=1.0"></script>
+  <script src="/static/js/app/dialogs.js?v=1.0"></script>
+  <script src="/static/js/app/paper-quiz.js?v=1.0"></script>
+  <script src="/static/js/app/events.js?v=1.0"></script>
+  <script src="/static/js/app/logo.js?v=1.0"></script>
   <script src="/static/js/launcher.js?v=1.1"></script>
   <script src="/static/js/point-cards.js?v=1.1"></script>
   <script src="/static/js/card-designer.js?v=1.0"></script>

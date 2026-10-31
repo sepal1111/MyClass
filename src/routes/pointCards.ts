@@ -12,7 +12,8 @@ import { parseCsvPointCards, parseExcelPointCards, ParsedPointCard } from "../ut
 import { resolveCardImage } from "./studentPointCards";
 
 export const pointCardsRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 卡片底圖、卡面圖片與匯入檔：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // 0-1. 卡片排版工具支援：QR Code 生成
 pointCardsRouter.get("/tools/qrcode", async (req, res) => {

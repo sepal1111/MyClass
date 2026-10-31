@@ -16,7 +16,8 @@ import { listSubmissionComments, createSubmissionComment } from "../utils/submis
 import { fixUploadFilename } from "../utils/upload";
 
 export const unitsRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 教材檔（可能是影片）：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
 
 /** "file,text,link" (as stored) <-> ["file","text","link"] (as sent/returned over the API). */
 function parseSubmissionTypes(csv: string | null): string[] {

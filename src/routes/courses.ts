@@ -16,7 +16,8 @@ import { fixUploadFilename } from "../utils/upload";
 
 export const coursesRouter = autoCatch(Router());
 const photoDir = path.join(getBinDir(), "photo");
-const upload = multer({ storage: multer.memoryStorage() });
+// 學生名冊匯入檔（CSV／Excel）：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const photoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_PHOTO_BYTES, files: 200 } });
 
@@ -390,7 +391,7 @@ coursesRouter.put("/:courseId/students/:studentId", async (req, res) => {
 });
 
 // --- 學生照片（bin/photo/<學號>.jpg）：網頁上傳 / 更換 / 移除 ---
-// 前端會先把圖片轉成 JPEG（見 app.js prepareStudentPhoto），這裡只收 JPEG。
+// 前端會先把圖片轉成 JPEG（見 app/admin.js prepareStudentPhoto），這裡只收 JPEG。
 
 // 批次匯入前預覽：只送檔名，回報每個檔案會「新增」「覆蓋現有照片」或「找不到學號」
 coursesRouter.post("/:courseId/students/photos/preview", async (req, res) => {

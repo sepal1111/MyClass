@@ -1,0 +1,27 @@
+v4.5.0 安全修正、自動化測試、前端拆分與對話框美化
+
+安全修正
+- 修正 /uploads 路徑穿越：可免登入讀取觀察紀錄附件（rewards/..%2Fnotes/...）
+- 觀察紀錄、教學日誌附件只限教師登入，學生憑證一律拒絕
+- 文字雲詞彙與詞頻排行榜改為跳脫輸出，防止學生注入 HTML／腳本
+- 教師登入 cookie 改為 HttpOnly
+- 教師端各項上傳加上檔案大小上限
+
+自動化測試
+- 新增 npm test（node:test），65 個測試涵蓋附件權限與路徑穿越、學生登入與憑證失效、
+  學生在家專用入口、即時連線身分驗證與班級隔離、前端輸出跳脫
+- 新增 MYCLASS_BIN_DIR 環境變數：測試使用暫存資料夾，不會讀寫 bin/
+
+前端拆分（程式內容未變更，僅搬移位置）
+- toolkit.js 拆成 static/js/toolkit/ 8 個模組
+- app.js 拆成 app.js 核心與 static/js/app/ 15 個檔案
+- student.js 拆成 student.js 核心與 static/js/student/ 10 個檔案
+
+對話框美化
+- 教師頁原生 confirm／prompt 改用系統自訂對話框（危險操作紅色、按鈕寫出具體動作）
+- 新增 dialogs-lite.js，教師手機頁與作業掃描視窗也改用美化對話框
+- 學生兌換獎勵的結果改用提示訊息
+- 只用來顯示內容的視窗（手動複製網址）只留一顆按鈕
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01SEp9JRb5ByVC3FFtfXnLWH

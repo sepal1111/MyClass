@@ -10,7 +10,8 @@ import { autoCatch } from "../asyncRoute";
 import { getNowStrTaipei, getTodayStrTaipei } from "../timezone";
 
 export const rewardsRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// 獎勵圖片：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // 1. 取得指定班級的獎勵品項列表 (教師端管理用)
 rewardsRouter.get("/:courseId", async (req, res) => {

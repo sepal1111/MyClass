@@ -25,7 +25,8 @@ import { isLocalRequest } from "../middleware/localOnly";
 import { loginBlockedSeconds, recordLoginFailure, recordLoginSuccess } from "../middleware/loginThrottle";
 
 export const systemRouter = autoCatch(Router());
-const upload = multer({ storage: multer.memoryStorage() });
+// Logo 圖片：上傳先整個放進記憶體，限制大小避免拖垮伺服器
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
 // 前端用來決定要不要顯示「僅限教師本機」的功能（如作業掃描登記）；真正的攔阻在伺服器端
 // （middleware/localOnly.ts），這裡只是讓其他裝置看不到多餘的選單。
@@ -46,7 +47,7 @@ systemRouter.get("/info", async (req, res) => {
   const mobileUrl = `${baseUrl}/mobile`;
   // 學生連線 QR Code（登入畫面用）：主登入介面預設只顯示教師登入，學生改用自己的手機/平板
   // 掃這組 QR Code，帶 ?login=student 讓對方裝置上開啟的頁面直接顯示學生登入表單（見
-  // static/js/app.js 的 getDefaultAuthPanel()），不影響掃碼裝置以外的任何畫面。
+  // static/js/app/auth.js 的 getDefaultAuthPanel()），不影響掃碼裝置以外的任何畫面。
   const studentLoginUrl = `${baseUrl}/?login=student`;
   const targetUrl = mode === "mobile" ? mobileUrl : mode === "student" ? studentLoginUrl : baseUrl;
 
@@ -112,7 +113,8 @@ systemRouter.post("/verify_password", async (req, res) => {
     maxAge: 86400 * 1000,
     path: "/",
     sameSite: "lax",
-    httpOnly: false,
+    // 前端不用 JS 讀這個 cookie（API 用 localStorage 的 auth_token）；設為 httpOnly，XSS 就偷不到
+    httpOnly: true,
   });
   res.json({ success: true, message: "身分驗證成功！", auth_token: token, auth_date: getTodayStrTaipei(), must_change_prefix: await isDefaultPrefix() });
 });
